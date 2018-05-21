@@ -217,7 +217,7 @@ ClientBin/
 *.dbproj.schemaview
 *.jfm
 *.pfx
-*.exe
+*/kwh-modbus.exe
 *.pdb
 *.ilk
 *.publishsettings
