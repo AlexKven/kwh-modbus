@@ -14,7 +14,7 @@ class Test2 : public Test1
 public:
 	virtual int Sum(int x, int y)
 	{
-		return x + y;
+		return y + x;
 	}
 };
 
