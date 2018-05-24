@@ -1,4 +1,6 @@
 #pragma once
+#ifndef TESTCLASS
+#define TESTCLASS
 class TestClass
 {
 private:
@@ -9,4 +11,4 @@ public:
 	int get_Value();
 	void set_Value(int value);
 };
-
+#endif
