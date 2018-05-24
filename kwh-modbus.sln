@@ -1,41 +1,49 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.27703.2018
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kwh-modbus", "kwh-modbus\kwh-modbus.vcxproj", "{EBE46D7F-45FC-4D90-B405-9C88856B59D4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kwh-modbus", "kwh-modbus\kwh-modbus.vcxproj", "{237F78B3-C4DA-47A4-BC3A-6741312ACDCA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kwh-modbus-tests", "kwh-modbus-tests\kwh-modbus-tests.vcxproj", "{DCE114D1-12A6-43F3-8315-AB5623798047}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kwh-modbus-tests", "kwh-modbus-tests\kwh-modbus-tests.vcxproj", "{D51C8433-FDE9-47A1-997C-CDD703B7C473}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Release|ARM = Release|ARM
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EBE46D7F-45FC-4D90-B405-9C88856B59D4}.Debug|x64.ActiveCfg = Debug|x64
-		{EBE46D7F-45FC-4D90-B405-9C88856B59D4}.Debug|x64.Build.0 = Debug|x64
-		{EBE46D7F-45FC-4D90-B405-9C88856B59D4}.Debug|x86.ActiveCfg = Debug|Win32
-		{EBE46D7F-45FC-4D90-B405-9C88856B59D4}.Debug|x86.Build.0 = Debug|Win32
-		{EBE46D7F-45FC-4D90-B405-9C88856B59D4}.Release|x64.ActiveCfg = Release|x64
-		{EBE46D7F-45FC-4D90-B405-9C88856B59D4}.Release|x64.Build.0 = Release|x64
-		{EBE46D7F-45FC-4D90-B405-9C88856B59D4}.Release|x86.ActiveCfg = Release|Win32
-		{EBE46D7F-45FC-4D90-B405-9C88856B59D4}.Release|x86.Build.0 = Release|Win32
-		{DCE114D1-12A6-43F3-8315-AB5623798047}.Debug|x64.ActiveCfg = Debug|x64
-		{DCE114D1-12A6-43F3-8315-AB5623798047}.Debug|x64.Build.0 = Debug|x64
-		{DCE114D1-12A6-43F3-8315-AB5623798047}.Debug|x86.ActiveCfg = Debug|Win32
-		{DCE114D1-12A6-43F3-8315-AB5623798047}.Debug|x86.Build.0 = Debug|Win32
-		{DCE114D1-12A6-43F3-8315-AB5623798047}.Release|x64.ActiveCfg = Release|x64
-		{DCE114D1-12A6-43F3-8315-AB5623798047}.Release|x64.Build.0 = Release|x64
-		{DCE114D1-12A6-43F3-8315-AB5623798047}.Release|x86.ActiveCfg = Release|Win32
-		{DCE114D1-12A6-43F3-8315-AB5623798047}.Release|x86.Build.0 = Release|Win32
+		{237F78B3-C4DA-47A4-BC3A-6741312ACDCA}.Debug|ARM.ActiveCfg = Debug|ARM
+		{237F78B3-C4DA-47A4-BC3A-6741312ACDCA}.Debug|ARM.Build.0 = Debug|ARM
+		{237F78B3-C4DA-47A4-BC3A-6741312ACDCA}.Debug|x64.ActiveCfg = Debug|x64
+		{237F78B3-C4DA-47A4-BC3A-6741312ACDCA}.Debug|x64.Build.0 = Debug|x64
+		{237F78B3-C4DA-47A4-BC3A-6741312ACDCA}.Debug|x86.ActiveCfg = Debug|x86
+		{237F78B3-C4DA-47A4-BC3A-6741312ACDCA}.Debug|x86.Build.0 = Debug|x86
+		{237F78B3-C4DA-47A4-BC3A-6741312ACDCA}.Release|ARM.ActiveCfg = Release|ARM
+		{237F78B3-C4DA-47A4-BC3A-6741312ACDCA}.Release|ARM.Build.0 = Release|ARM
+		{237F78B3-C4DA-47A4-BC3A-6741312ACDCA}.Release|x64.ActiveCfg = Release|x64
+		{237F78B3-C4DA-47A4-BC3A-6741312ACDCA}.Release|x64.Build.0 = Release|x64
+		{237F78B3-C4DA-47A4-BC3A-6741312ACDCA}.Release|x86.ActiveCfg = Release|x86
+		{237F78B3-C4DA-47A4-BC3A-6741312ACDCA}.Release|x86.Build.0 = Release|x86
+		{D51C8433-FDE9-47A1-997C-CDD703B7C473}.Debug|ARM.ActiveCfg = Debug|Win32
+		{D51C8433-FDE9-47A1-997C-CDD703B7C473}.Debug|x64.ActiveCfg = Debug|x64
+		{D51C8433-FDE9-47A1-997C-CDD703B7C473}.Debug|x64.Build.0 = Debug|x64
+		{D51C8433-FDE9-47A1-997C-CDD703B7C473}.Debug|x86.ActiveCfg = Debug|Win32
+		{D51C8433-FDE9-47A1-997C-CDD703B7C473}.Debug|x86.Build.0 = Debug|Win32
+		{D51C8433-FDE9-47A1-997C-CDD703B7C473}.Release|ARM.ActiveCfg = Release|Win32
+		{D51C8433-FDE9-47A1-997C-CDD703B7C473}.Release|x64.ActiveCfg = Release|x64
+		{D51C8433-FDE9-47A1-997C-CDD703B7C473}.Release|x64.Build.0 = Release|x64
+		{D51C8433-FDE9-47A1-997C-CDD703B7C473}.Release|x86.ActiveCfg = Release|Win32
+		{D51C8433-FDE9-47A1-997C-CDD703B7C473}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {0CB3232C-AB88-43DA-9BF7-5708F05F4E9F}
+		SolutionGuid = {62900655-F609-4D37-AD79-82F68F3D1EBD}
 	EndGlobalSection
 EndGlobal
