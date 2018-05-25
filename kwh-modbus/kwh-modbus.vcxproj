@@ -68,6 +68,8 @@
     <ClCompile Include="TestClass.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GlobalDefs.h" />
+    <ClInclude Include="ModbusRtu.h" />
     <ClInclude Include="TestClass.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

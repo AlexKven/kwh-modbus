@@ -6,5 +6,22 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestClass.h" />
+    <ClInclude Include="ModbusRtu.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalDefs.h">
+      <Filter>General</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Interfaces">
+      <UniqueIdentifier>{acf0fdc7-f8c3-4677-be44-ed45ba208430}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{1a25e1c1-5a91-4165-b4e0-5cc2c57da420}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="General">
+      <UniqueIdentifier>{3872f431-4ae4-4ba9-bbfb-9a0990fa0489}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
