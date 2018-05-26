@@ -142,7 +142,7 @@ const unsigned char fctsupported[] =
 
 #define T35  5
 #define  MAX_BUFFER  64	//!< maximum size for the communication buffer in bytes
-#define RtuTemplate template <class TSerial> 
+#define RtuTemplate template <class TSerial, long(*fMillis)()> 
 
 /**
 * @class Modbus
@@ -318,7 +318,7 @@ private:
 		u8BufferSize = 0;
 
 		// set time-out for master
-		u32timeOut = millis() + (unsigned long)u16timeOut;
+		u32timeOut = fMillis() + (unsigned long)u16timeOut;
 
 		// increase message counter
 		u16OutCnt++;
@@ -961,12 +961,12 @@ public:
 	* Return communication Watchdog state.
 	* It could be usefull to reset outputs if the watchdog is fired.
 	*
-	* @return TRUE if millis() > u32timeOut
+	* @return TRUE if fMillis() > u32timeOut
 	* @ingroup loop
 	*/
 	boolean getTimeOutState()
 	{
-		return (millis() > u32timeOut);
+		return (fMillis() > u32timeOut);
 	}
 
 
@@ -1153,7 +1153,7 @@ public:
 		else
 			u8current = softPort->available();
 
-		if (millis() > u32timeOut)
+		if (fMillis() > u32timeOut)
 		{
 			u8state = COM_IDLE;
 			u8lastError = NO_REPLY;
@@ -1167,10 +1167,10 @@ public:
 		if (u8current != u8lastRec)
 		{
 			u8lastRec = u8current;
-			u32time = millis() + T35;
+			u32time = fMillis() + T35;
 			return 0;
 		}
-		if (millis() < u32time) return 0;
+		if (fMillis() < u32time) return 0;
 
 		// transfer Serial buffer frame to auBuffer
 		u8lastRec = 0;
@@ -1250,10 +1250,10 @@ public:
 		if (u8current != u8lastRec)
 		{
 			u8lastRec = u8current;
-			u32time = millis() + T35;
+			u32time = fMillis() + T35;
 			return 0;
 		}
-		if (millis() < u32time) return 0;
+		if (fMillis() < u32time) return 0;
 
 		u8lastRec = 0;
 		int8_t i8state = getRxBuffer();
@@ -1276,7 +1276,7 @@ public:
 			return u8exception;
 		}
 
-		u32timeOut = millis() + long(u16timeOut);
+		u32timeOut = fMillis() + long(u16timeOut);
 		u8lastError = 0;
 
 		// process message
