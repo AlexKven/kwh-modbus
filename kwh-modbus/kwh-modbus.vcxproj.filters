@@ -3,14 +3,23 @@
   <ItemGroup>
     <ClCompile Include="TestClass.cpp" />
     <ClCompile Include="program.cpp" />
+    <ClCompile Include="Libraries\modbus-slave\Modbus\Modbus.cpp">
+      <Filter>Libraries\modbus-slave</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestClass.h" />
-    <ClInclude Include="ModbusRtu.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
     <ClInclude Include="GlobalDefs.h">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\modbus-slave\Modbus\Modbus.h">
+      <Filter>Libraries\modbus-slave</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\modbus-slave\Modbus\functions.h">
+      <Filter>Libraries\modbus-slave</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\modbus-slave\ModbusSerial\ModbusSerial.h">
+      <Filter>Libraries\modbus-slave</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -22,6 +31,9 @@
     </Filter>
     <Filter Include="General">
       <UniqueIdentifier>{3872f431-4ae4-4ba9-bbfb-9a0990fa0489}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\modbus-slave">
+      <UniqueIdentifier>{e387020c-8282-4779-9e47-0c4eb450bed3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

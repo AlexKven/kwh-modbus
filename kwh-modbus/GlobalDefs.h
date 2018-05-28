@@ -25,4 +25,8 @@
 #define HIGH      1
 #define CLR       0
 #define SET       1
+#define INPUT     0
+#define OUTPUT    1
+#define word unsigned int
+#define byte unsigned char
 #endif

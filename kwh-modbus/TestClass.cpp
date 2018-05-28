@@ -4,13 +4,6 @@
 
 TestClass::TestClass()
 {
-	int(*fMillis)() = func;
-	int i = fMillis();
-}
-
- int func()
-{
-	 return 5;
 }
 
 

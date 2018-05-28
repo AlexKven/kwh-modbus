@@ -64,12 +64,15 @@
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="Libraries\modbus-slave\Modbus\Modbus.cpp" />
     <ClCompile Include="program.cpp" />
     <ClCompile Include="TestClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GlobalDefs.h" />
-    <ClInclude Include="ModbusRtu.h" />
+    <ClInclude Include="Libraries\modbus-slave\ModbusSerial\ModbusSerial.h" />
+    <ClInclude Include="Libraries\modbus-slave\Modbus\functions.h" />
+    <ClInclude Include="Libraries\modbus-slave\Modbus\Modbus.h" />
     <ClInclude Include="TestClass.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
