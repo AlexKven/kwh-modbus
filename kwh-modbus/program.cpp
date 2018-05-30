@@ -1,6 +1,10 @@
 #include "stdio.h"
 #include "iostream"
 #include "Libraries/modbus-slave/ModbusSerial/ModbusSerial.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include "MockSerialStream.h"
 
 using namespace std;
 
@@ -11,20 +15,6 @@ void delayMicrosecond(unsigned long length)
 
 void pinMode(unsigned char pin, unsigned char mode) {}
 
-class MockSerial
-{
-public:
-	void begin(int baud)
-	{
-
-	}
-
-	bool operator!() 
-	{
-		return true;
-	}
-};
-
 int main()
 {
 	Modbus *mb = new Modbus();
@@ -32,6 +22,8 @@ int main()
 	int test;
 	cin >> test;
 
-	ModbusSerial<MockSerial, pinMode, delayMicrosecond, pinMode> modbus;
-	modbus.config(new MockSerial(), 5, 5);
+	MockSerialStream *stream;
+
+	ModbusSerial<MockSerialStream, pinMode, delayMicrosecond, pinMode> modbus;
+	modbus.config(stream, 5, 5);
 }
