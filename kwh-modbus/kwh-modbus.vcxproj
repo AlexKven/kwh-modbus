@@ -78,6 +78,9 @@
     <ClInclude Include="MockSerialStream.h" />
     <ClInclude Include="TestClass.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ModbusMaster.h" />
+  </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
     <ClCompile />

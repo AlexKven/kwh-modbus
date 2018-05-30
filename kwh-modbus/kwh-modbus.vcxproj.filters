@@ -30,6 +30,9 @@
     <ClInclude Include="MockSerialStream.h">
       <Filter>Mock</Filter>
     </ClInclude>
+    <ClInclude Include="ModbusMaster.h">
+      <Filter>Libraries\modbus-master</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Interfaces">
@@ -46,6 +49,9 @@
     </Filter>
     <Filter Include="Mock">
       <UniqueIdentifier>{2b8fde95-dcb3-4197-a178-25c2e00ee2ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\modbus-master">
+      <UniqueIdentifier>{27d12819-a954-4b19-9063-c63a27dc49dd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

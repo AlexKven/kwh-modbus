@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "MockSerialStream.h"
+#include "ModbusMaster.h"
 
 using namespace std;
 
@@ -24,6 +25,6 @@ int main()
 
 	MockSerialStream *stream;
 
-	ModbusSerial<MockSerialStream, pinMode, delayMicrosecond, pinMode> modbus;
-	modbus.config(stream, 5, 5);
+	ModbusMaster<MockSerialStream, pinMode, delayMicrosecond, pinMode> modbus;
+	modbus.begin(5, stream);
 }
