@@ -6,9 +6,7 @@
     <ClCompile Include="MockSerialStream.cpp">
       <Filter>Mock</Filter>
     </ClCompile>
-    <ClCompile Include="Libraries\Modbus.cpp">
-      <Filter>Libraries</Filter>
-    </ClCompile>
+    <ClCompile Include="Modbus.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestClass.h" />
@@ -18,27 +16,13 @@
     <ClInclude Include="MockSerialStream.h">
       <Filter>Mock</Filter>
     </ClInclude>
-    <ClInclude Include="Libraries\functions.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="Libraries\GlobalDefs.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="Libraries\crc16.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="Libraries\word.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="Libraries\Modbus.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="Libraries\ModbusSerial.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="Libraries\ModbusMaster.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
+    <ClInclude Include="crc16.h" />
+    <ClInclude Include="functions.h" />
+    <ClInclude Include="GlobalDefs.h" />
+    <ClInclude Include="Modbus.h" />
+    <ClInclude Include="word.h" />
+    <ClInclude Include="ModbusMaster.h" />
+    <ClInclude Include="ModbusSerial.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Interfaces">

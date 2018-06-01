@@ -31,50 +31,16 @@ limitations under the License.
 
 */
 #pragma once
-#include <cstdint>
-#include <cstddef>
-#include "functions.h"
-#include "crc16.h"
-#include "word.h"
-
-typedef unsigned int u_int;
-#define boolean bool;
-
-#ifndef __cplusplus
-#if !defined(__bool_true_false_are_defined)
-#define false     FALSE
-#define true      TRUE
-#endif
-#endif
-
-
-#ifndef HIGH
-#define DISABLE   0
-#define ENABLE    1
-#define DISABLED  0
-#define ENABLED   1
-#define OFF       0
-#define ON        1
-#define FALSE     0
-#define TRUE      1
-#define KO        0
-#define OK        1
-#define PASS      0
-#define FAIL      1
-#define LOW       0
-#define HIGH      1
-#define CLR       0
-#define SET       1
-#define INPUT     0
-#define OUTPUT    1
-#define word unsigned int
-#define byte unsigned char
-#endif
 
 #ifndef ModbusMaster_h
 #define ModbusMaster_h
 
-
+#include <cstdint>
+#include <cstddef>
+#include "crc16.h"
+#include "word.h"
+#include "functions.h"
+#include "GlobalDefs.h"
 /**
 @def __MODBUSMASTER_DEBUG__ (0)
 Set to 1 to enable debugging features within class:
@@ -127,17 +93,17 @@ public:
 //#endif
 	}
 
-	void idle(void(*idle)())
+	inline void idle(void(*idle)())
 	{
 		_idle = idle;
 	}
 
-	void preTransmission(void(*preTransmission)())
+	inline void preTransmission(void(*preTransmission)())
 	{
 		_preTransmission = preTransmission;
 	}
 
-	void postTransmission(void(*postTransmission)())
+	inline void postTransmission(void(*postTransmission)())
 	{
 		_postTransmission = postTransmission;
 	}
@@ -254,7 +220,7 @@ public:
 	*/
 	static const uint8_t ku8MBInvalidCRC = 0xE3;
 
-	uint16_t getResponseBuffer(uint8_t u8Index)
+	inline uint16_t getResponseBuffer(uint8_t u8Index)
 	{
 		if (u8Index < ku8MaxBufferSize)
 		{
@@ -266,7 +232,7 @@ public:
 		}
 	}
 
-	void clearResponseBuffer()
+	inline void clearResponseBuffer()
 	{
 		uint8_t i;
 
@@ -276,7 +242,7 @@ public:
 		}
 	}
 
-	uint8_t  setTransmitBuffer(uint8_t u8Index, uint16_t u16Value)
+	inline uint8_t  setTransmitBuffer(uint8_t u8Index, uint16_t u16Value)
 	{
 		if (u8Index < ku8MaxBufferSize)
 		{
@@ -289,7 +255,7 @@ public:
 		}
 	}
 
-	void clearTransmitBuffer()
+	inline void clearTransmitBuffer()
 	{
 		uint8_t i;
 
@@ -309,14 +275,14 @@ public:
 	uint16_t receive(void);
 
 
-	uint8_t  readCoils(uint16_t u16ReadAddress, uint16_t u16BitQty)
+	inline uint8_t  readCoils(uint16_t u16ReadAddress, uint16_t u16BitQty)
 	{
 		_u16ReadAddress = u16ReadAddress;
 		_u16ReadQty = u16BitQty;
 		return ModbusMasterTransaction(ku8MBReadCoils);
 	}
 
-	uint8_t  readDiscreteInputs(uint16_t u16ReadAddress,
+	inline uint8_t  readDiscreteInputs(uint16_t u16ReadAddress,
 		uint16_t u16BitQty)
 	{
 		_u16ReadAddress = u16ReadAddress;
@@ -324,7 +290,7 @@ public:
 		return ModbusMasterTransaction(ku8MBReadDiscreteInputs);
 	}
 
-	uint8_t  readHoldingRegisters(uint16_t u16ReadAddress,
+	inline uint8_t  readHoldingRegisters(uint16_t u16ReadAddress,
 		uint16_t u16ReadQty)
 	{
 		_u16ReadAddress = u16ReadAddress;
@@ -332,7 +298,7 @@ public:
 		return ModbusMasterTransaction(ku8MBReadHoldingRegisters);
 	}
 
-	uint8_t  readInputRegisters(uint16_t u16ReadAddress,
+	inline uint8_t  readInputRegisters(uint16_t u16ReadAddress,
 		uint8_t u16ReadQty)
 	{
 		_u16ReadAddress = u16ReadAddress;
@@ -340,14 +306,14 @@ public:
 		return ModbusMasterTransaction(ku8MBReadInputRegisters);
 	}
 
-	uint8_t  writeSingleCoil(uint16_t u16WriteAddress, uint8_t u8State)
+	inline uint8_t  writeSingleCoil(uint16_t u16WriteAddress, uint8_t u8State)
 	{
 		_u16WriteAddress = u16WriteAddress;
 		_u16WriteQty = (u8State ? 0xFF00 : 0x0000);
 		return ModbusMasterTransaction(ku8MBWriteSingleCoil);
 	}
 
-	uint8_t  writeSingleRegister(uint16_t u16WriteAddress,
+	inline uint8_t  writeSingleRegister(uint16_t u16WriteAddress,
 		uint16_t u16WriteValue)
 	{
 		_u16WriteAddress = u16WriteAddress;
@@ -356,7 +322,7 @@ public:
 		return ModbusMasterTransaction(ku8MBWriteSingleRegister);
 	}
 
-	uint8_t  writeMultipleCoils(uint16_t u16WriteAddress,
+	inline uint8_t  writeMultipleCoils(uint16_t u16WriteAddress,
 		uint16_t u16BitQty)
 	{
 		_u16WriteAddress = u16WriteAddress;
@@ -364,13 +330,13 @@ public:
 		return ModbusMasterTransaction(ku8MBWriteMultipleCoils);
 	}
 
-	uint8_t  writeMultipleCoils()
+	inline uint8_t  writeMultipleCoils()
 	{
 		_u16WriteQty = u16TransmitBufferLength;
 		return ModbusMasterTransaction(ku8MBWriteMultipleCoils);
 	}
 
-	uint8_t  writeMultipleRegisters(uint16_t u16WriteAddress,
+	inline uint8_t  writeMultipleRegisters(uint16_t u16WriteAddress,
 		uint16_t u16WriteQty)
 	{
 		_u16WriteAddress = u16WriteAddress;
@@ -378,13 +344,13 @@ public:
 		return ModbusMasterTransaction(ku8MBWriteMultipleRegisters);
 	}
 
-	uint8_t  writeMultipleRegisters()
+	inline uint8_t  writeMultipleRegisters()
 	{
 		_u16WriteQty = _u8TransmitBufferIndex;
 		return ModbusMasterTransaction(ku8MBWriteMultipleRegisters);
 	}
 
-	uint8_t  maskWriteRegister(uint16_t u16WriteAddress,
+	inline uint8_t  maskWriteRegister(uint16_t u16WriteAddress,
 		uint16_t u16AndMask, uint16_t u16OrMask)
 	{
 		_u16WriteAddress = u16WriteAddress;
@@ -393,7 +359,7 @@ public:
 		return ModbusMasterTransaction(ku8MBMaskWriteRegister);
 	}
 
-	uint8_t  readWriteMultipleRegisters(uint16_t u16ReadAddress,
+	inline uint8_t  readWriteMultipleRegisters(uint16_t u16ReadAddress,
 		uint16_t u16ReadQty, uint16_t u16WriteAddress, uint16_t u16WriteQty)
 	{
 		_u16ReadAddress = u16ReadAddress;
@@ -403,7 +369,7 @@ public:
 		return ModbusMasterTransaction(ku8MBReadWriteMultipleRegisters);
 	}
 
-	uint8_t  readWriteMultipleRegisters(uint16_t u16ReadAddress,
+	inline uint8_t  readWriteMultipleRegisters(uint16_t u16ReadAddress,
 		uint16_t u16ReadQty)
 	{
 		_u16ReadAddress = u16ReadAddress;
@@ -447,7 +413,7 @@ private:
 	static const uint16_t ku16MBResponseTimeout = 2000; ///< Modbus timeout [milliseconds]
 
 														// master function that conducts Modbus transactions
-	uint8_t ModbusMasterTransaction(uint8_t u8MBFunction)
+	inline uint8_t ModbusMasterTransaction(uint8_t u8MBFunction)
 	{
 		uint8_t u8ModbusADU[256];
 		uint8_t u8ModbusADUSize = 0;
@@ -618,7 +584,7 @@ private:
 				}
 
 				// check whether Modbus exception occurred; return Modbus Exception Code
-				if (bitRead(u8ModbusADU[1], 7))
+				if (bitRead((unsigned char)u8ModbusADU[1], (unsigned char)7))
 				{
 					u8MBStatus = u8ModbusADU[2];
 					break;

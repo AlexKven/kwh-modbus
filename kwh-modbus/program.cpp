@@ -1,11 +1,18 @@
 #include "stdio.h"
 #include "iostream"
-#include "Libraries/ModbusSerial.h"
+#include "ModbusSerial.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "MockSerialStream.h"
-#include "Libraries/ModbusMaster.h"
+#include "ModbusMaster.h"
+
+#include <cstdint>
+#include <cstddef>
+#include "functions.h"
+#include "crc16.h"
+#include "word.h"
+#include "Modbus.h"
 
 using namespace std;
 

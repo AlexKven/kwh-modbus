@@ -2,6 +2,7 @@
     ModbusSerial.h - Header for ModbusSerial Library
     Copyright (C) 2014 Andr� Sarmento Barbosa
 */
+
 #include "Modbus.h"
 
 #ifndef MODBUSSERIAL_H

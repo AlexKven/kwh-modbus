@@ -10,7 +10,9 @@
 #define MAX_FRAME   128
 //#define USE_HOLDING_REGISTERS_ONLY
 
+
 #include "GlobalDefs.h"
+
 //Function Codes
 enum {
     MB_FC_READ_COILS       = 0x01, // Read Coils (Output) Status 0xxxx
