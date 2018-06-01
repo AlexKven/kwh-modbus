@@ -7,6 +7,7 @@
       <Filter>Mock</Filter>
     </ClCompile>
     <ClCompile Include="Modbus.cpp" />
+    <ClCompile Include="arduinoFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestClass.h" />
@@ -17,12 +18,12 @@
       <Filter>Mock</Filter>
     </ClInclude>
     <ClInclude Include="crc16.h" />
-    <ClInclude Include="functions.h" />
     <ClInclude Include="GlobalDefs.h" />
     <ClInclude Include="Modbus.h" />
     <ClInclude Include="word.h" />
     <ClInclude Include="ModbusMaster.h" />
     <ClInclude Include="ModbusSerial.h" />
+    <ClInclude Include="arduinoFunctions.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Interfaces">

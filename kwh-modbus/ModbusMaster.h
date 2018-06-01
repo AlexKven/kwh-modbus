@@ -39,7 +39,6 @@ limitations under the License.
 #include <cstddef>
 #include "crc16.h"
 #include "word.h"
-#include "functions.h"
 #include "GlobalDefs.h"
 /**
 @def __MODBUSMASTER_DEBUG__ (0)
@@ -73,7 +72,7 @@ Set to 1 to enable debugging features within class:
 Arduino class library for communicating with Modbus slaves over
 RS232/485 (via RTU protocol).
 */
-template<typename TSerial, long(*fMillis)(), void(*fPinMode)(unsigned char, unsigned char), void(*fDelayMicroseconds)(unsigned long), void(*fDigitalWrite)(unsigned char, unsigned char)>
+template<typename TSerial, typename TArduinoFunctions>
 class ModbusMaster
 {
 public:
@@ -265,14 +264,14 @@ public:
 		}
 	}
 
-	void beginTransmission(uint16_t);
-	uint8_t requestFrom(uint16_t, uint16_t);
-	void sendBit(bool);
-	void send(uint8_t);
-	void send(uint16_t);
-	void send(uint32_t);
-	uint8_t available(void);
-	uint16_t receive(void);
+	//void beginTransmission(uint16_t);
+	//uint8_t requestFrom(uint16_t, uint16_t);
+	//void sendBit(bool);
+	//void send(uint8_t);
+	//void send(uint16_t);
+	//void send(uint32_t);
+	//uint8_t available(void);
+	//uint16_t receive(void);
 
 
 	inline uint8_t  readCoils(uint16_t u16ReadAddress, uint16_t u16BitQty)
@@ -538,7 +537,7 @@ private:
 		}
 
 		// loop until we run out of time or bytes, or an error occurs
-		u32StartTime = fMillis();
+		u32StartTime = TArduinoFunctions::Millis();
 		while (u8BytesLeft && !u8MBStatus)
 		{
 			if (_serial->available())
@@ -584,7 +583,7 @@ private:
 				}
 
 				// check whether Modbus exception occurred; return Modbus Exception Code
-				if (bitRead((unsigned char)u8ModbusADU[1], (unsigned char)7))
+				if (TArduinoFunctions::bitRead((unsigned char)u8ModbusADU[1], (unsigned char)7))
 				{
 					u8MBStatus = u8ModbusADU[2];
 					break;
@@ -613,7 +612,7 @@ private:
 					break;
 				}
 			}
-			if ((fMillis() - u32StartTime) > ku16MBResponseTimeout)
+			if ((TArduinoFunctions::Millis() - u32StartTime) > ku16MBResponseTimeout)
 			{
 				u8MBStatus = ku8MBResponseTimedOut;
 			}
@@ -705,3 +704,8 @@ private:
 @example examples/PhoenixContact_nanoLC/PhoenixContact_nanoLC.pde
 @example examples/RS485_HalfDuplex/RS485_HalfDuplex.ino
 */
+
+template<typename TSerial, typename TArduinoFunctions>
+inline ModbusMaster<TSerial, TArduinoFunctions>::ModbusMaster()
+{
+}

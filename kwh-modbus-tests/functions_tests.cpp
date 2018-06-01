@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "fakeit.hpp"
-#include "..\kwh-modbus\functions.h"
+#include "../kwh-modbus/arduinoFunctions.cpp"
 
 using namespace fakeit;
 
@@ -20,7 +20,7 @@ TEST(bitReadTest, success) {
 	// Act, Assert
 	for (unsigned char i = 0; i < 8; i++)
 	{
-		ASSERT_EQ(bitRead(input, i), bits[i]);
+		ASSERT_EQ(ArduinoFunctions::bitRead(input, i), bits[i]);
 	}
 }
 
@@ -42,9 +42,9 @@ TEST(bitSetClearTest, success) {
 	for (unsigned char i = 0; i < 8; i++)
 	{
 		if (bits[i] == 1)
-			bitSet(input, i);
+			ArduinoFunctions::bitSet(input, i);
 		else
-			bitClear(input, i);
+			ArduinoFunctions::bitClear(input, i);
 	}
 
 	// Assert

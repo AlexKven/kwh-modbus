@@ -64,14 +64,15 @@
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="arduinoFunctions.cpp" />
     <ClCompile Include="MockSerialStream.cpp" />
     <ClCompile Include="Modbus.cpp" />
     <ClCompile Include="program.cpp" />
     <ClCompile Include="TestClass.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="arduinoFunctions.h" />
     <ClInclude Include="crc16.h" />
-    <ClInclude Include="functions.h" />
     <ClInclude Include="GlobalDefs.h" />
     <ClInclude Include="ISerialStream.h" />
     <ClInclude Include="MockSerialStream.h" />

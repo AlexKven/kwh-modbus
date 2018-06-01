@@ -9,10 +9,10 @@
 
 #include <cstdint>
 #include <cstddef>
-#include "functions.h"
 #include "crc16.h"
 #include "word.h"
 #include "Modbus.h"
+#include "arduinoFunctions.h"
 
 using namespace std;
 
@@ -37,8 +37,8 @@ int main()
 
 	MockSerialStream *stream;
 
-	ModbusMaster<MockSerialStream, millis, pinMode, delayMicrosecond, pinMode> modbus;
+	ModbusMaster<MockSerialStream, ArduinoFunctions> modbus;
 	modbus.begin(5, stream);
 
-	ModbusSerial<MockSerialStream, pinMode, delayMicrosecond, pinMode> slave;
+	ModbusSerial<MockSerialStream, ArduinoFunctions> slave;
 }
