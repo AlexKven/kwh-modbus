@@ -3,35 +3,41 @@
   <ItemGroup>
     <ClCompile Include="TestClass.cpp" />
     <ClCompile Include="program.cpp" />
-    <ClCompile Include="Libraries\modbus-slave\Modbus\Modbus.cpp">
-      <Filter>Libraries\modbus-slave</Filter>
-    </ClCompile>
     <ClCompile Include="MockSerialStream.cpp">
       <Filter>Mock</Filter>
+    </ClCompile>
+    <ClCompile Include="Libraries\Modbus.cpp">
+      <Filter>Libraries</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestClass.h" />
-    <ClInclude Include="GlobalDefs.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="Libraries\modbus-slave\Modbus\Modbus.h">
-      <Filter>Libraries\modbus-slave</Filter>
-    </ClInclude>
-    <ClInclude Include="Libraries\modbus-slave\Modbus\functions.h">
-      <Filter>Libraries\modbus-slave</Filter>
-    </ClInclude>
-    <ClInclude Include="Libraries\modbus-slave\ModbusSerial\ModbusSerial.h">
-      <Filter>Libraries\modbus-slave</Filter>
-    </ClInclude>
     <ClInclude Include="ISerialStream.h">
       <Filter>Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="MockSerialStream.h">
       <Filter>Mock</Filter>
     </ClInclude>
-    <ClInclude Include="ModbusMaster.h">
-      <Filter>Libraries\modbus-master</Filter>
+    <ClInclude Include="Libraries\functions.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\GlobalDefs.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\crc16.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\word.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\Modbus.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\ModbusSerial.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\ModbusMaster.h">
+      <Filter>Libraries</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -44,14 +50,8 @@
     <Filter Include="General">
       <UniqueIdentifier>{3872f431-4ae4-4ba9-bbfb-9a0990fa0489}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Libraries\modbus-slave">
-      <UniqueIdentifier>{e387020c-8282-4779-9e47-0c4eb450bed3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Mock">
       <UniqueIdentifier>{2b8fde95-dcb3-4197-a178-25c2e00ee2ad}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Libraries\modbus-master">
-      <UniqueIdentifier>{27d12819-a954-4b19-9063-c63a27dc49dd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

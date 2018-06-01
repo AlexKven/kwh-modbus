@@ -27,6 +27,8 @@
 #define SET       1
 #define INPUT     0
 #define OUTPUT    1
-#define word unsigned int
-#define byte unsigned char
+#define lowByte(w) ((uint8_t) ((w) & 0xff))
+#define highByte(w) ((uint8_t) ((w) >> 8))
+typedef unsigned int word;
+typedef unsigned char byte;
 #endif

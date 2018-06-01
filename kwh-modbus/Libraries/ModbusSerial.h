@@ -2,7 +2,7 @@
     ModbusSerial.h - Header for ModbusSerial Library
     Copyright (C) 2014 Andr� Sarmento Barbosa
 */
-#include "../Modbus/Modbus.h"
+#include "Modbus.h"
 
 #ifndef MODBUSSERIAL_H
 #define MODBUSSERIAL_H
@@ -10,10 +10,6 @@
 //#define USE_SOFTWARE_SERIAL
 
 //#define DEBUG_MODE
-
-#ifdef USE_SOFTWARE_SERIAL
-#include <SoftwareSerial.h>
-#endif
 
 
 /* Table of CRC values for high�order byte */

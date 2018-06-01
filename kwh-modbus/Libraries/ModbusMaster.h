@@ -33,6 +33,9 @@ limitations under the License.
 #pragma once
 #include <cstdint>
 #include <cstddef>
+#include "functions.h"
+#include "crc16.h"
+#include "word.h"
 
 typedef unsigned int u_int;
 #define boolean bool;
@@ -43,6 +46,7 @@ typedef unsigned int u_int;
 #define true      TRUE
 #endif
 #endif
+
 
 #ifndef HIGH
 #define DISABLE   0
@@ -103,7 +107,7 @@ Set to 1 to enable debugging features within class:
 Arduino class library for communicating with Modbus slaves over
 RS232/485 (via RTU protocol).
 */
-template<typename TSerial, void(*fPinMode)(unsigned char, unsigned char), void(*fDelayMicroseconds)(unsigned long), void(*fDigitalWrite)(unsigned char, unsigned char)>
+template<typename TSerial, long(*fMillis)(), void(*fPinMode)(unsigned char, unsigned char), void(*fDelayMicroseconds)(unsigned long), void(*fDigitalWrite)(unsigned char, unsigned char)>
 class ModbusMaster
 {
 public:
@@ -568,7 +572,7 @@ private:
 		}
 
 		// loop until we run out of time or bytes, or an error occurs
-		u32StartTime = millis();
+		u32StartTime = fMillis();
 		while (u8BytesLeft && !u8MBStatus)
 		{
 			if (_serial->available())
@@ -643,7 +647,7 @@ private:
 					break;
 				}
 			}
-			if ((millis() - u32StartTime) > ku16MBResponseTimeout)
+			if ((fMillis() - u32StartTime) > ku16MBResponseTimeout)
 			{
 				u8MBStatus = ku8MBResponseTimedOut;
 			}

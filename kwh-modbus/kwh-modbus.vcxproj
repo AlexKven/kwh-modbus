@@ -64,22 +64,22 @@
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="Libraries\modbus-slave\Modbus\Modbus.cpp" />
+    <ClCompile Include="Libraries\Modbus.cpp" />
     <ClCompile Include="MockSerialStream.cpp" />
     <ClCompile Include="program.cpp" />
     <ClCompile Include="TestClass.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GlobalDefs.h" />
     <ClInclude Include="ISerialStream.h" />
-    <ClInclude Include="Libraries\modbus-slave\ModbusSerial\ModbusSerial.h" />
-    <ClInclude Include="Libraries\modbus-slave\Modbus\functions.h" />
-    <ClInclude Include="Libraries\modbus-slave\Modbus\Modbus.h" />
+    <ClInclude Include="Libraries\crc16.h" />
+    <ClInclude Include="Libraries\functions.h" />
+    <ClInclude Include="Libraries\GlobalDefs.h" />
+    <ClInclude Include="Libraries\Modbus.h" />
+    <ClInclude Include="Libraries\ModbusMaster.h" />
+    <ClInclude Include="Libraries\ModbusSerial.h" />
+    <ClInclude Include="Libraries\word.h" />
     <ClInclude Include="MockSerialStream.h" />
     <ClInclude Include="TestClass.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ModbusMaster.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />

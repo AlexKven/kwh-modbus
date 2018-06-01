@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "fakeit.hpp"
-#include "../kwh-modbus/Libraries/modbus-slave/Modbus/functions.h"
+#include "../kwh-modbus/Libraries/functions.h"
 
 using namespace fakeit;
 
