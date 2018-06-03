@@ -24,6 +24,7 @@
     <ClInclude Include="ModbusMaster.h" />
     <ClInclude Include="ModbusSerial.h" />
     <ClInclude Include="arduinoFunctions.h" />
+    <ClInclude Include="arduinoMacros.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Interfaces">

@@ -583,7 +583,7 @@ private:
 				}
 
 				// check whether Modbus exception occurred; return Modbus Exception Code
-				if (TArduinoFunctions::bitRead((unsigned char)u8ModbusADU[1], (unsigned char)7))
+				if (bitRead((unsigned char)u8ModbusADU[1], (unsigned char)7))
 				{
 					u8MBStatus = u8ModbusADU[2];
 					break;

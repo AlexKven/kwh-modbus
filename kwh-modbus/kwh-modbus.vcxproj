@@ -74,6 +74,7 @@
     <ClInclude Include="arduinoFunctions.h" />
     <ClInclude Include="crc16.h" />
     <ClInclude Include="GlobalDefs.h" />
+    <ClInclude Include="arduinoMacros.h" />
     <ClInclude Include="ISerialStream.h" />
     <ClInclude Include="MockSerialStream.h" />
     <ClInclude Include="Modbus.h" />

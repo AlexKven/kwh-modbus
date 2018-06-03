@@ -1,3 +1,4 @@
+#include "../kwh-modbus/arduinoMacros.h"
 #include "pch.h"
 #include "fakeit.hpp"
 #include "../kwh-modbus/arduinoFunctions.cpp"
@@ -20,7 +21,8 @@ TEST(bitReadTest, success) {
 	// Act, Assert
 	for (unsigned char i = 0; i < 8; i++)
 	{
-		ASSERT_EQ(ArduinoFunctions::bitRead(input, i), bits[i]);
+		char result = bitRead(input, i);
+		ASSERT_EQ(result, bits[i]);
 	}
 }
 
@@ -42,9 +44,9 @@ TEST(bitSetClearTest, success) {
 	for (unsigned char i = 0; i < 8; i++)
 	{
 		if (bits[i] == 1)
-			ArduinoFunctions::bitSet(input, i);
+			bitSet(input, i);
 		else
-			ArduinoFunctions::bitClear(input, i);
+			bitClear(input, i);
 	}
 
 	// Assert

@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "iostream"
 #include "ModbusSerial.h"
+#include "arduinoMacros.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
