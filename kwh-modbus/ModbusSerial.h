@@ -4,6 +4,7 @@
 */
 
 #include "Modbus.h"
+#include "arduinoMacros.h"
 
 #ifndef MODBUSSERIAL_H
 #define MODBUSSERIAL_H
@@ -128,7 +129,7 @@ class ModbusSerial : public Modbus {
 			//first byte of frame = address
 			byte address = frame[0];
 			//Last two bytes = crc
-			u_int crc = ((frame[_len - 2] << 8) | frame[_len - 1]);
+			unsigned int crc = ((frame[_len - 2] << 8) | frame[_len - 1]);
 
 			//Slave Check
 			if (address != 0xFF && address != this->getSlaveId()) {

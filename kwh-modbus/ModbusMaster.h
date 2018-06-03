@@ -39,7 +39,7 @@ limitations under the License.
 #include <cstddef>
 #include "crc16.h"
 #include "word.h"
-#include "GlobalDefs.h"
+#include "arduinoMacros.h"
 /**
 @def __MODBUSMASTER_DEBUG__ (0)
 Set to 1 to enable debugging features within class:
