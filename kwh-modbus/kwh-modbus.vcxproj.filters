@@ -1,50 +1,47 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="TestClass.cpp" />
     <ClCompile Include="program.cpp" />
-    <ClCompile Include="libraries\modbusSlave\Modbus.cpp">
+    <ClCompile Include="libraries\modbusSlave\modbus.cpp">
       <Filter>libraries\modbusSlave</Filter>
     </ClCompile>
-    <ClCompile Include="mock\MockSerialStream.cpp">
+    <ClCompile Include="mock\arduinofunctions.cpp">
       <Filter>mock</Filter>
     </ClCompile>
-    <ClCompile Include="mock\arduinoFunctions.cpp">
+    <ClCompile Include="mock\mockserialstream.cpp">
       <Filter>mock</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TestClass.h" />
-    <ClInclude Include="GlobalDefs.h" />
-    <ClInclude Include="libraries\modbusMaster\ModbusMaster.h">
-      <Filter>libraries\modbusMaster</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\modbusSlave\Modbus.h">
-      <Filter>libraries\modbusSlave</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\modbusSlave\ModbusSerial.h">
-      <Filter>libraries\modbusSlave</Filter>
-    </ClInclude>
-    <ClInclude Include="mock\MockSerialStream.h">
-      <Filter>mock</Filter>
-    </ClInclude>
-    <ClInclude Include="mock\arduinoFunctions.h">
-      <Filter>mock</Filter>
-    </ClInclude>
-    <ClInclude Include="interfaces\ISerialStream.h">
-      <Filter>interfaces</Filter>
-    </ClInclude>
     <ClInclude Include="libraries\modbusMaster\crc16.h">
       <Filter>libraries\modbusMaster</Filter>
     </ClInclude>
     <ClInclude Include="libraries\modbusMaster\word.h">
       <Filter>libraries\modbusMaster</Filter>
     </ClInclude>
-    <ClInclude Include="mock\arduinoMacros.h">
+    <ClInclude Include="libraries\modbusSlave\modbus.h">
+      <Filter>libraries\modbusSlave</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\modbusSlave\modbusserial.h">
+      <Filter>libraries\modbusSlave</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\modbusMaster\modbusmaster.h">
+      <Filter>libraries\modbusMaster</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\modbusTypes\modbustypes.h">
+      <Filter>libraries\arduinoTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="mock\arduinofunctions.h">
       <Filter>mock</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\modbusTypes\modbusTypes.h">
-      <Filter>libraries\generalTypes</Filter>
+    <ClInclude Include="mock\arduinomacros.h">
+      <Filter>mock</Filter>
+    </ClInclude>
+    <ClInclude Include="mock\mockserialstream.h">
+      <Filter>mock</Filter>
+    </ClInclude>
+    <ClInclude Include="interfaces\iserialstream.h">
+      <Filter>interfaces</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -66,7 +63,7 @@
     <Filter Include="interfaces">
       <UniqueIdentifier>{e91c64f8-ec29-45b5-8f98-1545b350a03a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="libraries\generalTypes">
+    <Filter Include="libraries\arduinoTypes">
       <UniqueIdentifier>{caa2f358-8371-422d-a3c8-db21cc513d89}</UniqueIdentifier>
     </Filter>
   </ItemGroup>

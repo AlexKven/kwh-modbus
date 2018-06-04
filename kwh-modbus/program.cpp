@@ -5,11 +5,11 @@
 #include <fcntl.h>
 #include <cstdint>
 #include <cstddef>
-#include "mock/arduinoMacros.h"
-#include "libraries/modbusMaster/ModbusMaster.h"
-#include "libraries/modbusSlave/ModbusSerial.h"
-#include "mock/MockSerialStream.h"
-#include "mock/arduinoFunctions.h"
+#include "mock/arduinomacros.h"
+#include "libraries/modbusMaster/modbusmaster.h"
+#include "libraries/modbusSlave/modbusserial.h"
+#include "mock/mockserialstream.h"
+#include "mock/arduinofunctions.h"
 
 using namespace std;
 

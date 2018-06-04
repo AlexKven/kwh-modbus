@@ -2,7 +2,7 @@
     Modbus.cpp - Source for Modbus Base Library
     Copyright (C) 2014 André Sarmento Barbosa
 */
-#include "Modbus.h"
+#include "modbus.h"
 #include <stdlib.h>
 
 Modbus::Modbus() {

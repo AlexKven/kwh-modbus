@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "fakeit.hpp"
-#include "../kwh-modbus/TestClass.h"
 
 using namespace fakeit;
 
@@ -15,7 +14,6 @@ class Test2 : public Test1
 public:
 	virtual int Sum(int x, int y)
 	{
-		TestClass tc;
 		return y + x;
 	}
 };

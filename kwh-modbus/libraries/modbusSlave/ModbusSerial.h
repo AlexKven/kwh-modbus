@@ -3,7 +3,7 @@
     Copyright (C) 2014 Andr� Sarmento Barbosa
 */
 
-#include "Modbus.h"
+#include "modbus.h"
 
 #ifndef MODBUSSERIAL_H
 #define MODBUSSERIAL_H

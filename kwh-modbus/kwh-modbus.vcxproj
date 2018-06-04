@@ -64,25 +64,22 @@
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="libraries\modbusSlave\Modbus.cpp" />
-    <ClCompile Include="mock\arduinoFunctions.cpp" />
-    <ClCompile Include="mock\MockSerialStream.cpp" />
+    <ClCompile Include="libraries\modbusSlave\modbus.cpp" />
+    <ClCompile Include="mock\arduinofunctions.cpp" />
+    <ClCompile Include="mock\mockserialstream.cpp" />
     <ClCompile Include="program.cpp" />
-    <ClCompile Include="TestClass.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GlobalDefs.h" />
-    <ClInclude Include="interfaces\ISerialStream.h" />
+    <ClInclude Include="interfaces\iserialstream.h" />
     <ClInclude Include="libraries\modbusMaster\crc16.h" />
-    <ClInclude Include="libraries\modbusMaster\ModbusMaster.h" />
+    <ClInclude Include="libraries\modbusMaster\modbusmaster.h" />
     <ClInclude Include="libraries\modbusMaster\word.h" />
-    <ClInclude Include="libraries\modbusSlave\Modbus.h" />
-    <ClInclude Include="libraries\modbusSlave\ModbusSerial.h" />
-    <ClInclude Include="libraries\modbusTypes\modbusTypes.h" />
-    <ClInclude Include="mock\arduinoFunctions.h" />
-    <ClInclude Include="mock\arduinoMacros.h" />
-    <ClInclude Include="mock\MockSerialStream.h" />
-    <ClInclude Include="TestClass.h" />
+    <ClInclude Include="libraries\modbusSlave\modbus.h" />
+    <ClInclude Include="libraries\modbusSlave\modbusserial.h" />
+    <ClInclude Include="libraries\modbusTypes\modbustypes.h" />
+    <ClInclude Include="mock\arduinofunctions.h" />
+    <ClInclude Include="mock\arduinomacros.h" />
+    <ClInclude Include="mock\mockserialstream.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
