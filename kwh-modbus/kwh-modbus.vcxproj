@@ -88,7 +88,7 @@
     <ClCompile />
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>MOCK</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NO_ARDUINO</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

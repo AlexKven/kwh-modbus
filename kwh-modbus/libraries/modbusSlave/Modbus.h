@@ -6,7 +6,7 @@
 #ifndef MODBUS_H
 #define MODBUS_H
 
-#ifdef MOCK
+#ifdef NO_ARDUINO
 #include "../../mock/arduinoFunctions.h"
 #include "../../mock/arduinoMacros.h"
 #else
