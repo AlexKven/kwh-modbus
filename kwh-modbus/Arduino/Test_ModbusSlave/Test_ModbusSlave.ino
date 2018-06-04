@@ -1,7 +1,7 @@
 #include "Arduino.h"
-#include "Modbus.h"
-#include <ModbusMaster.h>
-#include <ModbusSerial.h>
+#include "modbus.h"
+#include <modbusmaster.h>
+#include <modbusserial.h>
 
 
 class ArduinoFunctions
