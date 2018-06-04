@@ -4,7 +4,6 @@
 */
 #include "Modbus.h"
 #include <stdlib.h>
-#include <bitset>
 
 Modbus::Modbus() {
     _regs_head = 0;

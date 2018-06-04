@@ -9,6 +9,8 @@
 #ifdef MOCK
 #include "../../mock/arduinoFunctions.h"
 #include "../../mock/arduinoMacros.h"
+#else
+#include "Arduino.h"
 #endif
 
 #define MAX_REGS     32

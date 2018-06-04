@@ -1,6 +1,7 @@
+#include "Arduino.h"
 #include "Modbus.h"
-#include <kwh-modbus-slave.h>
-#include <HardwareSerial.h>
+#include <ModbusMaster.h>
+#include <ModbusSerial.h>
 
 
 class ArduinoFunctions

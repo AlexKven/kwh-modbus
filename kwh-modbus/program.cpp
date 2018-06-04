@@ -1,12 +1,11 @@
 #include "stdio.h"
 #include "iostream"
-#include "arduinoMacros.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <cstdint>
 #include <cstddef>
-#include "arduinoMacros.h"
+#include "mock/arduinoMacros.h"
 #include "libraries/modbusMaster/ModbusMaster.h"
 #include "libraries/modbusSlave/ModbusSerial.h"
 #include "mock/MockSerialStream.h"

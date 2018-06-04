@@ -38,10 +38,10 @@ limitations under the License.
 #ifdef MOCK
 #include "../../mock/arduinoFunctions.h"
 #include "../../mock/arduinoMacros.h"
-#endif
-
 #include <cstdint>
 #include <cstddef>
+#endif
+
 #include "crc16.h"
 #include "word.h"
 /**
