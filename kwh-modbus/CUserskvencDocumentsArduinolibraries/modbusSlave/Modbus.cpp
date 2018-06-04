@@ -5,7 +5,6 @@
 #include "Modbus.h"
 #include <stdlib.h>
 #include <bitset>
-#include "ArduinoMacros.h"
 
 Modbus::Modbus() {
     _regs_head = 0;

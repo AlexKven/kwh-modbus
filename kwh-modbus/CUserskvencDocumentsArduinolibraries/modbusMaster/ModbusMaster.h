@@ -35,11 +35,15 @@ limitations under the License.
 #ifndef ModbusMaster_h
 #define ModbusMaster_h
 
+#ifdef MOCK
+#include "../../mock/arduinoFunctions.h"
+#include "../../mock/arduinoMacros.h"
+#endif
+
 #include <cstdint>
 #include <cstddef>
 #include "crc16.h"
 #include "word.h"
-#include "arduinoMacros.h"
 /**
 @def __MODBUSMASTER_DEBUG__ (0)
 Set to 1 to enable debugging features within class:

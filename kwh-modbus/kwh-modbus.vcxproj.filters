@@ -3,41 +3,65 @@
   <ItemGroup>
     <ClCompile Include="TestClass.cpp" />
     <ClCompile Include="program.cpp" />
-    <ClCompile Include="MockSerialStream.cpp">
-      <Filter>Mock</Filter>
+    <ClCompile Include="libraries\modbusSlave\Modbus.cpp">
+      <Filter>libraries\modbusSlave</Filter>
     </ClCompile>
-    <ClCompile Include="Modbus.cpp" />
-    <ClCompile Include="arduinoFunctions.cpp" />
+    <ClCompile Include="mock\MockSerialStream.cpp">
+      <Filter>mock</Filter>
+    </ClCompile>
+    <ClCompile Include="mock\arduinoFunctions.cpp">
+      <Filter>mock</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestClass.h" />
-    <ClInclude Include="ISerialStream.h">
-      <Filter>Interfaces</Filter>
-    </ClInclude>
-    <ClInclude Include="MockSerialStream.h">
-      <Filter>Mock</Filter>
-    </ClInclude>
-    <ClInclude Include="crc16.h" />
     <ClInclude Include="GlobalDefs.h" />
-    <ClInclude Include="Modbus.h" />
-    <ClInclude Include="word.h" />
-    <ClInclude Include="ModbusMaster.h" />
-    <ClInclude Include="ModbusSerial.h" />
-    <ClInclude Include="arduinoFunctions.h" />
-    <ClInclude Include="arduinoMacros.h" />
+    <ClInclude Include="libraries\modbusMaster\ModbusMaster.h">
+      <Filter>libraries\modbusMaster</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\modbusSlave\Modbus.h">
+      <Filter>libraries\modbusSlave</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\modbusSlave\ModbusSerial.h">
+      <Filter>libraries\modbusSlave</Filter>
+    </ClInclude>
+    <ClInclude Include="mock\MockSerialStream.h">
+      <Filter>mock</Filter>
+    </ClInclude>
+    <ClInclude Include="mock\arduinoFunctions.h">
+      <Filter>mock</Filter>
+    </ClInclude>
+    <ClInclude Include="interfaces\ISerialStream.h">
+      <Filter>interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\modbusMaster\crc16.h">
+      <Filter>libraries\modbusMaster</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\modbusMaster\word.h">
+      <Filter>libraries\modbusMaster</Filter>
+    </ClInclude>
+    <ClInclude Include="mock\arduinoMacros.h">
+      <Filter>mock</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Interfaces">
-      <UniqueIdentifier>{acf0fdc7-f8c3-4677-be44-ed45ba208430}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Libraries">
-      <UniqueIdentifier>{1a25e1c1-5a91-4165-b4e0-5cc2c57da420}</UniqueIdentifier>
-    </Filter>
     <Filter Include="General">
       <UniqueIdentifier>{3872f431-4ae4-4ba9-bbfb-9a0990fa0489}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Mock">
-      <UniqueIdentifier>{2b8fde95-dcb3-4197-a178-25c2e00ee2ad}</UniqueIdentifier>
+    <Filter Include="libraries">
+      <UniqueIdentifier>{e32dfab6-bbd5-4fc1-b739-9e3adbd79973}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\modbusSlave">
+      <UniqueIdentifier>{cec90256-5063-40a0-96cb-e29a013d3f7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\modbusMaster">
+      <UniqueIdentifier>{d339af96-ea19-4c30-85cb-a00e004fa00f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="mock">
+      <UniqueIdentifier>{db1f2a1f-0c1c-4ba6-a9a4-d0c08a01e5fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="interfaces">
+      <UniqueIdentifier>{e91c64f8-ec29-45b5-8f98-1545b350a03a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

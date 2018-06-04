@@ -1,19 +1,16 @@
 #include "stdio.h"
 #include "iostream"
-#include "ModbusSerial.h"
 #include "arduinoMacros.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "MockSerialStream.h"
-#include "ModbusMaster.h"
-
 #include <cstdint>
 #include <cstddef>
-#include "crc16.h"
-#include "word.h"
-#include "Modbus.h"
-#include "arduinoFunctions.h"
+#include "arduinoMacros.h"
+#include "libraries/modbusMaster/ModbusMaster.h"
+#include "libraries/modbusSlave/ModbusSerial.h"
+#include "mock/MockSerialStream.h"
+#include "mock/arduinoFunctions.h"
 
 using namespace std;
 

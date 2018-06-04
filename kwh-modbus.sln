@@ -7,8 +7,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kwh-modbus", "kwh-modbus\kw
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kwh-modbus-tests", "kwh-modbus-tests\kwh-modbus-tests.vcxproj", "{D51C8433-FDE9-47A1-997C-CDD703B7C473}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kwh-modbus-makefile", "kwh-modbus-makefile\kwh-modbus-makefile.vcxproj", "{6B5566A0-408C-4837-8939-D5F25FFC8526}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -41,18 +39,6 @@ Global
 		{D51C8433-FDE9-47A1-997C-CDD703B7C473}.Release|x64.Build.0 = Release|x64
 		{D51C8433-FDE9-47A1-997C-CDD703B7C473}.Release|x86.ActiveCfg = Release|Win32
 		{D51C8433-FDE9-47A1-997C-CDD703B7C473}.Release|x86.Build.0 = Release|Win32
-		{6B5566A0-408C-4837-8939-D5F25FFC8526}.Debug|ARM.ActiveCfg = Debug|ARM
-		{6B5566A0-408C-4837-8939-D5F25FFC8526}.Debug|ARM.Build.0 = Debug|ARM
-		{6B5566A0-408C-4837-8939-D5F25FFC8526}.Debug|x64.ActiveCfg = Debug|x64
-		{6B5566A0-408C-4837-8939-D5F25FFC8526}.Debug|x64.Build.0 = Debug|x64
-		{6B5566A0-408C-4837-8939-D5F25FFC8526}.Debug|x86.ActiveCfg = Debug|x86
-		{6B5566A0-408C-4837-8939-D5F25FFC8526}.Debug|x86.Build.0 = Debug|x86
-		{6B5566A0-408C-4837-8939-D5F25FFC8526}.Release|ARM.ActiveCfg = Release|ARM
-		{6B5566A0-408C-4837-8939-D5F25FFC8526}.Release|ARM.Build.0 = Release|ARM
-		{6B5566A0-408C-4837-8939-D5F25FFC8526}.Release|x64.ActiveCfg = Release|x64
-		{6B5566A0-408C-4837-8939-D5F25FFC8526}.Release|x64.Build.0 = Release|x64
-		{6B5566A0-408C-4837-8939-D5F25FFC8526}.Release|x86.ActiveCfg = Release|x86
-		{6B5566A0-408C-4837-8939-D5F25FFC8526}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

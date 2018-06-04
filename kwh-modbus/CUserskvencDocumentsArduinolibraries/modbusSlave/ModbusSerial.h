@@ -4,7 +4,6 @@
 */
 
 #include "Modbus.h"
-#include "arduinoMacros.h"
 
 #ifndef MODBUSSERIAL_H
 #define MODBUSSERIAL_H

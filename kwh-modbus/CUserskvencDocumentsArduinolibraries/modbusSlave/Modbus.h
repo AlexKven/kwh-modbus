@@ -6,6 +6,11 @@
 #ifndef MODBUS_H
 #define MODBUS_H
 
+#ifdef MOCK
+#include "../../mock/arduinoFunctions.h"
+#include "../../mock/arduinoMacros.h"
+#endif
+
 #define MAX_REGS     32
 #define MAX_FRAME   128
 //#define USE_HOLDING_REGISTERS_ONLY
