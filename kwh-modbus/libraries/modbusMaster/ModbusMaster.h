@@ -36,8 +36,8 @@ limitations under the License.
 #define ModbusMaster_h
 
 #ifdef NO_ARDUINO
-#include "../../mock/arduinofunctions.h"
-#include "../../mock/arduinomacros.h"
+#include "../../noArduino/arduinofunctions.h"
+#include "../../noArduino/arduinomacros.h"
 #include <cstdint>
 #include <cstddef>
 #endif
