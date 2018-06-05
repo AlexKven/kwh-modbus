@@ -19,7 +19,8 @@ Modbus is configured as a Visual Studio solution with a C++ Linux project, and a
 	1. First, open an Arduino project in the kwh-modbus/Arduino folder
 	2. Arduino has a weird compiler that has a hard time with just including random .h files. As a result, the source code for the project needs to be in the Arduino libraries folder for it to compile propertly in Arduino. In the kwh-modbus folder, there are two scripts that you can use that will put the code in the proper place for Arduino. Use the .bat file if you're on Windows and the .sh file if you're on Linux: ![The two different scripts that copies the source code to the Arduino libraries folder](https://github.com/AlexKven/kwh-modbus/raw/documentation/documentation/images/arduino_script.png)
 (note: the .bat file really just runs the .sh file using the WSL)
-	3. After you've done that, open the Arduino IDE, and include every .h file at the top of your sketch. Then click "verify" (what Arduino IDE calls compile), and if it is successful, then everything worked.:![Compiling in Arduino](https://github.com/AlexKven/kwh-modbus/raw/documentation/documentation/images/arduino_verify.PNG)	4. For now, you need to run this script every time you make a change you want to compile to Arduino. And if you delete a file, you need to delete it manually from the Arduino libraries folder.
+	3. After you've done that, open the Arduino IDE, and include every .h file at the top of your sketch. Then click "verify" (what Arduino IDE calls compile), and if it is successful, then everything worked.:![Compiling in Arduino](https://github.com/AlexKven/kwh-modbus/raw/documentation/documentation/images/arduino_verify.PNG)
+	4. For now, you need to run this script every time you make a change you want to compile to Arduino. And if you delete a file, you need to delete it manually from the Arduino libraries folder.
 
 
 
