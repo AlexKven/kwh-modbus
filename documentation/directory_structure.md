@@ -23,5 +23,6 @@ Here is a summary of the important files and folders in the repository. Files sh
 14. Visual Studio project file for the main project (I.e., everything but unit tests)
 15. I'm not sure what this is, but it's used by Visual Studio
 16. Script that compiles all Linux programs, and needs to be run on Linux (or the Windows Subsystem for Linux on Windows 10)
-17. Copies all the libraries over to the Arduino libraries folder on Windows, so it can be used by the Arduino IDE
-18. Same as 17, but copies the libraries to the Arduino folder on Linux, and runs on Linux
+17. The main program that Visual Studio compiles by default (with its main())
+18. Copies all the libraries over to the Arduino libraries folder on Windows, so it can be used by the Arduino IDE
+19. Same as 18, but copies the libraries to the Arduino folder on Linux, and runs on Linux
