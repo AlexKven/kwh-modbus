@@ -210,8 +210,8 @@ class ModbusSerial : public Modbus {
 			while (!(*port));
 
 			if (txPin >= 0) {
-				TArduinoFunctions::PinMode(txPin, OUTPUT);
-				TArduinoFunctions::DigitalWrite(txPin, LOW);
+				TArduinoFunctions::pinMode(txPin, OUTPUT);
+				TArduinoFunctions::digitalWrite(txPin, LOW);
 			}
 
 			if (baud > 19200)
