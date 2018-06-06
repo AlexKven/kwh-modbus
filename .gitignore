@@ -332,5 +332,7 @@ ASALocalRun/
 .mfractor/
 *.exe
 
-# Seen after using GCC
+# Linux gcc outputs
 *.gch
+*.out
+*.o
