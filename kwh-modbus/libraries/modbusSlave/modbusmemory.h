@@ -28,7 +28,7 @@ private:
 		//scan through the linked list until the end of the list or the register is found.
 		//return the pointer.
 		do {
-			if (reg->address == address) return(reg);
+			if (reg->address == addr) return(reg);
 			reg = reg->next;
 		} while (reg);
 		return nullptr;
@@ -78,7 +78,7 @@ protected:
 	}
 
 public:
-	ModbusMemory::ModbusMemory()
+	ModbusMemory()
 	{
 		_regs_head = 0;
 		_regs_last = 0;
