@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 #define lowByte(w) ((uint8_t) ((w) & 0xff))
 #define highByte(w) ((uint8_t) ((w) >> 8))
@@ -38,5 +39,5 @@
 #define SET       1
 #define INPUT     0
 #define OUTPUT    1
-typedef unsigned int word;
-typedef unsigned char byte;
+typedef uint16_t word;
+typedef uint8_t byte;

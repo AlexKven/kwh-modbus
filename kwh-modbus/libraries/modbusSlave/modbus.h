@@ -12,9 +12,9 @@
 #else
 #include "Arduino.h"
 #endif
-
-#define MAX_REGS     32
-#define MAX_FRAME   128
+//
+//#define MAX_REGS     32
+//#define MAX_FRAME   128
 //#define USE_HOLDING_REGISTERS_ONLY
 
 //Function Codes
@@ -44,61 +44,37 @@ enum {
     MB_REPLY_NORMAL = 0x03,
 };
 
-typedef struct TRegister {
-    word address;
-    word value;
-    struct TRegister* next;
-} TRegister;
-
 class Modbus {
     private:
-        TRegister *_regs_head;
-        TRegister *_regs_last;
-
         void readRegisters(word startreg, word numregs);
         void writeSingleRegister(word reg, word value);
         void writeMultipleRegisters(byte* frame,word startreg, word numoutputs, byte bytecount);
         void exceptionResponse(byte fcode, byte excode);
-        #ifndef USE_HOLDING_REGISTERS_ONLY
-            void readCoils(word startreg, word numregs);
-            void readInputStatus(word startreg, word numregs);
-            void readInputRegisters(word startreg, word numregs);
-            void writeSingleCoil(word reg, word status);
-            void writeMultipleCoils(byte* frame,word startreg, word numoutputs, byte bytecount);
-        #endif
 
-        TRegister* searchRegister(word addr);
-
-        void addReg(word address, word value = 0);
-        bool Reg(word address, word value);
-        word Reg(word address);
+		byte *_frame;
+		byte  _length;
 
     protected:
-        byte *_frame;
-        byte  _len;
         byte  _reply;
+
+		virtual void addReg(word address, word value = 0) = 0;
+		virtual bool Reg(word address, word value) = 0;
+		virtual word Reg(word address) = 0;
         void receivePDU(byte* frame);
 
+		virtual bool resetFrame(word byteLength);
+		virtual byte* getFramePtr();
+		virtual word getFrameLength();
+
+		bool resetFrameRegs(word numRegs);
+		word getFrameReg(word address);
+		virtual bool setFrameReg(word address, word value);
     public:
         Modbus();
 
         void addHreg(word offset, word value = 0);
         bool Hreg(word offset, word value);
         word Hreg(word offset);
-
-        #ifndef USE_HOLDING_REGISTERS_ONLY
-            void addCoil(word offset, bool value = false);
-            void addIsts(word offset, bool value = false);
-            void addIreg(word offset, word value = 0);
-
-            bool Coil(word offset, bool value);
-            bool Ists(word offset, bool value);
-            bool Ireg(word offset, word value);
-
-            bool Coil(word offset);
-            bool Ists(word offset);
-            word Ireg(word offset);
-        #endif
 };
 
 #endif //MODBUS_H

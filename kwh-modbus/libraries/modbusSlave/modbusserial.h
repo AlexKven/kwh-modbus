@@ -55,8 +55,8 @@ const byte _auchCRCLo[] = {
 	0x44, 0x84, 0x85, 0x45, 0x87, 0x47, 0x46, 0x86, 0x82, 0x42, 0x43, 0x83, 0x41, 0x81, 0x80,
 	0x40 };
 
-template<typename TSerial, typename TArduinoFunctions>
-class ModbusSerial : public Modbus {
+template<typename TSerial, typename TArduinoFunctions, typename TBase>
+class ModbusSerial : public TBase {
     private:
 		TSerial* _port;
         //HardwareSerial* DebugPort;
@@ -98,7 +98,7 @@ class ModbusSerial : public Modbus {
 
         void task()
 		{
-			_len = 0;
+			word _len = 0;
 
 			while ((*_port).available() > _len) {
 				_len = (*_port).available();
@@ -108,10 +108,11 @@ class ModbusSerial : public Modbus {
 			if (_len == 0) return;
 
 			byte i;
-			_frame = (byte*)malloc(_len);
-			for (i = 0; i < _len; i++) _frame[i] = (*_port).read();
+			resetFrame(_len);
+			byte *frame = frameBytePtr();
+			for (i = 0; i < _len; i++) frame[i] = (*_port).read();
 
-			if (this->receive(_frame)) {
+			if (this->receive(frame)) {
 				if (_reply == MB_REPLY_NORMAL)
 					this->sendPDU(_frame);
 				else
@@ -119,8 +120,7 @@ class ModbusSerial : public Modbus {
 						this->send(_frame);
 			}
 
-			free(_frame);
-			_len = 0;
+			resetFrame(0);
 		}
 
         bool receive(byte* frame)

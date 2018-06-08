@@ -43,6 +43,9 @@
     <ClInclude Include="noArduino\arduinomacros.h">
       <Filter>noArduino</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\modbusSlave\modbusmemory.h">
+      <Filter>libraries\modbusSlave</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
