@@ -3,19 +3,12 @@
   <ItemGroup>
     <ClCompile Include="test.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="modbus_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="Libraries">
-      <UniqueIdentifier>{c1ae62ef-874c-43ba-8667-f29dd7ad2f81}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Libraries\modbus-slave">
-      <UniqueIdentifier>{00bd1530-1f17-451f-97f6-99fdabb57e54}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
 </Project>
