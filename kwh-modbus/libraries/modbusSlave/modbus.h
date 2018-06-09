@@ -52,7 +52,7 @@ class Modbus {
         void exceptionResponse(byte fcode, byte excode);
 
 		byte *_frame;
-		byte  _length;
+		word  _length;
 
     protected:
         byte  _reply;

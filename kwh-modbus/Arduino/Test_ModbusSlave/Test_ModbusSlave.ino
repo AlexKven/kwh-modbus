@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "modbus.h"
-#include <modbusmaster.h>
-#include <modbusserial.h>
+#include "modbusmemory.h"
+#include "modbusserial.h"
 
 
 class ArduinoFunctions
@@ -26,7 +26,8 @@ void setup() {
   // put your setup code here, to run once:
   //Serial *ser = &Serial1;
   
-  ModbusSerial<HardwareSerial, ArduinoFunctions> slave;
+  ModbusMemory<ModbusSerial<HardwareSerial, ArduinoFunctions, Modbus>> slave;
+  
 }
 
 void loop() {

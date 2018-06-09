@@ -98,37 +98,39 @@ class ModbusSerial : public TBase {
 
         void task()
 		{
-			word _len = 0;
+			word length = 0;
 
-			while ((*_port).available() > _len) {
-				_len = (*_port).available();
+			while ((*_port).available() > length) {
+				length = (*_port).available();
 				TArduinoFunctions::DelayMicroseconds(_t15);
 			}
 
-			if (_len == 0) return;
+			if (length == 0) return;
 
 			byte i;
-			resetFrame(_len);
-			byte *frame = frameBytePtr();
-			for (i = 0; i < _len; i++) frame[i] = (*_port).read();
+			this->resetFrame(length);
+			byte *frame = this->getFramePtr();
+			for (i = 0; i < length; i++) frame[i] = (*_port).read();
 
 			if (this->receive(frame)) {
-				if (_reply == MB_REPLY_NORMAL)
-					this->sendPDU(_frame);
+				if (this->_reply == MB_REPLY_NORMAL)
+					this->sendPDU(frame);
 				else
-					if (_reply == MB_REPLY_ECHO)
-						this->send(_frame);
+					if (this->_reply == MB_REPLY_ECHO)
+						this->send(frame);
 			}
 
-			resetFrame(0);
+			this->resetFrame(0);
 		}
 
-        bool receive(byte* frame)
+        bool receive(byte* inputFrame)
 		{
+			byte *frame = this->getFramePtr();
+			word length = this->getFrameLength();
 			//first byte of frame = address
-			byte address = frame[0];
+			byte address = inputFrame[0];
 			//Last two bytes = crc
-			unsigned int crc = ((frame[_len - 2] << 8) | frame[_len - 1]);
+			unsigned int crc = ((inputFrame[length - 2] << 8) | inputFrame[length - 1]);
 
 			//Slave Check
 			if (address != 0xFF && address != this->getSlaveId()) {
@@ -136,20 +138,23 @@ class ModbusSerial : public TBase {
 			}
 
 			//CRC Check
-			if (crc != this->calcCrc(_frame[0], _frame + 1, _len - 3)) {
+			if (crc != this->calcCrc(frame[0], frame + 1, length - 3)) {
 				return false;
 			}
 
 			//PDU starts after first byte
 			//framesize PDU = framesize - address(1) - crc(2)
-			this->receivePDU(frame + 1);
+			this->receivePDU(inputFrame + 1);
 			//No reply to Broadcasts
-			if (address == 0xFF) _reply = MB_REPLY_OFF;
+			if (address == 0xFF) this->_reply = MB_REPLY_OFF;
 			return true;
 		}
 
         bool sendPDU(byte* pduframe)
 		{
+			byte *frame = this->getFramePtr();
+			word length = this->getFrameLength();
+
 			if (this->_txPin >= 0) {
 				fDigitalWrite(this->_txPin, HIGH);
 				//delay(1);
@@ -163,12 +168,12 @@ class ModbusSerial : public TBase {
 
 			//Send PDU
 			byte i;
-			for (i = 0; i < _len; i++) {
+			for (i = 0; i < length; i++) {
 				(*_port).write(pduframe[i]);
 			}
 
 			//Send CRC
-			word crc = calcCrc(_slaveId, _frame, _len);
+			word crc = calcCrc(_slaveId, frame, length);
 			(*_port).write(crc >> 8);
 			(*_port).write(crc & 0xFF);
 
@@ -180,8 +185,9 @@ class ModbusSerial : public TBase {
 			}
 		}
 
-        bool send(byte* frame)
+        bool send(byte* inputFrame)
 		{
+			word length = this->getFrameLength();
 			byte i;
 
 			if (this->_txPin >= 0) {
@@ -190,8 +196,8 @@ class ModbusSerial : public TBase {
 				TArduinoFunctions::DelayMicroseconds(1000);
 			}
 
-			for (i = 0; i < _len; i++) {
-				(*_port).write(frame[i]);
+			for (i = 0; i < length; i++) {
+				(*_port).write(inputFrame[i]);
 			}
 
 			(*_port).flush();

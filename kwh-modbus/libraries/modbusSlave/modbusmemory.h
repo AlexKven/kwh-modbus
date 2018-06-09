@@ -80,7 +80,7 @@ protected:
 public:
 	ModbusMemory()
 	{
-		_regs_head = 0;
-		_regs_last = 0;
+		_regs_head = nullptr;
+		_regs_last = nullptr;
 	}
 };
