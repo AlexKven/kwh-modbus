@@ -46,6 +46,9 @@
     <ClInclude Include="libraries\modbusSlave\modbusmemory.h">
       <Filter>libraries\modbusSlave</Filter>
     </ClInclude>
+    <ClInclude Include="mock\mockpublicmodbus.h">
+      <Filter>mock</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
