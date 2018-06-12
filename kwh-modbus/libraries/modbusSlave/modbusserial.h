@@ -112,25 +112,25 @@ class ModbusSerial : public TBase {
 			byte *frame = this->getFramePtr();
 			for (i = 0; i < length; i++) frame[i] = (*_port).read();
 
-			if (this->receive(frame)) {
+			if (this->receive()) {
 				if (this->_reply == MB_REPLY_NORMAL)
-					this->sendPDU(frame);
+					this->sendPDU();
 				else
 					if (this->_reply == MB_REPLY_ECHO)
-						this->send(frame);
+						this->send();
 			}
 
 			this->resetFrame(0);
 		}
 
-        bool receive(byte* inputFrame)
+        bool receive()
 		{
 			byte *frame = this->getFramePtr();
 			word length = this->getFrameLength();
 			//first byte of frame = address
-			byte address = inputFrame[0];
+			byte address = frame[0];
 			//Last two bytes = crc
-			unsigned int crc = ((inputFrame[length - 2] << 8) | inputFrame[length - 1]);
+			unsigned int crc = ((frame[length - 2] << 8) | frame[length - 1]);
 
 			//Slave Check
 			if (address != 0xFF && address != this->getSlaveId()) {
@@ -144,17 +144,17 @@ class ModbusSerial : public TBase {
 
 			//PDU starts after first byte
 			//framesize PDU = framesize - address(1) - crc(2)
-			this->receivePDU(inputFrame + 1);
+			this->receivePDU(frame + 1);
 			//No reply to Broadcasts
 			if (address == 0xFF) this->_reply = MB_REPLY_OFF;
 			return true;
 		}
 
-        bool sendPDU(byte* pduframe)
+        bool sendPDU()
 		{
 			byte *frame = this->getFramePtr();
 			word length = this->getFrameLength();
-
+			
 			if (this->_txPin >= 0) {
 				fDigitalWrite(this->_txPin, HIGH);
 				//delay(1);
@@ -169,7 +169,7 @@ class ModbusSerial : public TBase {
 			//Send PDU
 			byte i;
 			for (i = 0; i < length; i++) {
-				(*_port).write(pduframe[i]);
+				(*_port).write(frame[i]);
 			}
 
 			//Send CRC
@@ -185,8 +185,9 @@ class ModbusSerial : public TBase {
 			}
 		}
 
-        bool send(byte* inputFrame)
+        bool send()
 		{
+			byte *frame = this->getFramePtr();
 			word length = this->getFrameLength();
 			byte i;
 
@@ -197,7 +198,7 @@ class ModbusSerial : public TBase {
 			}
 
 			for (i = 0; i < length; i++) {
-				(*_port).write(inputFrame[i]);
+				(*_port).write(frame[i]);
 			}
 
 			(*_port).flush();
