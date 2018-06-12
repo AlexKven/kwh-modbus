@@ -35,12 +35,13 @@ bool Modbus::resetFrameRegs(word numRegs)
 
 word Modbus::getFrameReg(word address)
 {
-	return (word)getFramePtr()[address * 2];
+	word* wordPtr = (word*)getFramePtr(); 
+	return wordPtr[address];
 }
 
 bool Modbus::setFrameReg(word address, word value)
 {
-	if (address * 2 > getFrameLength())
+	if (address * 2 >= getFrameLength())
 		return false;
 	word* wordPtr = (word*)getFramePtr();
 	wordPtr[address] = value;
