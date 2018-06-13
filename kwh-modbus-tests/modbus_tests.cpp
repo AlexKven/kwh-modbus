@@ -59,3 +59,25 @@ TEST(Modbus, ModbusMemory_Frame_Register)
 	ASSERT_EQ(success2, false);
 	ASSERT_EQ(reg, 703);
 }
+
+TEST(Modbus, Modbus_ReceivePDU_WriteRegister_IllegalAddress)
+{
+	ModbusMemory<MockPublicModbus<Modbus>> *modbus = new ModbusMemory<MockPublicModbus<Modbus>>();
+	modbus->_resetFrame(5);
+	byte *frame = modbus->_getFramePtr();
+	frame[0] = ::MB_FC_WRITE_REG;
+	word input1 = 5;
+	word input2 = 703;
+	frame[1] = input1 / 256;
+	frame[2] = input1 % 256;
+	frame[3] = input2 / 256;
+	frame[4] = input2 % 256;
+
+	modbus->_receivePDU(frame);
+
+	word frameLength = modbus->_getFrameLength();
+	frame = modbus->_getFramePtr();
+
+	ASSERT_EQ(frame[0], MB_FC_WRITE_REG + 0x80);
+	ASSERT_EQ(frame[1], MB_EX_ILLEGAL_ADDRESS);
+}
