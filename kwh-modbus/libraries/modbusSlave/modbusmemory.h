@@ -78,6 +78,16 @@ protected:
 	}
 
 public:
+	virtual bool validRange(word startReg, word numReg)
+	{
+		for (word i = startReg; i < startReg + numReg; i++)
+		{
+			if (searchRegister(i) == nullptr)
+				return false;
+		}
+		return true;
+	}
+
 	ModbusMemory()
 	{
 		_regs_head = nullptr;

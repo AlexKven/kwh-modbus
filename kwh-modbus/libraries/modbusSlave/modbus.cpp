@@ -104,12 +104,11 @@ void Modbus::readRegisters(word startreg, word numregs) {
         return;
     }
 
-    //Check Address
-    //*** See comments on readCoils method.
-    //if (!this->validRange(startreg, numregs)) {
-    //    this->exceptionResponse(MB_FC_READ_REGS, MB_EX_ILLEGAL_ADDRESS);
-    //    return;
-    //}
+    //Check address range
+    if (!this->validRange(startreg, numregs)) {
+        this->exceptionResponse(MB_FC_READ_REGS, MB_EX_ILLEGAL_ADDRESS);
+        return;
+    }
 
 
     //Clean frame buffer

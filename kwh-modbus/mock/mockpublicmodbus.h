@@ -5,20 +5,55 @@
 
 template<typename TBase>
 class MockPublicModbus : public TBase {
+protected:
+	virtual void addReg(word address, word value = 0)
+	{
+		_addReg(address, value);
+	}
+
+	virtual bool Reg(word address, word value)
+	{
+		return _Reg(address, value);
+	}
+
+	virtual word Reg(word address)
+	{
+		return _Reg(address);
+	}
+
+	virtual bool resetFrame(word byteLength)
+	{
+		return _resetFrame(byteLength);
+	}
+
+	virtual byte* getFramePtr()
+	{
+		return _getFramePtr();
+	}
+
+	virtual word getFrameLength()
+	{
+		return _getFrameLength();
+	}
+
+	virtual bool setFrameReg(word address, word value)
+	{
+		return _setFrameReg(address, value);
+	}
 public:
-	void _addReg(word address, word value = 0)
+	virtual void _addReg(word address, word value = 0)
 	{
-		return addReg(address, value);
+		return TBase::addReg(address, value);
 	}
 
-	bool _Reg(word address, word value)
+	virtual bool _Reg(word address, word value)
 	{
-		return Reg(address, value);
+		return TBase::Reg(address, value);
 	}
 
-	word _Reg(word address)
+	virtual word _Reg(word address)
 	{
-		return Reg(address);
+		return TBase::Reg(address);
 	}
 	
 	void _receivePDU(byte* frame)
@@ -26,19 +61,19 @@ public:
 		receivePDU(frame);
 	}
 
-	bool _resetFrame(word byteLength)
+	virtual bool _resetFrame(word byteLength)
 	{
-		return resetFrame(byteLength);
+		return TBase::resetFrame(byteLength);
 	}
 
-	byte* _getFramePtr()
+	virtual byte* _getFramePtr()
 	{
-		return getFramePtr();
+		return TBase::getFramePtr();
 	}
 
-	word _getFrameLength()
+	virtual word _getFrameLength()
 	{
-		return getFrameLength();
+		return TBase::getFrameLength();
 	}
 
 	bool _resetFrameRegs(word numRegs)
@@ -51,9 +86,9 @@ public:
 		return getFrameReg(address);
 	}
 
-	bool _setFrameReg(word address, word value)
+	virtual bool _setFrameReg(word address, word value)
 	{
-		return setFrameReg(address, value);
+		return TBase::setFrameReg(address, value);
 	}
 
 	byte _getReply()
