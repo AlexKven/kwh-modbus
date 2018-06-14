@@ -55,4 +55,14 @@ public:
 	{
 		return setFrameReg(address, value);
 	}
+
+	byte _getReply()
+	{
+		return _reply;
+	}
+
+	void _setReply(byte value)
+	{
+		_reply = value;
+	}
 };

@@ -1,8 +1,11 @@
 #include "pch.h"
+#include "fakeit.hpp"
 
 #include "../kwh-modbus/libraries/modbusSlave/modbus.cpp"
 #include "../kwh-modbus/libraries/modbusSlave/modbusmemory.h"
 #include "../kwh-modbus/mock/mockpublicmodbus.h"
+
+using namespace fakeit;
 
 TEST(Modbus, ModbusMemory_Hreg)
 {
@@ -80,4 +83,51 @@ TEST(Modbus, Modbus_ReceivePDU_WriteRegister_IllegalAddress)
 
 	ASSERT_EQ(frame[0], MB_FC_WRITE_REG + 0x80);
 	ASSERT_EQ(frame[1], MB_EX_ILLEGAL_ADDRESS);
+}
+
+TEST(Modbus, Modbus_ReceivePDU_WriteRegister_SlaveFailure)
+{
+	ModbusMemory<MockPublicModbus<Modbus>> *modbus = new ModbusMemory<MockPublicModbus<Modbus>>();
+	Mock<ModbusMemory<MockPublicModbus<Modbus>>> mock(*modbus);
+
+	When(OverloadedMethod(mock, Hreg, bool(word, word))).Return(true);
+	When(OverloadedMethod(mock, Hreg, word(word))).Return(-1);
+
+	modbus->_resetFrame(5);
+	byte *frame = modbus->_getFramePtr();
+	frame[0] = ::MB_FC_WRITE_REG;
+	word input1 = 5;
+	word input2 = 703;
+	frame[1] = input1 / 256;
+	frame[2] = input1 % 256;
+	frame[3] = input2 / 256;
+	frame[4] = input2 % 256;
+
+	modbus->_receivePDU(frame);
+
+	word frameLength = modbus->_getFrameLength();
+	frame = modbus->_getFramePtr();
+
+	ASSERT_EQ(frame[0], MB_FC_WRITE_REG + 0x80);
+	ASSERT_EQ(frame[1], MB_EX_SLAVE_FAILURE);
+}
+
+TEST(Modbus, Modbus_ReceivePDU_WriteRegister_Success)
+{
+	ModbusMemory<MockPublicModbus<Modbus>> *modbus = new ModbusMemory<MockPublicModbus<Modbus>>();
+	modbus->_resetFrame(5);
+	modbus->_addReg(5, 3);
+	byte *frame = modbus->_getFramePtr();
+	frame[0] = ::MB_FC_WRITE_REG;
+	word input1 = 5;
+	word input2 = 703;
+	frame[1] = input1 / 256;
+	frame[2] = input1 % 256;
+	frame[3] = input2 / 256;
+	frame[4] = input2 % 256;
+
+	modbus->_receivePDU(frame);
+
+	ASSERT_EQ(modbus->_getReply(), MB_REPLY_ECHO);
+	ASSERT_EQ(modbus->_Reg(5), 703);
 }

@@ -49,15 +49,15 @@ bool Modbus::setFrameReg(word address, word value)
 }
 
 void Modbus::addHreg(word offset, word value) {
-    this->addReg(offset + 40001, value);
+    this->addReg(offset, value);
 }
 
 bool Modbus::Hreg(word offset, word value) {
-    return Reg(offset + 40001, value);
+    return Reg(offset, value);
 }
 
 word Modbus::Hreg(word offset) {
-    return Reg(offset + 40001);
+    return Reg(offset);
 }
 
 void Modbus::receivePDU(byte* frame) {
