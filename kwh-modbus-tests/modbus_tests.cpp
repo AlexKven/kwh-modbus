@@ -13,6 +13,23 @@ class ModbusMemoryTests : public ::testing::Test
 {
 protected:
 	MockPublicModbus<ModbusMemory<Modbus>> *modbus = new MockPublicModbus<ModbusMemory<Modbus>>();
+
+	void setup_FourRegisters(bool missingOne = false)
+	{
+		int missing = -1;
+		if (missingOne)
+		{
+			missing = rand() % 4;
+		}
+		if (missing != 0)
+			modbus->_addReg(5, 111);
+		if (missing != 1)
+			modbus->_addReg(6, 703);
+		if (missing != 2)
+			modbus->_addReg(7, 902);
+		if (missing != 3)
+			modbus->_addReg(8, 429);
+	}
 public:
 	void SetUp()
 	{
@@ -145,10 +162,7 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_Success)
 TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_Success)
 {
 	modbus->_resetFrame(5);
-	modbus->_addReg(5, 111);
-	modbus->_addReg(6, 703);
-	modbus->_addReg(7, 902);
-	modbus->_addReg(8, 429);
+	setup_FourRegisters();
 	byte *frame = modbus->_getFramePtr();
 	frame[0] = ::MB_FC_READ_REGS;
 	word input1 = 5;
@@ -173,9 +187,7 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_Success)
 TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_IllegalAddress)
 {
 	modbus->_resetFrame(5);
-	modbus->_addReg(5, 111);
-	modbus->_addReg(6, 703);
-	modbus->_addReg(7, 902);
+	setup_FourRegisters(true);
 	byte *frame = modbus->_getFramePtr();
 	frame[0] = ::MB_FC_READ_REGS;
 	word input1 = 5;
@@ -219,10 +231,7 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_SlaveFailure)
 {
 	USE_MOCK;
 	modbus->_resetFrame(5);
-	modbus->_addReg(5, 111);
-	modbus->_addReg(6, 703);
-	modbus->_addReg(7, 902);
-	modbus->_addReg(8, 429);
+	setup_FourRegisters();
 	byte *frame = modbus->_getFramePtr();
 	frame[0] = ::MB_FC_READ_REGS;
 	word input1 = 5;
