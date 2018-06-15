@@ -4,6 +4,7 @@
 #include "../kwh-modbus/libraries/modbusSlave/modbus.cpp"
 #include "../kwh-modbus/libraries/modbusSlave/modbusmemory.h"
 #include "../kwh-modbus/mock/mockpublicmodbus.h"
+#include "test_helpers.h"
 
 #define USE_MOCK Mock<MockPublicModbus<ModbusMemory<Modbus>>> mock = Mock<MockPublicModbus<ModbusMemory<Modbus>>>(*modbus);
 
@@ -66,15 +67,14 @@ TEST_F(ModbusMemoryTests, ModbusMemory_Frame_Byte)
 
 	bool success1 = modbus->_setFrameReg(3, 703);
 	bool success2 = modbus->_setFrameReg(5, 703);
+	word regValue;
 
-	byte regLow = ptr[6];
-	byte regHigh = ptr[7];
+	parseArray(ptr + 6, regValue);
 
 	ASSERT_EQ(len, 10);
 	ASSERT_EQ(success1, true);
 	ASSERT_EQ(success2, false);
-	ASSERT_EQ(regLow, 703 % 256);
-	ASSERT_EQ(regHigh, 703 / 256);
+	ASSERT_EQ(regValue, 703);
 }
 
 TEST_F(ModbusMemoryTests, ModbusMemory_Frame_Register)
@@ -98,13 +98,10 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_IllegalAddress)
 {
 	modbus->_resetFrame(5);
 	byte *frame = modbus->_getFramePtr();
-	frame[0] = ::MB_FC_WRITE_REG;
 	word input1 = 5;
 	word input2 = 703;
-	frame[1] = input1 / 256;
-	frame[2] = input1 % 256;
-	frame[3] = input2 / 256;
-	frame[4] = input2 % 256;
+
+	setArray(frame, (byte)MB_FC_WRITE_REG, revBytes(input1), revBytes(input2));
 
 	modbus->_receivePDU(frame);
 
@@ -123,13 +120,10 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_SlaveFailure)
 
 	modbus->_resetFrame(5);
 	byte *frame = modbus->_getFramePtr();
-	frame[0] = ::MB_FC_WRITE_REG;
 	word input1 = 5;
 	word input2 = 703;
-	frame[1] = input1 / 256;
-	frame[2] = input1 % 256;
-	frame[3] = input2 / 256;
-	frame[4] = input2 % 256;
+
+	setArray(frame, (byte)MB_FC_WRITE_REG, revBytes(input1), revBytes(input2));
 
 	modbus->_receivePDU(frame);
 
@@ -145,13 +139,10 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_Success)
 	modbus->_resetFrame(5);
 	modbus->_addReg(5, 3);
 	byte *frame = modbus->_getFramePtr();
-	frame[0] = ::MB_FC_WRITE_REG;
 	word input1 = 5;
 	word input2 = 703;
-	frame[1] = input1 / 256;
-	frame[2] = input1 % 256;
-	frame[3] = input2 / 256;
-	frame[4] = input2 % 256;
+
+	setArray(frame, (byte)MB_FC_WRITE_REG, revBytes(input1), revBytes(input2));
 
 	modbus->_receivePDU(frame);
 
@@ -164,13 +155,10 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_Success)
 	modbus->_resetFrame(5);
 	setup_FourRegisters();
 	byte *frame = modbus->_getFramePtr();
-	frame[0] = ::MB_FC_READ_REGS;
 	word input1 = 5;
 	word input2 = 4;
-	frame[1] = input1 / 256;
-	frame[2] = input1 % 256;
-	frame[3] = input2 / 256;
-	frame[4] = input2 % 256;
+
+	setArray(frame, (byte)MB_FC_READ_REGS, revBytes(input1), revBytes(input2));
 
 	modbus->_receivePDU(frame);
 
@@ -189,13 +177,10 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_IllegalAddress)
 	modbus->_resetFrame(5);
 	setup_FourRegisters(true);
 	byte *frame = modbus->_getFramePtr();
-	frame[0] = ::MB_FC_READ_REGS;
 	word input1 = 5;
 	word input2 = 4;
-	frame[1] = input1 / 256;
-	frame[2] = input1 % 256;
-	frame[3] = input2 / 256;
-	frame[4] = input2 % 256;
+
+	setArray(frame, (byte)MB_FC_READ_REGS, revBytes(input1), revBytes(input2));
 
 	modbus->_receivePDU(frame);
 
@@ -210,13 +195,10 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_IllegalValue)
 {
 	modbus->_resetFrame(5);
 	byte *frame = modbus->_getFramePtr();
-	frame[0] = ::MB_FC_READ_REGS;
 	word input1 = 5;
 	word input2 = 0;
-	frame[1] = input1 / 256;
-	frame[2] = input1 % 256;
-	frame[3] = input2 / 256;
-	frame[4] = input2 % 256;
+
+	setArray(frame, (byte)MB_FC_READ_REGS, revBytes(input1), revBytes(input2));
 
 	modbus->_receivePDU(frame);
 
@@ -233,13 +215,10 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_SlaveFailure)
 	modbus->_resetFrame(5);
 	setup_FourRegisters();
 	byte *frame = modbus->_getFramePtr();
-	frame[0] = ::MB_FC_READ_REGS;
 	word input1 = 5;
 	word input2 = 4;
-	frame[1] = input1 / 256;
-	frame[2] = input1 % 256;
-	frame[3] = input2 / 256;
-	frame[4] = input2 % 256;
+
+	setArray(frame, (byte)MB_FC_READ_REGS, revBytes(input1), revBytes(input2));
 
 	// Do the frame reset for the error in advance, since we'll mock it.
 	modbus->_resetFrame(2);
