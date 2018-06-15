@@ -5,11 +5,27 @@
 #include "../kwh-modbus/libraries/modbusSlave/modbusmemory.h"
 #include "../kwh-modbus/mock/mockpublicmodbus.h"
 
+#define USE_MOCK Mock<MockPublicModbus<ModbusMemory<Modbus>>> mock = Mock<MockPublicModbus<ModbusMemory<Modbus>>>(*modbus);
+
 using namespace fakeit;
 
-TEST(Modbus, ModbusMemory_Hreg)
+class ModbusMemoryTests : public ::testing::Test
 {
-	ModbusMemory<Modbus> *modbus = new ModbusMemory<Modbus>();
+protected:
+	MockPublicModbus<ModbusMemory<Modbus>> *modbus = new MockPublicModbus<ModbusMemory<Modbus>>();
+public:
+	void SetUp()
+	{
+	}
+
+	void TearDown()
+	{
+		delete modbus;
+	}
+};
+
+TEST_F(ModbusMemoryTests, ModbusMemory_Hreg)
+{
 	modbus->addHreg(5, 1);
 	modbus->addHreg(20, 50);
 	word val1 = modbus->Hreg(5);
@@ -25,9 +41,8 @@ TEST(Modbus, ModbusMemory_Hreg)
 	ASSERT_EQ(bool2, true);
 }
 
-TEST(Modbus, ModbusMemory_Frame_Byte)
+TEST_F(ModbusMemoryTests, ModbusMemory_Frame_Byte)
 {
-	MockPublicModbus<ModbusMemory<Modbus>> *modbus = new MockPublicModbus<ModbusMemory<Modbus>>();
 	modbus->_resetFrame(10);
 	byte *ptr = modbus->_getFramePtr();
 	word len = modbus->_getFrameLength();
@@ -45,9 +60,8 @@ TEST(Modbus, ModbusMemory_Frame_Byte)
 	ASSERT_EQ(regHigh, 703 / 256);
 }
 
-TEST(Modbus, ModbusMemory_Frame_Register)
+TEST_F(ModbusMemoryTests, ModbusMemory_Frame_Register)
 {
-	MockPublicModbus<ModbusMemory<Modbus>> *modbus = new MockPublicModbus<ModbusMemory<Modbus>>();
 	modbus->_resetFrameRegs(5);
 	byte *ptr = modbus->_getFramePtr();
 	word len = modbus->_getFrameLength();
@@ -63,9 +77,8 @@ TEST(Modbus, ModbusMemory_Frame_Register)
 	ASSERT_EQ(reg, 703);
 }
 
-TEST(Modbus, Modbus_ReceivePDU_WriteRegister_IllegalAddress)
+TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_IllegalAddress)
 {
-	MockPublicModbus<ModbusMemory<Modbus>> *modbus = new MockPublicModbus<ModbusMemory<Modbus>>();
 	modbus->_resetFrame(5);
 	byte *frame = modbus->_getFramePtr();
 	frame[0] = ::MB_FC_WRITE_REG;
@@ -85,11 +98,9 @@ TEST(Modbus, Modbus_ReceivePDU_WriteRegister_IllegalAddress)
 	ASSERT_EQ(frame[1], MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST(Modbus, Modbus_ReceivePDU_WriteRegister_SlaveFailure)
+TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_SlaveFailure)
 {
-	MockPublicModbus<ModbusMemory<Modbus>> *modbus = new MockPublicModbus<ModbusMemory<Modbus>>();
-	Mock<MockPublicModbus<ModbusMemory<Modbus>>> mock(*modbus);
-
+	USE_MOCK;
 	When(OverloadedMethod(mock, Hreg, bool(word, word))).Return(true);
 	When(OverloadedMethod(mock, Hreg, word(word))).Return(-1);
 
@@ -112,9 +123,8 @@ TEST(Modbus, Modbus_ReceivePDU_WriteRegister_SlaveFailure)
 	ASSERT_EQ(frame[1], MB_EX_SLAVE_FAILURE);
 }
 
-TEST(Modbus, Modbus_ReceivePDU_WriteRegister_Success)
+TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_Success)
 {
-	MockPublicModbus<ModbusMemory<Modbus>> *modbus = new MockPublicModbus<ModbusMemory<Modbus>>();
 	modbus->_resetFrame(5);
 	modbus->_addReg(5, 3);
 	byte *frame = modbus->_getFramePtr();
@@ -132,9 +142,8 @@ TEST(Modbus, Modbus_ReceivePDU_WriteRegister_Success)
 	ASSERT_EQ(modbus->_Reg(5), 703);
 }
 
-TEST(Modbus, Modbus_ReceivePDU_ReadRegisters_Success)
+TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_Success)
 {
-	MockPublicModbus<ModbusMemory<Modbus>> *modbus = new MockPublicModbus<ModbusMemory<Modbus>>();
 	modbus->_resetFrame(5);
 	modbus->_addReg(5, 111);
 	modbus->_addReg(6, 703);
@@ -161,10 +170,8 @@ TEST(Modbus, Modbus_ReceivePDU_ReadRegisters_Success)
 	}
 }
 
-TEST(Modbus, Modbus_ReceivePDU_ReadRegisters_IllegalAddress)
+TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_IllegalAddress)
 {
-	MockPublicModbus<ModbusMemory<Modbus>> *modbus = new MockPublicModbus<ModbusMemory<Modbus>>();
-	
 	modbus->_resetFrame(5);
 	modbus->_addReg(5, 111);
 	modbus->_addReg(6, 703);
@@ -187,9 +194,8 @@ TEST(Modbus, Modbus_ReceivePDU_ReadRegisters_IllegalAddress)
 	ASSERT_EQ(frame[1], MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST(Modbus, Modbus_ReceivePDU_ReadRegisters_IllegalValue)
+TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_IllegalValue)
 {
-	MockPublicModbus<ModbusMemory<Modbus>> *modbus = new MockPublicModbus<ModbusMemory<Modbus>>();
 	modbus->_resetFrame(5);
 	byte *frame = modbus->_getFramePtr();
 	frame[0] = ::MB_FC_READ_REGS;
@@ -209,11 +215,9 @@ TEST(Modbus, Modbus_ReceivePDU_ReadRegisters_IllegalValue)
 	ASSERT_EQ(frame[1], MB_EX_ILLEGAL_VALUE);
 }
 
-TEST(Modbus, Modbus_ReceivePDU_ReadRegisters_SlaveFailure)
+TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_SlaveFailure)
 {
-	MockPublicModbus<ModbusMemory<Modbus>> *modbus = new MockPublicModbus<ModbusMemory<Modbus>>();
-	Mock<MockPublicModbus<ModbusMemory<Modbus>>> mock(*modbus);
-
+	USE_MOCK;
 	modbus->_resetFrame(5);
 	modbus->_addReg(5, 111);
 	modbus->_addReg(6, 703);
