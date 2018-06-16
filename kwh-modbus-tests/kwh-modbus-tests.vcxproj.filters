@@ -3,8 +3,8 @@
   <ItemGroup>
     <ClCompile Include="test.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="modbus_tests.cpp" />
     <ClCompile Include="test_helpers.h" />
+    <ClCompile Include="modbusmemorytests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

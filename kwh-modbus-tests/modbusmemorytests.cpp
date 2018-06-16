@@ -42,6 +42,7 @@ public:
 	}
 };
 
+
 TEST_F(ModbusMemoryTests, ModbusMemory_Hreg)
 {
 	modbus->addHreg(5, 1);
@@ -92,6 +93,24 @@ TEST_F(ModbusMemoryTests, ModbusMemory_Frame_Register)
 	ASSERT_EQ(success1, true);
 	ASSERT_EQ(success2, false);
 	ASSERT_EQ(reg, 703);
+}
+
+TEST_F(ModbusMemoryTests, ModbusMemory_ValidRange_True)
+{
+	setup_FourRegisters();
+
+	bool result = modbus->validRange(5, 4);
+
+	ASSERT_TRUE(result);
+}
+
+TEST_F(ModbusMemoryTests, ModbusMemory_ValidRange_False)
+{
+	setup_FourRegisters(true);
+
+	bool result = modbus->validRange(5, 4);
+
+	ASSERT_FALSE(result);
 }
 
 TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_IllegalAddress)
