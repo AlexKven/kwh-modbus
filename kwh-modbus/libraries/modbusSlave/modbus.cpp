@@ -154,35 +154,32 @@ void Modbus::writeMultipleRegisters(byte* inputFrame,word startreg, word numoutp
         return;
     }
 
-    //Check Address (startreg...startreg + numregs)
-    //for (int k = 0; k < numoutputs; k++) {
-    //    if (!this->validRange(startreg, numregs)) {
-    //        this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_ILLEGAL_ADDRESS);
-    //        return;
-    //    }
-    //}
+	//Check address range
+	if (!this->validRange(startreg, numoutputs)) {
+		this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_ILLEGAL_ADDRESS);
+		return;
+	}
 
-    //Clean frame buffer
-	resetFrame(5);
+    word val;
+    word i = 0;
+	while(i < numoutputs) {
+        val = (word)inputFrame[6+i*2] << 8 | (word)inputFrame[7+i*2];
+        this->Hreg(startreg + i, val);
+        i++;
+	}
+
+	//Clean frame buffer
+	if (!resetFrame(5)) {
+		this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_SLAVE_FAILURE);
+		return;
+	}
 	byte* frame = getFramePtr();
-    if (!_frame) {
-        this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_SLAVE_FAILURE);
-        return;
-    }
 
 	frame[0] = MB_FC_WRITE_REGS;
 	frame[1] = startreg >> 8;
 	frame[2] = startreg & 0x00FF;
 	frame[3] = numoutputs >> 8;
 	frame[4] = numoutputs & 0x00FF;
-
-    word val;
-    word i = 0;
-	while(numoutputs--) {
-        val = (word)inputFrame[6+i*2] << 8 | (word)inputFrame[7+i*2];
-        this->Hreg(startreg + i, val);
-        i++;
-	}
 
     _reply = MB_REPLY_NORMAL;
 }
