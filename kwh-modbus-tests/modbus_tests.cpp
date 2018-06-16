@@ -98,18 +98,20 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_IllegalAddress)
 {
 	modbus->_resetFrame(5);
 	byte *frame = modbus->_getFramePtr();
-	word input1 = 5;
-	word input2 = 703;
 
-	setArray(frame, (byte)MB_FC_WRITE_REG, revBytes(input1), revBytes(input2));
+	setArray<byte, word, word>(frame,
+		MB_FC_WRITE_REG,
+		revBytes(5),
+		revBytes(703));
 
 	modbus->_receivePDU(frame);
 
 	word frameLength = modbus->_getFrameLength();
 	frame = modbus->_getFramePtr();
 
-	ASSERT_EQ(frame[0], MB_FC_WRITE_REG + 0x80);
-	ASSERT_EQ(frame[1], MB_EX_ILLEGAL_ADDRESS);
+	assertArrayEq<byte, byte>(frame,
+		MB_FC_WRITE_REG + 0x80,
+		MB_EX_ILLEGAL_ADDRESS);
 }
 
 TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_SlaveFailure)
@@ -120,18 +122,20 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_SlaveFailure)
 
 	modbus->_resetFrame(5);
 	byte *frame = modbus->_getFramePtr();
-	word input1 = 5;
-	word input2 = 703;
 
-	setArray(frame, (byte)MB_FC_WRITE_REG, revBytes(input1), revBytes(input2));
+	setArray<byte, word, word>(frame, 
+		MB_FC_WRITE_REG,
+		revBytes(5),
+		revBytes(703));
 
 	modbus->_receivePDU(frame);
 
 	word frameLength = modbus->_getFrameLength();
 	frame = modbus->_getFramePtr();
 
-	ASSERT_EQ(frame[0], MB_FC_WRITE_REG + 0x80);
-	ASSERT_EQ(frame[1], MB_EX_SLAVE_FAILURE);
+	assertArrayEq<byte, byte>(frame,
+		MB_FC_WRITE_REG + 0x80,
+		MB_EX_SLAVE_FAILURE);
 }
 
 TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_Success)
@@ -139,10 +143,11 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_Success)
 	modbus->_resetFrame(5);
 	modbus->_addReg(5, 3);
 	byte *frame = modbus->_getFramePtr();
-	word input1 = 5;
-	word input2 = 703;
 
-	setArray(frame, (byte)MB_FC_WRITE_REG, revBytes(input1), revBytes(input2));
+	setArray(frame,
+		(byte)MB_FC_WRITE_REG,
+		revBytes<word>(5),
+		revBytes<word>(703));
 
 	modbus->_receivePDU(frame);
 
@@ -155,10 +160,11 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_Success)
 	modbus->_resetFrame(5);
 	setup_FourRegisters();
 	byte *frame = modbus->_getFramePtr();
-	word input1 = 5;
-	word input2 = 4;
 
-	setArray(frame, (byte)MB_FC_READ_REGS, revBytes(input1), revBytes(input2));
+	setArray(frame,
+		(byte)MB_FC_READ_REGS,
+		revBytes<word>(5),
+		revBytes<word>(4));
 
 	modbus->_receivePDU(frame);
 
@@ -177,36 +183,40 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_IllegalAddress)
 	modbus->_resetFrame(5);
 	setup_FourRegisters(true);
 	byte *frame = modbus->_getFramePtr();
-	word input1 = 5;
-	word input2 = 4;
 
-	setArray(frame, (byte)MB_FC_READ_REGS, revBytes(input1), revBytes(input2));
+	setArray(frame,
+		(byte)MB_FC_READ_REGS,
+		revBytes<word>(5),
+		revBytes<word>(4));
 
 	modbus->_receivePDU(frame);
 
 	word frameLength = modbus->_getFrameLength();
 	frame = modbus->_getFramePtr();
 
-	ASSERT_EQ(frame[0], MB_FC_READ_REGS + 0x80);
-	ASSERT_EQ(frame[1], MB_EX_ILLEGAL_ADDRESS);
+	assertArrayEq<byte, byte>(frame,
+		MB_FC_READ_REGS + 0x80,
+		MB_EX_ILLEGAL_ADDRESS);
 }
 
 TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_IllegalValue)
 {
 	modbus->_resetFrame(5);
 	byte *frame = modbus->_getFramePtr();
-	word input1 = 5;
-	word input2 = 0;
 
-	setArray(frame, (byte)MB_FC_READ_REGS, revBytes(input1), revBytes(input2));
+	setArray<byte, word, word>(frame,
+		MB_FC_READ_REGS,
+		revBytes(5),
+		revBytes(0));
 
 	modbus->_receivePDU(frame);
 
 	word frameLength = modbus->_getFrameLength();
 	frame = modbus->_getFramePtr();
 
-	ASSERT_EQ(frame[0], MB_FC_READ_REGS + 0x80);
-	ASSERT_EQ(frame[1], MB_EX_ILLEGAL_VALUE);
+	assertArrayEq<byte, byte>(frame,
+		MB_FC_READ_REGS + 0x80,
+		MB_EX_ILLEGAL_VALUE);
 }
 
 TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_SlaveFailure)
@@ -215,10 +225,11 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_SlaveFailure)
 	modbus->_resetFrame(5);
 	setup_FourRegisters();
 	byte *frame = modbus->_getFramePtr();
-	word input1 = 5;
-	word input2 = 4;
 
-	setArray(frame, (byte)MB_FC_READ_REGS, revBytes(input1), revBytes(input2));
+	setArray(frame,
+		(byte)MB_FC_READ_REGS,
+		revBytes<word>(5),
+		revBytes<word>(4));
 
 	// Do the frame reset for the error in advance, since we'll mock it.
 	modbus->_resetFrame(2);
@@ -229,6 +240,7 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_SlaveFailure)
 	word frameLength = modbus->_getFrameLength();
 	frame = modbus->_getFramePtr();
 
-	ASSERT_EQ(frame[0], MB_FC_READ_REGS + 0x80);
-	ASSERT_EQ(frame[1], MB_EX_SLAVE_FAILURE);
+	assertArrayEq<byte, byte>(frame,
+		MB_FC_READ_REGS + 0x80,
+		MB_EX_SLAVE_FAILURE);
 }

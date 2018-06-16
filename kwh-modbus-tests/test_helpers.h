@@ -18,6 +18,21 @@ void setArray(void* arr, A head, B... args)
 }
 
 template<class A>
+void parseArray(void* arr, A &head)
+{
+	A *headArr = (A*)arr;
+	head = headArr[0];
+}
+
+template<class A, class ...B>
+void parseArray(void* arr, A &head, B &... args)
+{
+	A *headArr = (A*)arr;
+	head = headArr[0];
+	parseArray(headArr + 1, args...);
+}
+
+template<class A>
 A revBytes(A input)
 {
 	A result = input;
@@ -32,16 +47,29 @@ A revBytes(A input)
 }
 
 template<class A>
-void parseArray(void* arr, A &head)
+void revBytesAll(A &head)
 {
-	A *headArr = (A*)arr;
-	head = headArr[0];
+	head = revBytes(head);
 }
 
 template<class A, class ...B>
-void parseArray(void* arr, A &head, B &... args)
+void revBytesAll(A &head, B &... args)
+{
+	head = revBytes(head);
+	revBytesAll(args...);
+}
+
+template<class A>
+void assertArrayEq(void* arr, A head)
 {
 	A *headArr = (A*)arr;
-	head = headArr[0];
-	parseArray(headArr + 1, args...);
+	ASSERT_EQ(headArr[0], head);
+}
+
+template<class A, class ...B>
+void assertArrayEq(void* arr, A head, B... args)
+{
+	A *headArr = (A*)arr;
+	ASSERT_EQ(headArr[0], head);
+	assertArrayEq(headArr + 1, args...);
 }
