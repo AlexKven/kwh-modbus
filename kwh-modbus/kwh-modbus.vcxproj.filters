@@ -49,6 +49,9 @@
     <ClInclude Include="noArduino\modbusmemory.h">
       <Filter>noArduino</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\modbus\modbusarray.h">
+      <Filter>libraries\modbus</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">

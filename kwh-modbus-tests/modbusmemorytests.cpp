@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "fakeit.hpp"
 
-#include "../kwh-modbus/libraries/modbus/modbus.cpp"
+#include "../kwh-modbus/libraries/modbus/modbus.h"
 #include "../kwh-modbus/noArduino/modbusmemory.h"
 #include "../kwh-modbus/mock/mockpublicmodbus.h"
 #include "test_helpers.h"

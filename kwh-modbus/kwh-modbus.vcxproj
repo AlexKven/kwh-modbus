@@ -77,6 +77,7 @@
     <ClInclude Include="libraries\modbusSlave\modbusserial.h" />
     <ClInclude Include="libraries\modbusTypes\modbustypes.h" />
     <ClInclude Include="libraries\modbus\modbus.h" />
+    <ClInclude Include="libraries\modbus\modbusarray.h" />
     <ClInclude Include="mock\mockpublicmodbus.h" />
     <ClInclude Include="mock\mockserialstream.h" />
     <ClInclude Include="noArduino\arduinofunctions.h" />

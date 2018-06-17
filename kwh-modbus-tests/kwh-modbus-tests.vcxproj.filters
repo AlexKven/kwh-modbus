@@ -5,6 +5,7 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="test_helpers.h" />
     <ClCompile Include="modbusmemorytests.cpp" />
+    <ClCompile Include="modbusarraytests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
