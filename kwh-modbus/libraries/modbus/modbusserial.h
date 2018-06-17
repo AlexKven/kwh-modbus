@@ -111,7 +111,7 @@ public:
 		this->_port = port;
 		this->_txPin = txPin;
 		_port->begin(baud);
-		while (!(*port));
+		//while (!(*port));
 
 		if (txPin >= 0) {
 			TArduinoFunctions::pinMode(txPin, OUTPUT);

@@ -20,7 +20,8 @@ protected:
 TEST_F(ModbusSerialTests, ModbusSerial_Config)
 {
 	Mock<ISerialStream> mockSerial;
+	Fake(Method(mockSerial, begin));
 	modbus->config(&mockSerial.get(), 1200, 4);
 
-	
+	Verify(Method(mockSerial, begin).Using(1200)).Once();
 }
