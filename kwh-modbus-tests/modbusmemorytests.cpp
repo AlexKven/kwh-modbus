@@ -23,13 +23,13 @@ protected:
 			missing = rand() % 4;
 		}
 		if (missing != 0)
-			modbus->_addReg(5, 111);
+			modbus->addHreg(5, 111);
 		if (missing != 1)
-			modbus->_addReg(6, 703);
+			modbus->addHreg(6, 703);
 		if (missing != 2)
-			modbus->_addReg(7, 902);
+			modbus->addHreg(7, 902);
 		if (missing != 3)
-			modbus->_addReg(8, 429);
+			modbus->addHreg(8, 429);
 	}
 public:
 	void SetUp()
@@ -160,7 +160,7 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_SlaveFailure)
 TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_Success)
 {
 	modbus->_resetFrame(5);
-	modbus->_addReg(5, 3);
+	modbus->addHreg(5, 3);
 	byte *frame = modbus->_getFramePtr();
 
 	setArray(frame,

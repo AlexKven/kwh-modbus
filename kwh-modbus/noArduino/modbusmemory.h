@@ -1,5 +1,5 @@
 #pragma once
-
+#pragma once
 #include "../libraries/modbus/modbus.h"
 
 #include "arduinofunctions.h"
@@ -31,7 +31,7 @@ private:
 	}
 
 protected:
-	void addReg(word address, word value = 0) {
+	virtual bool addReg(word address, word value = 0) {
 		TRegister *newreg;
 
 		newreg = (TRegister *)malloc(sizeof(TRegister));
@@ -49,6 +49,7 @@ protected:
 			//then make temp the last register in the list.
 			_regs_last = newreg;
 		}
+		return true;
 	}
 
 	bool Reg(word address, word value) {
@@ -74,6 +75,10 @@ protected:
 	}
 
 public:
+	bool addHreg(word offset, word value = 0) {
+		return this->addReg(offset, value);
+	}
+
 	virtual bool validRange(word startReg, word numReg)
 	{
 		for (word i = startReg; i < startReg + numReg; i++)

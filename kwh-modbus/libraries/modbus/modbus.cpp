@@ -48,10 +48,6 @@ bool Modbus::setFrameReg(word address, word value)
 	return true;
 }
 
-void Modbus::addHreg(word offset, word value) {
-    this->addReg(offset, value);
-}
-
 bool Modbus::Hreg(word offset, word value) {
     return Reg(offset, value);
 }

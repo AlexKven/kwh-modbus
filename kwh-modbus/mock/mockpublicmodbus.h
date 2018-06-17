@@ -6,11 +6,6 @@
 template<typename TBase>
 class MockPublicModbus : public TBase {
 protected:
-	virtual void addReg(word address, word value = 0)
-	{
-		_addReg(address, value);
-	}
-
 	virtual bool Reg(word address, word value)
 	{
 		return _Reg(address, value);
@@ -41,11 +36,6 @@ protected:
 		return _setFrameReg(address, value);
 	}
 public:
-	virtual void _addReg(word address, word value = 0)
-	{
-		return TBase::addReg(address, value);
-	}
-
 	virtual bool _Reg(word address, word value)
 	{
 		return TBase::Reg(address, value);

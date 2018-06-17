@@ -57,7 +57,6 @@ class Modbus {
     protected:
         byte  _reply;
 
-		virtual void addReg(word address, word value = 0) = 0;
 		virtual bool Reg(word address, word value) = 0;
 		virtual word Reg(word address) = 0;
         void receivePDU(byte* frame);
@@ -72,7 +71,6 @@ class Modbus {
     public:
         Modbus();
 
-        void addHreg(word offset, word value = 0);
         bool Hreg(word offset, word value);
         word Hreg(word offset);
 
