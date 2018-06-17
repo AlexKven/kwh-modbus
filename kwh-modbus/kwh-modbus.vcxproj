@@ -64,7 +64,7 @@
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="libraries\modbusSlave\modbus.cpp" />
+    <ClCompile Include="libraries\modbus\modbus.cpp" />
     <ClCompile Include="mock\mockserialstream.cpp" />
     <ClCompile Include="noArduino\arduinofunctions.cpp" />
     <ClCompile Include="program.cpp" />
@@ -74,14 +74,14 @@
     <ClInclude Include="libraries\modbusMaster\crc16.h" />
     <ClInclude Include="libraries\modbusMaster\modbusmaster.h" />
     <ClInclude Include="libraries\modbusMaster\word.h" />
-    <ClInclude Include="libraries\modbusSlave\modbus.h" />
-    <ClInclude Include="libraries\modbusSlave\modbusmemory.h" />
     <ClInclude Include="libraries\modbusSlave\modbusserial.h" />
     <ClInclude Include="libraries\modbusTypes\modbustypes.h" />
+    <ClInclude Include="libraries\modbus\modbus.h" />
     <ClInclude Include="mock\mockpublicmodbus.h" />
     <ClInclude Include="mock\mockserialstream.h" />
     <ClInclude Include="noArduino\arduinofunctions.h" />
     <ClInclude Include="noArduino\arduinomacros.h" />
+    <ClInclude Include="noArduino\modbusmemory.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />

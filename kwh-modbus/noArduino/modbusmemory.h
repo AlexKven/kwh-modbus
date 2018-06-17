@@ -1,13 +1,9 @@
 #pragma once
 
-#include "modbus.h"
+#include "../libraries/modbus/modbus.h"
 
-#ifdef NO_ARDUINO
-#include "../../noArduino/arduinofunctions.h"
-#include "../../noArduino/arduinomacros.h"
-#else
-#include "Arduino.h"
-#endif
+#include "arduinofunctions.h"
+#include "arduinomacros.h"
 
 typedef struct TRegister {
 	word address;

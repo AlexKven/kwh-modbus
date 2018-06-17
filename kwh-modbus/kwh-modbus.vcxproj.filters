@@ -2,14 +2,14 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="program.cpp" />
-    <ClCompile Include="libraries\modbusSlave\modbus.cpp">
-      <Filter>libraries\modbusSlave</Filter>
-    </ClCompile>
     <ClCompile Include="mock\mockserialstream.cpp">
       <Filter>mock</Filter>
     </ClCompile>
     <ClCompile Include="noArduino\arduinofunctions.cpp">
       <Filter>noArduino</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\modbus\modbus.cpp">
+      <Filter>libraries\modbus</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -18,9 +18,6 @@
     </ClInclude>
     <ClInclude Include="libraries\modbusMaster\word.h">
       <Filter>libraries\modbusMaster</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\modbusSlave\modbus.h">
-      <Filter>libraries\modbusSlave</Filter>
     </ClInclude>
     <ClInclude Include="libraries\modbusSlave\modbusserial.h">
       <Filter>libraries\modbusSlave</Filter>
@@ -43,11 +40,14 @@
     <ClInclude Include="noArduino\arduinomacros.h">
       <Filter>noArduino</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\modbusSlave\modbusmemory.h">
-      <Filter>libraries\modbusSlave</Filter>
-    </ClInclude>
     <ClInclude Include="mock\mockpublicmodbus.h">
       <Filter>mock</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\modbus\modbus.h">
+      <Filter>libraries\modbus</Filter>
+    </ClInclude>
+    <ClInclude Include="noArduino\modbusmemory.h">
+      <Filter>noArduino</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -74,6 +74,9 @@
     </Filter>
     <Filter Include="noArduino">
       <UniqueIdentifier>{f2524c70-9ccf-4176-b99d-9e11b69af7a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\modbus">
+      <UniqueIdentifier>{ff1b4742-bef6-4206-8208-a2a8c12cde49}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
