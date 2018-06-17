@@ -7,14 +7,16 @@
 #include <cstddef>
 #include "noArduino/modbusmemory.h"
 #include "libraries/modbus/modbus.h"
-#include "libraries/modbusSlave/modbusserial.h"
+#include "libraries/modbus/modbusserial.h"
 #include "libraries/modbus/modbusarray.h"
 #include "mock/mockserialstream.h"
 #include "noArduino/arduinofunctions.h"
+#define modbus_t ModbusArray<ModbusSerial<MockSerialStream, ArduinoFunctions, Modbus>>
 
 using namespace std;
 
 int main()
 {
-	Modbus *mb = new ModbusArray<ModbusSerial<MockSerialStream, ArduinoFunctions, Modbus>>();
+	modbus_t *mb = new modbus_t();
+	
 }

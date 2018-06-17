@@ -38,6 +38,7 @@
   <ItemGroup>
     <ClCompile Include="modbusarraytests.cpp" />
     <ClCompile Include="modbusmemorytests.cpp" />
+    <ClCompile Include="modbusserialtests.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

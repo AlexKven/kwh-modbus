@@ -5,3 +5,4 @@
 
 #include "pch.h"
 #include "../kwh-modbus/libraries/modbus/modbus.cpp"
+#include "../kwh-modbus/noArduino/arduinofunctions.cpp"
