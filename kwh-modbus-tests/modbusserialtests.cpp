@@ -25,3 +25,16 @@ TEST_F(ModbusSerialTests, ModbusSerial_Config)
 
 	Verify(Method(mockSerial, begin).Using(1200)).Once();
 }
+
+TEST_F(ModbusSerialTests, ModbusSerial_Available)
+{
+	Mock<ISerialStream> mockSerial;
+	Fake(Method(mockSerial, begin));
+	When(Method(mockSerial, available)).Return(32);
+
+	modbus->config(&mockSerial.get(), 1200, 4);
+	int result = modbus->available();
+
+	ASSERT_EQ(result, 32);
+	Verify(Method(mockSerial, available)).Once();
+}

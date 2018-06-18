@@ -55,6 +55,9 @@
     <ClInclude Include="libraries\modbus\modbusserial.h">
       <Filter>libraries\modbus</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\modbus\modbusHelpers.h">
+      <Filter>libraries\modbus</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -83,6 +86,9 @@
     </Filter>
     <Filter Include="libraries\modbus">
       <UniqueIdentifier>{ff1b4742-bef6-4206-8208-a2a8c12cde49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\modbusHelpers">
+      <UniqueIdentifier>{98765850-cd37-4bb5-b89c-8bc84e543526}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

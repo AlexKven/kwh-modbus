@@ -6,6 +6,7 @@
 */
 
 #include "modbus.h"
+#include "modbusHelpers.h"
 //#define USE_SOFTWARE_SERIAL
 
 //#define DEBUG_MODE
@@ -62,7 +63,7 @@ private:
 	int   _txPin;
 	unsigned int _t15; // inter character time out
 	unsigned int _t35; // frame delay
-protected:
+protected_testable:
 	int available()
 	{
 		return _port->available();
