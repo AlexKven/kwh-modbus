@@ -6,6 +6,8 @@
 #ifndef MODBUS_H
 #define MODBUS_H
 
+#include "modbusHelpers.h"
+
 #ifdef NO_ARDUINO
 #include "../../noArduino/arduinofunctions.h"
 #include "../../noArduino/arduinomacros.h"
@@ -54,7 +56,7 @@ class Modbus {
 		byte *_frame;
 		word  _length;
 
-    protected:
+	protected_testable:
         byte  _reply;
 
 		virtual bool Reg(word address, word value) = 0;

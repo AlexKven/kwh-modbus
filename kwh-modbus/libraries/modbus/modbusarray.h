@@ -25,7 +25,7 @@ private:
 		return true;
 	}
 
-protected:
+protected_testable:
 	bool Reg(word address, word value)
 	{
 		word index;

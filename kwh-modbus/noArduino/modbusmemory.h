@@ -30,7 +30,7 @@ private:
 		return nullptr;
 	}
 
-protected:
+protected_testable:
 	virtual bool addReg(word address, word value = 0) {
 		TRegister *newreg;
 
