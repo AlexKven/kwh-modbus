@@ -61,6 +61,7 @@ private:
 	TSerial* _port;
 	long  _baud;
 	int   _txPin;
+private_testable:
 	unsigned int _t15; // inter character time out
 	unsigned int _t35; // frame delay
 protected_testable:
