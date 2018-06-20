@@ -55,10 +55,11 @@ const byte _auchCRCLo[] = {
 	0x40 };
 
 
-template<typename TSerial, typename TArduinoFunctions, typename TBase>
+template<typename TSerial, typename TSystemFunctions, typename TBase>
 class ModbusSerial : public TBase {
 private:
 	TSerial* _port;
+	TSystemFunctions* _system;
 	long  _baud;
 	int   _txPin;
 private_testable:
@@ -82,12 +83,12 @@ protected_testable:
 
 	void frameDelay()
 	{
-		TArduinoFunctions::DelayMicroseconds(_t35);
+		TSystemFunctions::DelayMicroseconds(_t35);
 	}
 
 	void byteTimeout()
 	{
-		TArduinoFunctions::DelayMicroseconds(_t15);
+		TSystemFunctions::DelayMicroseconds(_t15);
 	}
 
 	word calcCrc(byte address, byte* pduFrame, byte pduLen)
@@ -108,16 +109,17 @@ protected_testable:
 	}
 
 public:
-	bool config(TSerial* port, long baud, int txPin = -1)
+	bool config(TSerial* port, TSystemFunctions* system, long baud, int txPin = -1)
 	{
 		this->_port = port;
+		this->_system = system;
 		this->_txPin = txPin;
 		_port->begin(baud);
 		//while (!(*port));
 
 		if (txPin >= 0) {
-			TArduinoFunctions::pinMode(txPin, OUTPUT);
-			TArduinoFunctions::digitalWrite(txPin, LOW);
+			_system->pinMode(txPin, OUTPUT);
+			_system->digitalWrite(txPin, LOW);
 		}
 
 		if (baud > 19200)

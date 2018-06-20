@@ -2,7 +2,6 @@
 #pragma once
 #include "../libraries/modbus/modbus.h"
 
-#include "arduinofunctions.h"
 #include "arduinomacros.h"
 
 typedef struct TRegister {

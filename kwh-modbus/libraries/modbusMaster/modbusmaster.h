@@ -76,7 +76,7 @@ Set to 1 to enable debugging features within class:
 Arduino class library for communicating with Modbus slaves over
 RS232/485 (via RTU protocol).
 */
-template<typename TSerial, typename TArduinoFunctions>
+template<typename TSerial, typename TSystemFunctions>
 class ModbusMaster
 {
 public:
@@ -541,7 +541,7 @@ private:
 		}
 
 		// loop until we run out of time or bytes, or an error occurs
-		u32StartTime = TArduinoFunctions::Millis();
+		u32StartTime = TSystemFunctions::Millis();
 		while (u8BytesLeft && !u8MBStatus)
 		{
 			if (_serial->available())
@@ -616,7 +616,7 @@ private:
 					break;
 				}
 			}
-			if ((TArduinoFunctions::Millis() - u32StartTime) > ku16MBResponseTimeout)
+			if ((TSystemFunctions::Millis() - u32StartTime) > ku16MBResponseTimeout)
 			{
 				u8MBStatus = ku8MBResponseTimedOut;
 			}
@@ -709,7 +709,7 @@ private:
 @example examples/RS485_HalfDuplex/RS485_HalfDuplex.ino
 */
 
-template<typename TSerial, typename TArduinoFunctions>
-inline ModbusMaster<TSerial, TArduinoFunctions>::ModbusMaster()
+template<typename TSerial, typename TSystemFunctions>
+inline ModbusMaster<TSerial, TSystemFunctions>::ModbusMaster()
 {
 }

@@ -5,11 +5,11 @@
     <ClCompile Include="mock\mockserialstream.cpp">
       <Filter>mock</Filter>
     </ClCompile>
-    <ClCompile Include="noArduino\arduinofunctions.cpp">
-      <Filter>noArduino</Filter>
-    </ClCompile>
     <ClCompile Include="libraries\modbus\modbus.cpp">
       <Filter>libraries\modbus</Filter>
+    </ClCompile>
+    <ClCompile Include="noArduino\systemfunctions.cpp">
+      <Filter>noArduino</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -25,17 +25,11 @@
     <ClInclude Include="libraries\modbusMaster\modbusmaster.h">
       <Filter>libraries\modbusMaster</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\modbusTypes\modbustypes.h">
-      <Filter>libraries\arduinoTypes</Filter>
-    </ClInclude>
     <ClInclude Include="mock\mockserialstream.h">
       <Filter>mock</Filter>
     </ClInclude>
     <ClInclude Include="interfaces\iserialstream.h">
       <Filter>interfaces</Filter>
-    </ClInclude>
-    <ClInclude Include="noArduino\arduinofunctions.h">
-      <Filter>noArduino</Filter>
     </ClInclude>
     <ClInclude Include="noArduino\arduinomacros.h">
       <Filter>noArduino</Filter>
@@ -54,6 +48,12 @@
     </ClInclude>
     <ClInclude Include="libraries\modbus\modbusHelpers.h">
       <Filter>libraries\modbus</Filter>
+    </ClInclude>
+    <ClInclude Include="interfaces\isystemfunctions.h">
+      <Filter>interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="noArduino\systemfunctions.h">
+      <Filter>noArduino</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -74,9 +74,6 @@
     </Filter>
     <Filter Include="interfaces">
       <UniqueIdentifier>{e91c64f8-ec29-45b5-8f98-1545b350a03a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="libraries\arduinoTypes">
-      <UniqueIdentifier>{caa2f358-8371-422d-a3c8-db21cc513d89}</UniqueIdentifier>
     </Filter>
     <Filter Include="noArduino">
       <UniqueIdentifier>{f2524c70-9ccf-4176-b99d-9e11b69af7a4}</UniqueIdentifier>

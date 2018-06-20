@@ -9,9 +9,9 @@
 #include "libraries/modbus/modbus.h"
 #include "libraries/modbus/modbusserial.h"
 #include "libraries/modbus/modbusarray.h"
+#include "interfaces/isystemfunctions.h"
 #include "mock/mockserialstream.h"
-#include "noArduino/arduinofunctions.h"
-#define modbus_t ModbusArray<ModbusSerial<MockSerialStream, ArduinoFunctions, Modbus>>
+#define modbus_t ModbusArray<ModbusSerial<MockSerialStream, ISystemFunctions, Modbus>>
 
 using namespace std;
 

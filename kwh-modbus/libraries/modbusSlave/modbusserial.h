@@ -55,7 +55,7 @@ const byte _auchCRCLo[] = {
 	0x44, 0x84, 0x85, 0x45, 0x87, 0x47, 0x46, 0x86, 0x82, 0x42, 0x43, 0x83, 0x41, 0x81, 0x80,
 	0x40 };
 
-template<typename TSerial, typename TArduinoFunctions, typename TBase>
+template<typename TSerial, typename TSystemFunctions, typename TBase>
 class ModbusSerial : public TBase {
     private:
 		TSerial* _port;
@@ -102,7 +102,7 @@ class ModbusSerial : public TBase {
 
 			while ((*_port).available() > length) {
 				length = (*_port).available();
-				TArduinoFunctions::DelayMicroseconds(_t15);
+				TSystemFunctions::DelayMicroseconds(_t15);
 			}
 
 			if (length == 0) return;
@@ -158,10 +158,10 @@ class ModbusSerial : public TBase {
 			if (this->_txPin >= 0) {
 				fDigitalWrite(this->_txPin, HIGH);
 				//delay(1);
-				TArduinoFunctions::DelayMicroseconds(1000);
+				TSystemFunctions::DelayMicroseconds(1000);
 			}
 
-			TArduinoFunctions::DelayMicroseconds(_t35);
+			TSystemFunctions::DelayMicroseconds(_t35);
 
 			//Send slaveId
 			(*_port).write(_slaveId);
@@ -178,7 +178,7 @@ class ModbusSerial : public TBase {
 			(*_port).write(crc & 0xFF);
 
 			(*_port).flush();
-			TArduinoFunctions::DelayMicroseconds(_t35);
+			TSystemFunctions::DelayMicroseconds(_t35);
 
 			if (this->_txPin >= 0) {
 				fDigitalWrite(this->_txPin, LOW);
@@ -192,9 +192,9 @@ class ModbusSerial : public TBase {
 			byte i;
 
 			if (this->_txPin >= 0) {
-				TArduinoFunctions::DigitalWrite(this->_txPin, HIGH);
+				TSystemFunctions::DigitalWrite(this->_txPin, HIGH);
 				//delay(1);
-				TArduinoFunctions::DelayMicroseconds(1000);
+				TSystemFunctions::DelayMicroseconds(1000);
 			}
 
 			for (i = 0; i < length; i++) {
@@ -202,7 +202,7 @@ class ModbusSerial : public TBase {
 			}
 
 			(*_port).flush();
-			TArduinoFunctions::DelayMicroseconds(_t35);
+			TSystemFunctions::DelayMicroseconds(_t35);
 
 			if (this->_txPin >= 0) {
 				fDigitalWrite(this->_txPin, LOW);
@@ -217,8 +217,8 @@ class ModbusSerial : public TBase {
 			while (!(*port));
 
 			if (txPin >= 0) {
-				TArduinoFunctions::pinMode(txPin, OUTPUT);
-				TArduinoFunctions::digitalWrite(txPin, LOW);
+				TSystemFunctions::pinMode(txPin, OUTPUT);
+				TSystemFunctions::digitalWrite(txPin, LOW);
 			}
 
 			if (baud > 19200)

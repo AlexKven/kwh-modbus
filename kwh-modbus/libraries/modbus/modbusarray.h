@@ -2,7 +2,6 @@
 #include "modbus.h"
 
 #ifdef NO_ARDUINO
-#include "../../noArduino/arduinofunctions.h"
 #include "../../noArduino/arduinomacros.h"
 #else
 #include "Arduino.h"
