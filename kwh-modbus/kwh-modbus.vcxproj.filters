@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="program.cpp" />
     <ClCompile Include="mock\mockserialstream.cpp">
       <Filter>mock</Filter>
     </ClCompile>
@@ -11,6 +10,9 @@
     <ClCompile Include="noArduino\systemfunctions.cpp">
       <Filter>noArduino</Filter>
     </ClCompile>
+    <ClCompile Include="program.cpp" />
+    <ClCompile Include="libraries\modbus\modbusarray.cpp" />
+    <ClCompile Include="noArduino\modbusmemory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\modbusMaster\crc16.h">

@@ -11,14 +11,14 @@
 #define USE_MOCK Mock<ISerialStream> mockSerial; \
 Mock<ISystemFunctions> mockSystem; \
 Fake(Method(mockSerial, begin)); \
-modbus->config(&mockSerial.get(), &mockSystem.get(), 1200, 4);
+modbus->config(&mockSerial.get(), &mockSystem.get(), 1200, -1);
 
 using namespace fakeit;
 
 class ModbusSerialTests : public ::testing::Test
 {
 protected:
-	ModbusSerial<ISerialStream, ISystemFunctions, ModbusMemory<Modbus>> *modbus = new ModbusSerial<ISerialStream, ISystemFunctions, ModbusMemory<Modbus>>();
+	ModbusSerial<ISerialStream, ISystemFunctions, ModbusMemory> *modbus = new ModbusSerial<ISerialStream, ISystemFunctions, ModbusMemory>();
 };
 
 TEST_F(ModbusSerialTests, ModbusSerial_Config)

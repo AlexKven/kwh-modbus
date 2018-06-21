@@ -11,7 +11,7 @@
 #include "libraries/modbus/modbusarray.h"
 #include "interfaces/isystemfunctions.h"
 #include "mock/mockserialstream.h"
-#define modbus_t ModbusArray<ModbusSerial<MockSerialStream, ISystemFunctions, Modbus>>
+#define modbus_t ModbusSerial<MockSerialStream, ISystemFunctions, ModbusArray>
 
 using namespace std;
 

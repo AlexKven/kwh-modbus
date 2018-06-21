@@ -65,7 +65,9 @@
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="libraries\modbus\modbus.cpp" />
+    <ClCompile Include="libraries\modbus\modbusarray.cpp" />
     <ClCompile Include="mock\mockserialstream.cpp" />
+    <ClCompile Include="noArduino\modbusmemory.cpp" />
     <ClCompile Include="noArduino\systemfunctions.cpp" />
     <ClCompile Include="program.cpp" />
   </ItemGroup>

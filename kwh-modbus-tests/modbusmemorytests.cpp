@@ -5,14 +5,14 @@
 #include "../kwh-modbus/noArduino/modbusmemory.h"
 #include "test_helpers.h"
 
-#define USE_MOCK Mock<ModbusMemory<Modbus>> mock = Mock<ModbusMemory<Modbus>>(*modbus);
+#define USE_MOCK Mock<ModbusMemory> mock = Mock<ModbusMemory>(*modbus);
 
 using namespace fakeit;
 
 class ModbusMemoryTests : public ::testing::Test
 {
 protected:
-	ModbusMemory<Modbus> *modbus = new ModbusMemory<Modbus>();
+	ModbusMemory *modbus = new ModbusMemory();
 
 	void setup_FourRegisters(bool missingOne = false)
 	{

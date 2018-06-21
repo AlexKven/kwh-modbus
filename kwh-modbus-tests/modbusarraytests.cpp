@@ -5,7 +5,7 @@
 #include "../kwh-modbus/libraries/modbus/modbusarray.h"
 #include "test_helpers.h"
 
-#define USE_MOCK Mock<ModbusArray<Modbus>> mock = Mock<ModbusArray<Modbus>>(*modbus);
+#define USE_MOCK Mock<ModbusArray> mock = Mock<ModbusArray>(*modbus);
 
 using namespace fakeit;
 
@@ -13,7 +13,7 @@ class ModbusArrayTests : public ::testing::Test
 {
 protected:
 	word *registerArray;
-	ModbusArray<Modbus> *modbus = new ModbusArray<Modbus>();
+	ModbusArray *modbus = new ModbusArray();
 
 public:
 	void SetUp()
