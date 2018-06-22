@@ -83,12 +83,12 @@ protected_testable:
 
 	void frameDelay()
 	{
-		TSystemFunctions::DelayMicroseconds(_t35);
+		_system->delayMicroseconds(_t35);
 	}
 
 	void byteTimeout()
 	{
-		TSystemFunctions::DelayMicroseconds(_t15);
+		_system->delayMicroseconds(_t15);
 	}
 
 	word calcCrc(byte address, byte* pduFrame, byte pduLen)

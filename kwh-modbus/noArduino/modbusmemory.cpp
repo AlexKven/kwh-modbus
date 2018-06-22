@@ -76,4 +76,3 @@ ModbusMemory::ModbusMemory()
 	_regs_head = nullptr;
 	_regs_last = nullptr;
 }
-
