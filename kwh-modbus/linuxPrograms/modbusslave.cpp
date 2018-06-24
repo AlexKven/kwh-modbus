@@ -1,30 +1,19 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <cstdint>
-#include <cstddef>
-#include "../noArduino/arduinomacros.h"
-#include "../libraries/modbusSlave/modbusserial.h"
+//#include <sys/types.h>
+//#include <sys/stat.h>
+//#include <fcntl.h>
+//#include <cstdint>
+//#include <cstddef>
+//#include "../noArduino/arduinomacros.h"
+//#include "../libraries/modbus/modbusserial.h"
 #include "../mock/mockserialstream.h"
-#include "../noArduino/arduinofunctions.h"
+#include "../noArduino/systemfunctions.h"
+//#include "../noArduino/modbusmemory.h"
 
 using namespace std;
-
-void delayMicrosecond(unsigned long length)
-{
-
-}
-
-void pinMode(unsigned char pin, unsigned char mode) {}
-
-long millis()
-{
-	return 0;
-}
-
 int main()
 {
 	MockSerialStream *stream;
-	ModbusSerial<MockSerialStream, ArduinoFunctions> slave;
-	slave.config(stream, 9600);
+	SystemFunctions *system;
+	//ModbusSerial<MockSerialStream, SystemFunctions, ModbusMemory> slave;
+	//slave.config(stream, system, 9600, -1);
 }

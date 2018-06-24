@@ -36,7 +36,7 @@ limitations under the License.
 #define ModbusMaster_h
 
 #ifdef NO_ARDUINO
-#include "../../noArduino/arduinofunctions.h"
+#include "../../noArduino/systemfunctions.h"
 #include "../../noArduino/arduinomacros.h"
 #include <cstdint>
 #include <cstddef>
@@ -541,7 +541,7 @@ private:
 		}
 
 		// loop until we run out of time or bytes, or an error occurs
-		u32StartTime = TSystemFunctions::Millis();
+		//u32StartTime = TSystemFunctions::Millis();
 		while (u8BytesLeft && !u8MBStatus)
 		{
 			if (_serial->available())
@@ -616,10 +616,10 @@ private:
 					break;
 				}
 			}
-			if ((TSystemFunctions::Millis() - u32StartTime) > ku16MBResponseTimeout)
-			{
-				u8MBStatus = ku8MBResponseTimedOut;
-			}
+			//if ((TSystemFunctions::Millis() - u32StartTime) > ku16MBResponseTimeout)
+			//{
+			//	u8MBStatus = ku8MBResponseTimedOut;
+			//}
 		}
 
 		// verify response is large enough to inspect further

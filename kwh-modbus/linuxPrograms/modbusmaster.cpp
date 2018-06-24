@@ -6,7 +6,7 @@
 #include "../noArduino/arduinomacros.h"
 #include "../libraries/modbusMaster/modbusmaster.h"
 #include "../mock/mockserialstream.h"
-#include "../noArduino/arduinofunctions.h"
+#include "../noArduino/systemfunctions.h"
 
 using namespace std;
 
@@ -26,6 +26,6 @@ int main()
 {
 	MockSerialStream *stream;
 
-	ModbusMaster<MockSerialStream, ArduinoFunctions> modbus;
+	ModbusMaster<MockSerialStream, SystemFunctions> modbus;
 	modbus.begin(5, stream);
 }

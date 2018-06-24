@@ -11,8 +11,12 @@
       <Filter>noArduino</Filter>
     </ClCompile>
     <ClCompile Include="program.cpp" />
-    <ClCompile Include="libraries\modbus\modbusarray.cpp" />
-    <ClCompile Include="noArduino\modbusmemory.cpp" />
+    <ClCompile Include="noArduino\modbusmemory.cpp">
+      <Filter>noArduino</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\modbus\modbusarray.cpp">
+      <Filter>libraries\modbus</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\modbusMaster\crc16.h">

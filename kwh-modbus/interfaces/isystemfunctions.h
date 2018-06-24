@@ -6,4 +6,5 @@ public:
 	virtual void digitalWrite(unsigned char pin, unsigned char value) = 0;
 	virtual void delay(unsigned long ms) = 0;
 	virtual void delayMicroseconds(unsigned long us) = 0;
+	ISystemFunctions() {}
 };
