@@ -86,7 +86,6 @@
     <ClInclude Include="noArduino\systemfunctions.h" />
     <ClInclude Include="noArduino\arduinomacros.h" />
     <ClInclude Include="noArduino\modbusmemory.h" />
-    <ClInclude Include="winheaders.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />

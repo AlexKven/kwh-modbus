@@ -1,6 +1,5 @@
 #include "systemfunctions.h"
 #ifdef WINDOWS
-#include <windows.h>
 #else
 #include <unistd.h>
 #endif

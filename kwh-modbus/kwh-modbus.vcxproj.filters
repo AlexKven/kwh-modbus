@@ -61,9 +61,6 @@
     <ClInclude Include="noArduino\systemfunctions.h">
       <Filter>noArduino</Filter>
     </ClInclude>
-    <ClInclude Include="winheaders.h">
-      <Filter>noArduino</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">

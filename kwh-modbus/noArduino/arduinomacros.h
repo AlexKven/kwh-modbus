@@ -12,9 +12,7 @@
 #define lowByte(w) ((uint8_t) ((w) & 0xff))
 #define highByte(w) ((uint8_t) ((w) >> 8))
 
-#ifndef WINDOWS
 #define boolean bool;
-#endif
 
 #ifndef __cplusplus
 #if !defined(__bool_true_false_are_defined)
