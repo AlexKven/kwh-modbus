@@ -43,6 +43,26 @@
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
     <ClCompile Include="fakeit.hpp" />
+    <ClInclude Include="gtest.h" />
+    <ClInclude Include="gtest\gtest-death-test.h" />
+    <ClInclude Include="gtest\gtest-message.h" />
+    <ClInclude Include="gtest\gtest-param-test.h" />
+    <ClInclude Include="gtest\gtest-printers.h" />
+    <ClInclude Include="gtest\gtest-spi.h" />
+    <ClInclude Include="gtest\gtest-test-part.h" />
+    <ClInclude Include="gtest\gtest-typed-test.h" />
+    <ClInclude Include="gtest\gtest_pred_impl.h" />
+    <ClInclude Include="gtest\gtest_prod.h" />
+    <ClInclude Include="gtest\internal\gtest-death-test-internal.h" />
+    <ClInclude Include="gtest\internal\gtest-filepath.h" />
+    <ClInclude Include="gtest\internal\gtest-internal.h" />
+    <ClInclude Include="gtest\internal\gtest-linked_ptr.h" />
+    <ClInclude Include="gtest\internal\gtest-param-util-generated.h" />
+    <ClInclude Include="gtest\internal\gtest-param-util.h" />
+    <ClInclude Include="gtest\internal\gtest-port.h" />
+    <ClInclude Include="gtest\internal\gtest-string.h" />
+    <ClInclude Include="gtest\internal\gtest-tuple.h" />
+    <ClInclude Include="gtest\internal\gtest-type-util.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -61,13 +81,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="gtest\gtest-param-test.h.pump" />
+    <None Include="gtest\internal\gtest-param-util-generated.h.pump" />
+    <None Include="gtest\internal\gtest-tuple.h.pump" />
+    <None Include="gtest\internal\gtest-type-util.h.pump" />
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\gtest.1.7.0\build\native\gtest.targets" Condition="Exists('..\packages\gtest.1.7.0\build\native\gtest.targets')" />
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -95,6 +116,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>C:\GitHub\kwh-modbus\kwh-modbus\kwh-modbus\bin\x64\Debug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -134,10 +156,4 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
   </ItemDefinitionGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\gtest.1.7.0\build\native\gtest.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\gtest.1.7.0\build\native\gtest.targets'))" />
-  </Target>
 </Project>

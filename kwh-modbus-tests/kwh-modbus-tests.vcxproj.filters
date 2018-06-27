@@ -8,8 +8,85 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="gtest\gtest_pred_impl.h">
+      <Filter>gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\gtest_prod.h">
+      <Filter>gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\gtest-death-test.h">
+      <Filter>gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\gtest-message.h">
+      <Filter>gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\gtest-param-test.h">
+      <Filter>gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\gtest-printers.h">
+      <Filter>gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\gtest-spi.h">
+      <Filter>gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\gtest-test-part.h">
+      <Filter>gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\gtest-typed-test.h">
+      <Filter>gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\internal\gtest-death-test-internal.h">
+      <Filter>gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\internal\gtest-filepath.h">
+      <Filter>gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\internal\gtest-internal.h">
+      <Filter>gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\internal\gtest-linked_ptr.h">
+      <Filter>gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\internal\gtest-param-util.h">
+      <Filter>gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\internal\gtest-param-util-generated.h">
+      <Filter>gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\internal\gtest-port.h">
+      <Filter>gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\internal\gtest-string.h">
+      <Filter>gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\internal\gtest-tuple.h">
+      <Filter>gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest\internal\gtest-type-util.h">
+      <Filter>gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="gtest.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="gtest\gtest-param-test.h.pump">
+      <Filter>gtest</Filter>
+    </None>
+    <None Include="gtest\internal\gtest-param-util-generated.h.pump">
+      <Filter>gtest\internal</Filter>
+    </None>
+    <None Include="gtest\internal\gtest-tuple.h.pump">
+      <Filter>gtest\internal</Filter>
+    </None>
+    <None Include="gtest\internal\gtest-type-util.h.pump">
+      <Filter>gtest\internal</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="gtest">
+      <UniqueIdentifier>{2b407d57-7065-474e-ac9c-2c2572722f7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gtest\internal">
+      <UniqueIdentifier>{5343bf75-b516-4134-9046-a4d5d8aed4a9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
