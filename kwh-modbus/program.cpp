@@ -5,7 +5,6 @@
 #include <fcntl.h>
 #include <cstdint>
 #include <cstddef>
-#include "noArduino/modbusmemory.h"
 #include "libraries/modbus/modbus.h"
 #include "libraries/modbus/modbusserial.h"
 #include "libraries/modbus/modbusarray.h"
