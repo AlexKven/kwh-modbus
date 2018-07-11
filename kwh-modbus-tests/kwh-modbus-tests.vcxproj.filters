@@ -7,9 +7,12 @@
     <ClCompile Include="modbusmemorytests.cpp" />
     <ClCompile Include="modbusarraytests.cpp" />
     <ClCompile Include="modbusserialtests.cpp" />
+    <ClCompile Include="Source.cpp" />
+    <ClCompile Include="WindowsFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="WindowsFunctions.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

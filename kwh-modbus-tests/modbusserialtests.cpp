@@ -7,6 +7,7 @@
 #include "../kwh-modbus/interfaces/iserialstream.h"
 #include "../kwh-modbus/noArduino/systemfunctions.h"
 #include "test_helpers.h"
+#include "WindowsFunctions.h"
 
 #define USE_MOCK Mock<ISerialStream> mockSerial; \
 Mock<ISystemFunctions> mockSystem;
