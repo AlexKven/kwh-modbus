@@ -1,4 +1,4 @@
-#include "modbusmemory.h"
+#include "ModbusMemory.h"
 #include <cstdlib>
 
 TRegister * ModbusMemory::searchRegister(word addr) {

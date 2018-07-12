@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "fakeit.hpp"
 
-#include "../kwh-modbus/libraries/modbus/modbus.h"
-#include "../kwh-modbus/noArduino/modbusmemory.h"
+#include "../kwh-modbus/libraries/modbus/Modbus.h"
+#include "../kwh-modbus/noArduino/ModbusMemory.h"
 #include "test_helpers.h"
 
 #define USE_MOCK Mock<ModbusMemory> mock = Mock<ModbusMemory>(*modbus);

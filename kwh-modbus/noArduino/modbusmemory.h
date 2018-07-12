@@ -1,8 +1,8 @@
 #pragma once
 #pragma once
-#include "../libraries/modbus/modbus.h"
+#include "../libraries/modbus/Modbus.h"
 
-#include "arduinomacros.h"
+#include "ArduinoMacros.h"
 
 typedef struct TRegister {
 	word address;

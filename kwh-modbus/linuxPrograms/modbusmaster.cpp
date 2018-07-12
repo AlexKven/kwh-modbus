@@ -3,10 +3,10 @@
 #include <fcntl.h>
 #include <cstdint>
 #include <cstddef>
-#include "../noArduino/arduinomacros.h"
-#include "../libraries/modbusMaster/modbusmaster.h"
-#include "../mock/mockserialstream.h"
-#include "../noArduino/systemfunctions.h"
+#include "../noArduino/ArduinoMacros.h"
+#include "../libraries/modbusMaster/ModbusMaster.h"
+#include "../mock/MockSerialStream.h"
+#include "../noArduino/SystemFunctions.h"
 
 using namespace std;
 

@@ -1,7 +1,4 @@
-#include "systemfunctions.h"
-#ifdef WINDOWS
-#include <windows.h>
-#else
+#include "SystemFunctions.h"
 #include <unistd.h>
 #endif
 

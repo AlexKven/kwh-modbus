@@ -1,7 +1,7 @@
-#include "../libraries/modbus/modbusserial.h"
-#include "../mock/mockserialstream.h"
-#include "../noArduino/systemfunctions.h"
-#include "../noArduino/modbusmemory.h"
+#include "../libraries/modbus/ModbusSerial.hpp"
+#include "../mock/MockSerialStream.h"
+#include "../noArduino/SystemFunctions.h"
+#include "../noArduino/ModbusMemory.h"
 
 using namespace std;
 int main()
