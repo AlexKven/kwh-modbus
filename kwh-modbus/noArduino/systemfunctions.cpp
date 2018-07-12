@@ -1,4 +1,4 @@
-#include "systemfunctions.h"
+#include "SystemFunctions.h"
 #include <unistd.h>
 
 void SystemFunctions::pinMode(unsigned char pin, unsigned char mode) 

@@ -4,12 +4,12 @@
     <ClCompile Include="test.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="test_helpers.h" />
-    <ClCompile Include="modbusmemorytests.cpp" />
-    <ClCompile Include="modbusarraytests.cpp" />
-    <ClCompile Include="modbusserialtests.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="WindowsFunctions.cpp" />
     <ClCompile Include="WindowsSystemFunctions.cpp" />
+    <ClCompile Include="ModbusArrayTests.cpp" />
+    <ClCompile Include="ModbusMemoryTests.cpp" />
+    <ClCompile Include="ModbusSerialTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

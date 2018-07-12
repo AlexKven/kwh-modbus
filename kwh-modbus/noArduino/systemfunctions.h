@@ -1,5 +1,5 @@
 #pragma once
-#include "../interfaces/isystemfunctions.h"
+#include "../interfaces/ISystemFunctions.h"
 
 class SystemFunctions 
 	: ISystemFunctions

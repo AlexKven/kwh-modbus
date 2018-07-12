@@ -38,9 +38,9 @@
     <ClInclude Include="WindowsSystemFunctions.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="modbusarraytests.cpp" />
-    <ClCompile Include="modbusmemorytests.cpp" />
-    <ClCompile Include="modbusserialtests.cpp" />
+    <ClCompile Include="ModbusArrayTests.cpp" />
+    <ClCompile Include="ModbusMemoryTests.cpp" />
+    <ClCompile Include="ModbusSerialTests.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="pch.cpp">

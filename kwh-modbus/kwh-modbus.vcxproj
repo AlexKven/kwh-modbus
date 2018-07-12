@@ -64,28 +64,28 @@
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="libraries\modbus\modbus.cpp" />
-    <ClCompile Include="libraries\modbus\modbusarray.cpp" />
-    <ClCompile Include="mock\mockserialstream.cpp" />
-    <ClCompile Include="noArduino\modbusmemory.cpp" />
-    <ClCompile Include="noArduino\systemfunctions.cpp" />
+    <ClCompile Include="libraries\modbus\Modbus.cpp" />
+    <ClCompile Include="libraries\modbus\ModbusArray.cpp" />
+    <ClCompile Include="mock\MockSerialStream.cpp" />
+    <ClCompile Include="noArduino\ModbusMemory.cpp" />
+    <ClCompile Include="noArduino\SystemFunctions.cpp" />
     <ClCompile Include="program.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="interfaces\iserialstream.h" />
-    <ClInclude Include="interfaces\isystemfunctions.h" />
+    <ClInclude Include="interfaces\ISerialStream.h" />
+    <ClInclude Include="interfaces\ISystemFunctions.h" />
     <ClInclude Include="libraries\modbusMaster\crc16.h" />
     <ClInclude Include="libraries\modbusMaster\modbusmaster.h" />
     <ClInclude Include="libraries\modbusMaster\word.h" />
     <ClInclude Include="libraries\modbusSlave\modbusserial.h" />
-    <ClInclude Include="libraries\modbus\modbus.h" />
-    <ClInclude Include="libraries\modbus\modbusarray.h" />
-    <ClInclude Include="libraries\modbus\modbusHelpers.h" />
-    <ClInclude Include="libraries\modbus\modbusserial.h" />
-    <ClInclude Include="mock\mockserialstream.h" />
-    <ClInclude Include="noArduino\systemfunctions.h" />
-    <ClInclude Include="noArduino\arduinomacros.h" />
-    <ClInclude Include="noArduino\modbusmemory.h" />
+    <ClInclude Include="libraries\modbus\Modbus.h" />
+    <ClInclude Include="libraries\modbus\ModbusArray.h" />
+    <ClInclude Include="libraries\modbus\ModbusHelpers.h" />
+    <ClInclude Include="libraries\modbus\ModbusSerial.hpp" />
+    <ClInclude Include="mock\MockSerialStream.h" />
+    <ClInclude Include="noArduino\SystemFunctions.h" />
+    <ClInclude Include="noArduino\ArduinoMacros.h" />
+    <ClInclude Include="noArduino\ModbusMemory.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />

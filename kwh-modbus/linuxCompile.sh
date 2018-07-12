@@ -1,3 +1,3 @@
-g++ mock/mockserialstream.cpp -D "NO_ARDUINO" -c
-g++ linuxPrograms/modbusmaster.cpp libraries/modbusMaster/modbusmaster.h -D "NO_ARDUINO" -o linuxOutputs/modbusMaster.out
-g++ linuxPrograms/modbusslave.cpp libraries/modbus/modbus.cpp noArduino/modbusmemory.cpp mock/mockserialstream.cpp noArduino/systemfunctions.cpp -D "NO_ARDUINO" -fpermissive -o linuxOutputs/modbusSlave.out
+g++ mock/MockSerialStream.cpp -D "NO_ARDUINO" -c
+g++ linuxPrograms/ModbusMaster.cpp libraries/modbusMaster/ModbusMaster.h -D "NO_ARDUINO" -o linuxOutputs/ModbusMaster.out
+g++ linuxPrograms/ModbusSlave.cpp libraries/modbus/Modbus.cpp noArduino/ModbusMemory.cpp mock/MockSerialStream.cpp noArduino/SystemFunctions.cpp -D "NO_ARDUINO" -fpermissive -o linuxOutputs/ModbusSlave.out

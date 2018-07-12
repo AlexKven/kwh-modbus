@@ -6,10 +6,10 @@
 #ifndef MODBUS_H
 #define MODBUS_H
 
-#include "modbusHelpers.h"
+#include "ModbusHelpers.h"
 
 #ifdef NO_ARDUINO
-#include "../../noArduino/arduinomacros.h"
+#include "../../noArduino/ArduinoMacros.h"
 #else
 #include "Arduino.h"
 #endif

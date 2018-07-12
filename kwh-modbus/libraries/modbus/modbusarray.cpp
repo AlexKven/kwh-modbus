@@ -1,4 +1,4 @@
-#include "modbusarray.h"
+#include "ModbusArray.h"
 
 bool ModbusArray::getRegIndex(word address, word & index)
 {

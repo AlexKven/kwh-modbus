@@ -5,12 +5,12 @@
 #include <fcntl.h>
 #include <cstdint>
 #include <cstddef>
-#include "noArduino/modbusmemory.h"
-#include "libraries/modbus/modbus.h"
-#include "libraries/modbus/modbusserial.h"
-#include "libraries/modbus/modbusarray.h"
-#include "interfaces/isystemfunctions.h"
-#include "mock/mockserialstream.h"
+#include "noArduino/ModbusMemory.h"
+#include "libraries/modbus/Modbus.h"
+#include "libraries/modbus/ModbusSerial.hpp"
+#include "libraries/modbus/ModbusArray.h"
+#include "interfaces/ISystemFunctions.h"
+#include "mock/MockSerialStream.h"
 #define modbus_t ModbusSerial<MockSerialStream, ISystemFunctions, ModbusArray>
 
 using namespace std;

@@ -1,5 +1,5 @@
 #pragma once
-#include "../kwh-modbus/interfaces/isystemfunctions.h"
+#include "../kwh-modbus/interfaces/ISystemFunctions.h"
 class WindowsSystemFunctions
 	: ISystemFunctions
 {

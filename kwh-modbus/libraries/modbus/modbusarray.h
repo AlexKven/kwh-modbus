@@ -1,8 +1,8 @@
 #pragma once
-#include "modbus.h"
+#include "Modbus.h"
 
 #ifdef NO_ARDUINO
-#include "../../noArduino/arduinomacros.h"
+#include "../../noArduino/ArduinoMacros.h"
 #else
 #include "Arduino.h"
 #endif

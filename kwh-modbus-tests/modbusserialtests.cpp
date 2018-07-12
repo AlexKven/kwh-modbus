@@ -1,11 +1,11 @@
 #include "pch.h"
 #include "fakeit.hpp"
 
-#include "../kwh-modbus/libraries/modbus/modbus.h"
-#include "../kwh-modbus/noArduino/modbusmemory.h"
-#include "../kwh-modbus/libraries/modbus/modbusserial.h"
-#include "../kwh-modbus/interfaces/iserialstream.h"
-#include "../kwh-modbus/noArduino/systemfunctions.h"
+#include "../kwh-modbus/libraries/modbus/Modbus.h"
+#include "../kwh-modbus/noArduino/ModbusMemory.h"
+#include "../kwh-modbus/libraries/modbus/ModbusSerial.hpp"
+#include "../kwh-modbus/interfaces/ISerialStream.h"
+#include "../kwh-modbus/noArduino/SystemFunctions.h"
 #include "test_helpers.h"
 #include "WindowsFunctions.h"
 
