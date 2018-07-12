@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="mock\mockserialstream.cpp">
+    <ClCompile Include="program.cpp" />
+    <ClCompile Include="libraries\modbus\Modbus.cpp">
+      <Filter>libraries\modbus</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\modbus\ModbusArray.cpp">
+      <Filter>libraries\modbus</Filter>
+    </ClCompile>
+    <ClCompile Include="mock\MockSerialStream.cpp">
       <Filter>mock</Filter>
     </ClCompile>
-    <ClCompile Include="libraries\modbus\modbus.cpp">
-      <Filter>libraries\modbus</Filter>
-    </ClCompile>
-    <ClCompile Include="noArduino\systemfunctions.cpp">
+    <ClCompile Include="noArduino\ModbusMemory.cpp">
       <Filter>noArduino</Filter>
     </ClCompile>
-    <ClCompile Include="program.cpp" />
-    <ClCompile Include="noArduino\modbusmemory.cpp">
+    <ClCompile Include="noArduino\SystemFunctions.cpp">
       <Filter>noArduino</Filter>
-    </ClCompile>
-    <ClCompile Include="libraries\modbus\modbusarray.cpp">
-      <Filter>libraries\modbus</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -31,35 +31,35 @@
     <ClInclude Include="libraries\modbusMaster\modbusmaster.h">
       <Filter>libraries\modbusMaster</Filter>
     </ClInclude>
-    <ClInclude Include="mock\mockserialstream.h">
+    <ClInclude Include="libraries\modbus\Modbus.h">
+      <Filter>libraries\modbus</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\modbus\ModbusArray.h">
+      <Filter>libraries\modbus</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\modbus\ModbusHelpers.h">
+      <Filter>libraries\modbus</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\modbus\ModbusSerial.hpp">
+      <Filter>libraries\modbus</Filter>
+    </ClInclude>
+    <ClInclude Include="mock\MockSerialStream.h">
       <Filter>mock</Filter>
     </ClInclude>
-    <ClInclude Include="interfaces\iserialstream.h">
+    <ClInclude Include="noArduino\ArduinoMacros.h">
+      <Filter>noArduino</Filter>
+    </ClInclude>
+    <ClInclude Include="noArduino\ModbusMemory.h">
+      <Filter>noArduino</Filter>
+    </ClInclude>
+    <ClInclude Include="noArduino\SystemFunctions.h">
+      <Filter>noArduino</Filter>
+    </ClInclude>
+    <ClInclude Include="interfaces\ISerialStream.h">
       <Filter>interfaces</Filter>
     </ClInclude>
-    <ClInclude Include="noArduino\arduinomacros.h">
-      <Filter>noArduino</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\modbus\modbus.h">
-      <Filter>libraries\modbus</Filter>
-    </ClInclude>
-    <ClInclude Include="noArduino\modbusmemory.h">
-      <Filter>noArduino</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\modbus\modbusarray.h">
-      <Filter>libraries\modbus</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\modbus\modbusserial.h">
-      <Filter>libraries\modbus</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\modbus\modbusHelpers.h">
-      <Filter>libraries\modbus</Filter>
-    </ClInclude>
-    <ClInclude Include="interfaces\isystemfunctions.h">
+    <ClInclude Include="interfaces\ISystemFunctions.h">
       <Filter>interfaces</Filter>
-    </ClInclude>
-    <ClInclude Include="noArduino\systemfunctions.h">
-      <Filter>noArduino</Filter>
     </ClInclude>
     <ClInclude Include="winheaders.h">
       <Filter>noArduino</Filter>

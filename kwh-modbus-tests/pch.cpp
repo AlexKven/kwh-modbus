@@ -4,7 +4,7 @@
 //
 
 #include "pch.h"
-#include "../kwh-modbus/libraries/modbus/modbus.cpp"
-#include "../kwh-modbus/libraries/modbus/modbusarray.cpp"
-#include "../kwh-modbus/noArduino/systemfunctions.cpp"
-#include "../kwh-modbus/noArduino/modbusmemory.cpp"
+#include "../kwh-modbus/libraries/modbus/Modbus.cpp"
+#include "../kwh-modbus/libraries/modbus/ModbusArray.cpp"
+#include "../kwh-modbus/noArduino/ModbusMemory.cpp"
+#include "../kwh-modbus/noArduino/SystemFunctions.cpp"

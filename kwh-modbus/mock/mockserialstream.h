@@ -1,5 +1,5 @@
 #pragma once
-#include "../interfaces/iserialstream.h"
+#include "../interfaces/ISerialStream.h"
 class MockSerialStream :
 	public ISerialStream
 {

@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "fakeit.hpp"
 
-#include "../kwh-modbus/libraries/modbus/modbus.h"
-#include "../kwh-modbus/libraries/modbus/modbusarray.h"
+#include "../kwh-modbus/libraries/modbus/Modbus.h"
+#include "../kwh-modbus/libraries/modbus/ModbusArray.h"
 #include "test_helpers.h"
 
 #define USE_MOCK Mock<ModbusArray> mock = Mock<ModbusArray>(*modbus);

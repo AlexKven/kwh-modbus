@@ -1,4 +1,4 @@
-#include "systemfunctions.h"
+#include "SystemFunctions.h"
 #ifdef WINDOWS
 #include <windows.h>
 #else
