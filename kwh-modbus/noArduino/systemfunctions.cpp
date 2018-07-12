@@ -1,8 +1,5 @@
 #include "systemfunctions.h"
-#ifdef WINDOWS
-#else
 #include <unistd.h>
-#endif
 
 void SystemFunctions::pinMode(unsigned char pin, unsigned char mode) 
 {
