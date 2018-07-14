@@ -94,14 +94,14 @@ TEST_F(ModbusSerialTests, ModbusSerial_FrameDelay)
 	Verify(Method(mockSystem, delayMicroseconds).Using(delay)).Once();
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_ByteTimeout)
+TEST_F(ModbusSerialTests, ModbusSerial_ByteDelay)
 {
 	USE_MOCK;
 	CONFIG_MODBUS;
 	Fake(Method(mockSystem, delayMicroseconds));
 	unsigned int delay = modbus->_t15;
 
-	modbus->byteTimeout();
+	modbus->byteDelay();
 
 	Verify(Method(mockSystem, delayMicroseconds).Using(delay)).Once();
 }

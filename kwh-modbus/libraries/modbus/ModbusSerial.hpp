@@ -86,7 +86,7 @@ protected_testable:
 		_system->delayMicroseconds(_t35);
 	}
 
-	void byteTimeout()
+	void byteDelay()
 	{
 		_system->delayMicroseconds(_t15);
 	}
@@ -123,7 +123,7 @@ protected_testable:
 		while (_port->available() > length)
 		{
 			length = _port->available();
-			byteTimeout();
+			byteDelay();
 		}
 		return length;
 	}
