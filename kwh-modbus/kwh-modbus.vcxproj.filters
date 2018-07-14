@@ -61,6 +61,9 @@
     <ClInclude Include="interfaces\ISystemFunctions.h">
       <Filter>interfaces</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\modbusSlave\ModbusSlave.hpp">
+      <Filter>libraries\modbusSlave</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">

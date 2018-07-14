@@ -108,6 +108,26 @@ protected_testable:
 		return (CRCHi << 8) | CRCLo;
 	}
 
+	int readToFrame(int length = -1, int offset = 0)
+	{
+		if (length == -1)
+			length = this->getFrameLength();
+		byte *frame = this->getFramePtr();
+		for (int i = offset; i < length + offset; i++)
+			frame[i] = _port->read();
+	}
+
+	int awaitIncomingSerial()
+	{
+		word length = 0;
+		while (_port->available() > length)
+		{
+			length = _port->available();
+			byteTimeout();
+		}
+		return length;
+	}
+
 public:
 	bool config(TSerial* port, TSystemFunctions* system, long baud, int txPin = -1)
 	{

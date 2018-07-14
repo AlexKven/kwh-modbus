@@ -5,4 +5,3 @@ public:
 	WindowsFunctions();
 	void Windows_Sleep(int millis);
 };
-

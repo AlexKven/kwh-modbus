@@ -105,3 +105,34 @@ TEST_F(ModbusSerialTests, ModbusSerial_ByteTimeout)
 
 	Verify(Method(mockSystem, delayMicroseconds).Using(delay)).Once();
 }
+
+TEST_F(ModbusSerialTests, ModbysSerial_AwaitIncomingSerial_Nothing)
+{
+	USE_MOCK;
+	CONFIG_MODBUS;
+	When(Method(mockSerial, available)).Return(0);
+
+	int result = modbus->awaitIncomingSerial();
+
+	ASSERT_EQ(result, 0);
+}
+
+TEST_F(ModbusSerialTests, ModbysSerial_AwaitIncomingSerial_Something)
+{
+	USE_MOCK;
+	CONFIG_MODBUS;
+	When(Method(mockSerial, available))
+		.Return(1).Return(1)
+		.Return(3).Return(3)
+		.Return(8).Return(8)
+		.Return(21).Return(21)
+		.Return(22).Return(22)
+		.Return(22);
+	Fake(Method(mockSystem, delayMicroseconds));
+	unsigned int delay = modbus->_t15;
+
+	int result = modbus->awaitIncomingSerial();
+
+	ASSERT_EQ(result, 22);
+	Verify(Method(mockSystem, delayMicroseconds).Using(delay)).Exactly(5_Times);
+}

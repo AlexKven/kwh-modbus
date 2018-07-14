@@ -10,4 +10,5 @@ public:
 	virtual void digitalWrite(unsigned char pin, unsigned char value);
 	void delay(unsigned long ms);
 	void delayMicroseconds(unsigned long us);
+	unsigned long millis();
 };

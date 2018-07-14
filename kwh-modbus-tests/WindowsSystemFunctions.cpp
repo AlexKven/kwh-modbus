@@ -29,3 +29,8 @@ void WindowsSystemFunctions::delayMicroseconds(unsigned long us)
 {
 	Sleep(us / 1000);
 }
+
+unsigned long WindowsSystemFunctions::millis()
+{
+	return GetTickCount64();
+}

@@ -98,19 +98,13 @@ class ModbusSerial : public TBase {
 
         void task()
 		{
-			word length = 0;
-
-			while ((*_port).available() > length) {
-				length = (*_port).available();
-				TSystemFunctions::DelayMicroseconds(_t15);
-			}
+			word length = awaitIncomingSerial();
 
 			if (length == 0) return;
 
-			byte i;
 			this->resetFrame(length);
-			byte *frame = this->getFramePtr();
-			for (i = 0; i < length; i++) frame[i] = (*_port).read();
+
+			readToFrame();
 
 			if (this->receive()) {
 				if (this->_reply == MB_REPLY_NORMAL)
