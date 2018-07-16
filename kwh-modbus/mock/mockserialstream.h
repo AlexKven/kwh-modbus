@@ -9,7 +9,7 @@ class MockSerialStream :
 	public ISerialStream
 {
 public:
-	void begin(long speed);
+	void begin(long _baud);
 	bool listen();
 	void end();
 	bool isListening();
@@ -28,4 +28,7 @@ public:
 private:
 	queue<uint8_t> *readQueue;
 	queue<uint8_t> *writeQueue;
+	long baud;
+	bool _isListening = true;
+
 };
