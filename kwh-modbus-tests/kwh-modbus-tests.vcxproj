@@ -38,6 +38,7 @@
     <ClInclude Include="WindowsSystemFunctions.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MockSerialStreamTests.cpp" />
     <ClCompile Include="ModbusArrayTests.cpp" />
     <ClCompile Include="ModbusMemoryTests.cpp" />
     <ClCompile Include="ModbusSerialTests.cpp" />

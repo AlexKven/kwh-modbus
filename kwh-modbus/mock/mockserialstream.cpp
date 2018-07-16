@@ -3,6 +3,7 @@
 
 MockSerialStream::MockSerialStream(std::queue<uint8_t>* _readQueue, std::queue<uint8_t>* _writeQueue)
 {
+	externalQueues = true;
 	this->readQueue = _readQueue;
 	this->writeQueue = _writeQueue;
 }
@@ -15,8 +16,11 @@ MockSerialStream::MockSerialStream()
 
 MockSerialStream::~MockSerialStream()
 {
-	delete this->readQueue;
-	delete this->writeQueue;
+	if (!externalQueues)
+	{
+		delete this->readQueue;
+		delete this->writeQueue;
+	}
 }
 
 void MockSerialStream::begin(long _baud)
@@ -26,7 +30,7 @@ void MockSerialStream::begin(long _baud)
 
 bool MockSerialStream::listen()
 {
-	if (baud == -1)
+	if (_isListening || baud == -1)
 		return false;
 	_isListening = true;
 	return true;
@@ -39,12 +43,17 @@ void MockSerialStream::end()
 
 bool MockSerialStream::isListening()
 {
+	if (baud == -1)
+		return false;
 	return _isListening;
 }
 
 bool MockSerialStream::stopListening()
 {
+	if (!_isListening || baud == -1)
+		return false;
 	_isListening = false;
+	return true;
 }
 
 bool MockSerialStream::overflow()
@@ -75,13 +84,18 @@ int MockSerialStream::read()
 	if (!(available() > 0))
 		return -1;
 	else
-		return readQueue->front();
+	{
+		auto res = readQueue->front();
 		readQueue->pop();
+		return res;
+	}
 }
 
 int MockSerialStream::available()
 {
-	return (baud > 0 && readQueue->size() > 0);
+	if (baud > 0)
+		return readQueue->size();
+	return 0;
 }
 
 void MockSerialStream::flush() {}

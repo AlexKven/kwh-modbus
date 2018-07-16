@@ -28,7 +28,7 @@ public:
 private:
 	queue<uint8_t> *readQueue;
 	queue<uint8_t> *writeQueue;
-	long baud;
+	long baud = -1;
 	bool _isListening = true;
-
+	bool externalQueues = false;
 };
