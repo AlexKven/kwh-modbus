@@ -22,6 +22,7 @@ public:
 	void flush();
 	operator bool();
 	MockSerialStream(queue<uint8_t> *_readQueue, queue<uint8_t> *_writeQueue);
+	MockSerialStream(queue<uint8_t> *_queue, bool writeOnly);
 	MockSerialStream();
 
 	~MockSerialStream();

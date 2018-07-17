@@ -8,6 +8,21 @@ MockSerialStream::MockSerialStream(std::queue<uint8_t>* _readQueue, std::queue<u
 	this->writeQueue = _writeQueue;
 }
 
+MockSerialStream::MockSerialStream(queue<uint8_t>* _queue, bool writeOnly)
+{
+	externalQueues = true;
+	if (writeOnly)
+	{
+		this->readQueue = _queue;
+		this->writeQueue = nullptr;
+	}
+	else
+	{
+		this->readQueue = nullptr;
+		this->writeQueue = _queue;
+	}
+}
+
 MockSerialStream::MockSerialStream()
 {
 	readQueue = new queue<uint8_t>();

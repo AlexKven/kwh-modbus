@@ -111,10 +111,11 @@ protected_testable:
 	int readToFrame(int length = -1, int offset = 0)
 	{
 		if (length == -1)
-			length = this->getFrameLength();
+			length = this->getFrameLength() - offset;
 		byte *frame = this->getFramePtr();
 		for (int i = offset; i < length + offset; i++)
 			frame[i] = _port->read();
+		return length;
 	}
 
 	int awaitIncomingSerial()
