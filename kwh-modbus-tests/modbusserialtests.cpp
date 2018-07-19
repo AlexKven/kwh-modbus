@@ -290,3 +290,153 @@ TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Offset_Lower_Length)
 		(byte)3,
 		(byte)5);
 }
+
+TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_All)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	modbus->config(&mockSerial, &fakeSystem.get(), 1200, -1);
+
+	modbus->resetFrame(9);
+	auto frame = modbus->getFramePtr();
+	setArray(frame,
+		(byte)2,
+		(byte)3,
+		(byte)5,
+		(byte)7,
+		(byte)11,
+		(byte)13,
+		(byte)17,
+		(byte)19,
+		(byte)23);
+
+	int length = modbus->writeFromFrame();
+
+	ASSERT_EQ(length, 9);
+	ASSERT_EQ(writeQueue.front(), 2);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 3);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 5);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 7);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 11);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 13);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 17);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 19);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 23);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.size(), 0);
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_Lower_Length)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	modbus->config(&mockSerial, &fakeSystem.get(), 1200, -1);
+
+	modbus->resetFrame(9);
+	auto frame = modbus->getFramePtr();
+	setArray(frame,
+		(byte)2,
+		(byte)3,
+		(byte)5,
+		(byte)7,
+		(byte)11,
+		(byte)13,
+		(byte)17,
+		(byte)19,
+		(byte)23);
+
+	int length = modbus->writeFromFrame(5);
+
+	ASSERT_EQ(length, 5);
+	ASSERT_EQ(writeQueue.front(), 2);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 3);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 5);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 7);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 11);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.size(), 0);
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_Offset)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	modbus->config(&mockSerial, &fakeSystem.get(), 1200, -1);
+
+	modbus->resetFrame(9);
+	auto frame = modbus->getFramePtr();
+	setArray(frame,
+		(byte)2,
+		(byte)3,
+		(byte)5,
+		(byte)7,
+		(byte)11,
+		(byte)13,
+		(byte)17,
+		(byte)19,
+		(byte)23);
+
+	int length = modbus->writeFromFrame(-1, 3);
+
+	ASSERT_EQ(length, 6);
+	ASSERT_EQ(writeQueue.front(), 7);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 11);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 13);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 17);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 19);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 23);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.size(), 0);
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_Offset_Lower_Length)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	modbus->config(&mockSerial, &fakeSystem.get(), 1200, -1);
+
+	modbus->resetFrame(9);
+	auto frame = modbus->getFramePtr();
+	setArray(frame,
+		(byte)2,
+		(byte)3,
+		(byte)5,
+		(byte)7,
+		(byte)11,
+		(byte)13,
+		(byte)17,
+		(byte)19,
+		(byte)23);
+
+	int length = modbus->writeFromFrame(5, 3);
+
+	ASSERT_EQ(length, 5);
+	ASSERT_EQ(writeQueue.front(), 7);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 11);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 13);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 17);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 19);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.size(), 0);
+}
