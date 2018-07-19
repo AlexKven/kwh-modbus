@@ -14,15 +14,15 @@
 #define USE_FAKE Mock<ISerialStream> fakeSerial; \
 Mock<ISystemFunctions> fakeSystem;
 
-#define USE_FAKE_SYSTEM Mock<ISystemFunctions> fakeSystem;
-#define USE_FAKE_SERIAL Mock<ISerialStream> fakeSerial;
+#define USE_FAKE_SYSTEM Mock<ISystemFunctions> fakeSystem
+#define USE_FAKE_SERIAL Mock<ISerialStream> fakeSerial
 
 #define USE_MOCK_SERIAL std::queue<uint8_t> readQueue; \
 std::queue<uint8_t> writeQueue; \
 MockSerialStream mockSerial = MockSerialStream(&readQueue, &writeQueue);
 
 #define CONFIG_MODBUS_FAKE_ALL Fake(Method(fakeSerial, begin)); \
-modbus->config(&fakeSerial.get(), &fakeSystem.get(), 1200, -1);
+modbus->config(&fakeSerial.get(), &fakeSystem.get(), 1200, -1)
 
 #define READ_QUEUE_PUSH_FIBONACCI readQueue.push(1); \
 readQueue.push(1); \
@@ -35,7 +35,7 @@ readQueue.push(21); \
 readQueue.push(34); \
 readQueue.push(55); \
 readQueue.push(89); \
-readQueue.push(144);
+readQueue.push(144)
 
 using namespace fakeit;
 
@@ -161,10 +161,10 @@ TEST_F(ModbusSerialTests, ModbusSerial_AwaitIncomingSerial_Something)
 
 TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_All)
 {
-	USE_FAKE_SYSTEM
-		USE_MOCK_SERIAL
-		READ_QUEUE_PUSH_FIBONACCI
-		modbus->config(&mockSerial, &fakeSystem.get(), 1200, -1);
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	READ_QUEUE_PUSH_FIBONACCI;
+	modbus->config(&mockSerial, &fakeSystem.get(), 1200, -1);
 
 
 	modbus->resetFrame(9);
@@ -186,8 +186,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_All)
 
 TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Incomplete)
 {
-	USE_FAKE_SYSTEM
-	USE_MOCK_SERIAL
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
 	modbus->config(&mockSerial, &fakeSystem.get(), 1200, -1);
 	readQueue.push(1);
 	readQueue.push(1);
@@ -212,9 +212,9 @@ TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Incomplete)
 
 TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Lower_Length)
 {
-	USE_FAKE_SYSTEM
-	USE_MOCK_SERIAL
-	READ_QUEUE_PUSH_FIBONACCI
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	READ_QUEUE_PUSH_FIBONACCI;
 	modbus->config(&mockSerial, &fakeSystem.get(), 1200, -1);
 
 	readQueue.push(1);
@@ -242,9 +242,9 @@ TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Lower_Length)
 
 TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Offset)
 {
-	USE_FAKE_SYSTEM
-	USE_MOCK_SERIAL
-	READ_QUEUE_PUSH_FIBONACCI
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	READ_QUEUE_PUSH_FIBONACCI;
 	modbus->config(&mockSerial, &fakeSystem.get(), 1200, -1);
 
 	modbus->resetFrame(9);
@@ -263,9 +263,9 @@ TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Offset)
 
 TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Offset_Lower_Length)
 {
-	USE_FAKE_SYSTEM
-	USE_MOCK_SERIAL
-	READ_QUEUE_PUSH_FIBONACCI
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	READ_QUEUE_PUSH_FIBONACCI;
 	modbus->config(&mockSerial, &fakeSystem.get(), 1200, -1);
 
 	readQueue.push(1);

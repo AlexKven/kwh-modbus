@@ -5,8 +5,6 @@
 #include "test_helpers.h"
 #include <queue>
 
-#define USE_MOCK Mock<ModbusMemory> mock = Mock<ModbusMemory>(*modbus);
-
 using namespace fakeit;
 
 class MockSerialStreamTests : public ::testing::Test

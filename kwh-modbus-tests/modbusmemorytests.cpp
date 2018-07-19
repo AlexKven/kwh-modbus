@@ -5,7 +5,7 @@
 #include "../kwh-modbus/noArduino/ModbusMemory.h"
 #include "test_helpers.h"
 
-#define USE_MOCK Mock<ModbusMemory> mock = Mock<ModbusMemory>(*modbus);
+#define USE_MOCK Mock<ModbusMemory> mock = Mock<ModbusMemory>(*modbus)
 
 using namespace fakeit;
 
