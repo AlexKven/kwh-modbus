@@ -128,7 +128,7 @@ TEST_F(ModbusSerialTests, ModbusSerial_ByteDelay)
 	Verify(Method(fakeSystem, delayMicroseconds).Using(delay)).Once();
 }
 
-TEST_F(ModbusSerialTests, ModbysSerial_AwaitIncomingSerial_Nothing)
+TEST_F(ModbusSerialTests, ModbusSerial_AwaitIncomingSerial_Nothing)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -139,7 +139,7 @@ TEST_F(ModbusSerialTests, ModbysSerial_AwaitIncomingSerial_Nothing)
 	ASSERT_EQ(result, 0);
 }
 
-TEST_F(ModbusSerialTests, ModbysSerial_AwaitIncomingSerial_Something)
+TEST_F(ModbusSerialTests, ModbusSerial_AwaitIncomingSerial_Something)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -159,7 +159,7 @@ TEST_F(ModbusSerialTests, ModbysSerial_AwaitIncomingSerial_Something)
 	Verify(Method(fakeSystem, delayMicroseconds).Using(delay)).Exactly(5_Times);
 }
 
-TEST_F(ModbusSerialTests, ModbysSerial_readToFrame_All)
+TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_All)
 {
 	USE_FAKE_SYSTEM
 		USE_MOCK_SERIAL
@@ -184,7 +184,7 @@ TEST_F(ModbusSerialTests, ModbysSerial_readToFrame_All)
 		(byte)34);
 }
 
-TEST_F(ModbusSerialTests, ModbysSerial_readToFrame_Incomplete)
+TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Incomplete)
 {
 	USE_FAKE_SYSTEM
 	USE_MOCK_SERIAL
@@ -210,7 +210,7 @@ TEST_F(ModbusSerialTests, ModbysSerial_readToFrame_Incomplete)
 		(byte)8);
 }
 
-TEST_F(ModbusSerialTests, ModbysSerial_readToFrame_Lower_Length)
+TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Lower_Length)
 {
 	USE_FAKE_SYSTEM
 	USE_MOCK_SERIAL
@@ -240,7 +240,7 @@ TEST_F(ModbusSerialTests, ModbysSerial_readToFrame_Lower_Length)
 		(byte)5);
 }
 
-TEST_F(ModbusSerialTests, ModbysSerial_readToFrame_Offset)
+TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Offset)
 {
 	USE_FAKE_SYSTEM
 	USE_MOCK_SERIAL
@@ -261,7 +261,7 @@ TEST_F(ModbusSerialTests, ModbysSerial_readToFrame_Offset)
 		(byte)8);
 }
 
-TEST_F(ModbusSerialTests, ModbysSerial_readToFrame_Offset_Lower_Length)
+TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Offset_Lower_Length)
 {
 	USE_FAKE_SYSTEM
 	USE_MOCK_SERIAL
