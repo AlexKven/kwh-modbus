@@ -290,34 +290,3 @@ TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Offset_Lower_Length)
 		(byte)3,
 		(byte)5);
 }
-
-TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_All)
-{
-	USE_FAKE_SYSTEM;
-	USE_MOCK_SERIAL;
-	modbus->config(&mockSerial, &fakeSystem.get(), 1200, -1);
-
-	modbus->resetFrame(9);
-	auto frame = modbus->getFramePtr();
-	setArray(frame,
-		(byte)2,
-		(byte)3,
-		(byte)5,
-		(byte)7,
-		(byte)11,
-		(byte)13,
-		(byte)17,
-		(byte)19);
-
-	int length = modbus->writeFromFrame();
-
-	ASSERT_EQ(length, 9);
-	assertEqWhile<byte, std::queue<byte>>(
-		[](std::queue<byte> *queue) -> byte {
-		byte result = queue->front();
-		queue->pop();
-		return result; },
-		[](std::queue<byte> *queue) -> bool { return queue->size() > 0; },
-		&writeQueue,
-		(byte)5);
-}

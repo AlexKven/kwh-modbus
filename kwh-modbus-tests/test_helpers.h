@@ -1,7 +1,6 @@
 #pragma once
 #include <stdarg.h>
 #include "pch.h"
-#include <functional>
 
 template<class A>
 void setArray(void* arr, A head)
@@ -73,23 +72,4 @@ void assertArrayEq(void* arr, A head, B... args)
 	A *headArr = (A*)arr;
 	ASSERT_EQ(headArr[0], head);
 	assertArrayEq(headArr + 1, args...);
-}
-
-template<class A, class S>
-void assertEqWhile(std::function<A(S)> valueFunc, std::function<bool(S)> whileFunc, S structure, A head)
-{
-	if (!whileFunc(structure))
-		return;
-	A result = valueFunc(s);
-	ASSERT_EQ(result, head);
-}
-
-template<class A, class S>
-void assertEqWhile(std::function<A(S)> valueFunc, std::function<bool(S)> whileFunc, S structure, A head, A tail...)
-{
-	if (!whileFunc(structure))
-		return;
-	A result = valueFunc(s);
-	ASSERT_EQ(result, head);
-	assertEqWhile(valueFunc, whileFunc, structure, tail);
 }
