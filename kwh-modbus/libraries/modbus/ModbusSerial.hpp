@@ -123,6 +123,20 @@ protected_testable:
 		return length;
 	}
 
+	int writeFromFrame(int length = -1, int offset = 0)
+	{
+		if (length == -1)
+			length = this->getFrameLength() - offset;
+		byte *frame = this->getFramePtr();
+		for (int i = offset; i < length + offset; i++)
+		{
+			int result = _port->write(frame[i]);
+			if (result != 1)
+				return i;
+		}
+		return length;
+	}
+
 	int awaitIncomingSerial()
 	{
 		word length = 0;

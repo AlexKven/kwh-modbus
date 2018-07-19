@@ -213,31 +213,31 @@ TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Incomplete)
 TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Lower_Length)
 {
 	USE_FAKE_SYSTEM;
-	USE_MOCK_SERIAL;
-	READ_QUEUE_PUSH_FIBONACCI;
-	modbus->config(&mockSerial, &fakeSystem.get(), 1200, -1);
+USE_MOCK_SERIAL;
+READ_QUEUE_PUSH_FIBONACCI;
+modbus->config(&mockSerial, &fakeSystem.get(), 1200, -1);
 
-	readQueue.push(1);
-	readQueue.push(1);
-	readQueue.push(2);
-	readQueue.push(3);
-	readQueue.push(5);
-	readQueue.push(8);
-	readQueue.push(13);
-	readQueue.push(21);
-	readQueue.push(34);
+readQueue.push(1);
+readQueue.push(1);
+readQueue.push(2);
+readQueue.push(3);
+readQueue.push(5);
+readQueue.push(8);
+readQueue.push(13);
+readQueue.push(21);
+readQueue.push(34);
 
-	modbus->resetFrame(9);
-	int length = modbus->readToFrame(5);
+modbus->resetFrame(9);
+int length = modbus->readToFrame(5);
 
-	auto frame = modbus->getFramePtr();
-	ASSERT_EQ(length, 5);
-	assertArrayEq(frame,
-		(byte)1,
-		(byte)1,
-		(byte)2,
-		(byte)3,
-		(byte)5);
+auto frame = modbus->getFramePtr();
+ASSERT_EQ(length, 5);
+assertArrayEq(frame,
+(byte)1,
+(byte)1,
+(byte)2,
+(byte)3,
+(byte)5);
 }
 
 TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Offset)
