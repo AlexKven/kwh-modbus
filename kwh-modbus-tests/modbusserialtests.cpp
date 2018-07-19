@@ -104,6 +104,72 @@ TEST_F(ModbusSerialTests, ModbusSerial_Flush)
 	Verify(Method(fakeSerial, flush)).Once();
 }
 
+TEST_F(ModbusSerialTests, ModbusSerial_Read)
+{
+	USE_FAKE;
+	CONFIG_MODBUS_FAKE_ALL;
+	When(Method(fakeSerial, read)).Return(5);
+
+	auto result = modbus->read();
+
+	Verify(Method(fakeSerial, read)).Once();
+	ASSERT_EQ(result, 5);
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_Read_Success)
+{
+	USE_FAKE;
+	CONFIG_MODBUS_FAKE_ALL;
+	When(Method(fakeSerial, read)).Return(5);
+
+	byte result = 3;
+	bool success = modbus->read(result);
+
+	Verify(Method(fakeSerial, read)).Once();
+	ASSERT_EQ(result, 5);
+	ASSERT_TRUE(success);
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_Read_Failure)
+{
+	USE_FAKE;
+	CONFIG_MODBUS_FAKE_ALL;
+	When(Method(fakeSerial, read)).Return(-1);
+
+	byte result = 3;
+	bool success = modbus->read(result);
+
+	Verify(Method(fakeSerial, read)).Once();
+	ASSERT_EQ(result, 3);
+	ASSERT_FALSE(success);
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_Write_Success)
+{
+	USE_FAKE;
+	CONFIG_MODBUS_FAKE_ALL;
+	When(Method(fakeSerial, write)).Return(1);
+
+	byte write = 5;
+	bool success = modbus->write(write);
+
+	Verify(Method(fakeSerial, write).Using(5)).Once();
+	ASSERT_TRUE(success);
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_Write_Failure)
+{
+	USE_FAKE;
+	CONFIG_MODBUS_FAKE_ALL;
+	When(Method(fakeSerial, write)).Return(0);
+
+	byte write = 5;
+	bool success = modbus->write(write);
+
+	Verify(Method(fakeSerial, write).Using(5)).Once();
+	ASSERT_FALSE(success);
+}
+
 TEST_F(ModbusSerialTests, ModbusSerial_FrameDelay)
 {
 	USE_FAKE;
@@ -333,6 +399,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_All)
 	writeQueue.pop();
 	ASSERT_EQ(writeQueue.size(), 0);
 }
+
+// Add ModbusSerial_writeFromFrame_All once supported by MockSerialStream
 
 TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_Lower_Length)
 {

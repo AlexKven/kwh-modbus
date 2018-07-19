@@ -71,9 +71,23 @@ protected_testable:
 		return _port->available();
 	}
 
-	void write(byte val)
+	bool write(byte val)
 	{
-		_port->write(val);
+		return (_port->write(val) > 0);
+	}
+
+	int read()
+	{
+		return _port->read();
+	}
+
+	bool read(byte &result)
+	{
+		int res = _port->read();
+		if (res == -1)
+			return false;
+		result = res;
+		return true;
 	}
 
 	void flush()
@@ -115,10 +129,8 @@ protected_testable:
 		byte *frame = this->getFramePtr();
 		for (int i = offset; i < length + offset; i++)
 		{
-			int it = _port->read();
-			if (it == -1)
+			if (!read(frame[i]))
 				return i;
-			frame[i] = (byte)it;
 		}
 		return length;
 	}
