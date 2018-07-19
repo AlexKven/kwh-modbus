@@ -114,7 +114,12 @@ protected_testable:
 			length = this->getFrameLength() - offset;
 		byte *frame = this->getFramePtr();
 		for (int i = offset; i < length + offset; i++)
-			frame[i] = _port->read();
+		{
+			int it = _port->read();
+			if (it == -1)
+				return i;
+			frame[i] = (byte)it;
+		}
 		return length;
 	}
 
