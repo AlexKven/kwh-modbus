@@ -511,9 +511,11 @@ TEST_F(ModbusSerialTests, ModbusSerial_WriteTwice_NoBeginTransmission)
 {
 	USE_FAKE;
 	Fake(Method(fakeSerial, begin));
+	Fake(Method(fakeSerial, flush));
 	When(Method(fakeSerial, write)).AlwaysReturn(1);
 	Fake(Method(fakeSystem, pinMode));
 	Fake(Method(fakeSystem, digitalWrite));
+	Fake(Method(fakeSystem, delayMicroseconds));
 	modbus->config(&fakeSerial.get(), &fakeSystem.get(), 1200, 4);
 
 	modbus->write(5);
@@ -528,9 +530,11 @@ TEST_F(ModbusSerialTests, ModbusSerial_WriteFromFrame_NoBeginTransmission)
 {
 	USE_FAKE;
 	Fake(Method(fakeSerial, begin));
+	Fake(Method(fakeSerial, flush));
 	When(Method(fakeSerial, write)).AlwaysReturn(1);
 	Fake(Method(fakeSystem, pinMode));
 	Fake(Method(fakeSystem, digitalWrite));
+	Fake(Method(fakeSystem, delayMicroseconds));
 	modbus->config(&fakeSerial.get(), &fakeSystem.get(), 1200, 4);
 
 	modbus->resetFrame(3);
@@ -551,9 +555,11 @@ TEST_F(ModbusSerialTests, ModbusSerial_WriteTwice_BeginTransmission)
 {
 	USE_FAKE;
 	Fake(Method(fakeSerial, begin));
+	Fake(Method(fakeSerial, flush));
 	When(Method(fakeSerial, write)).AlwaysReturn(1);
 	Fake(Method(fakeSystem, pinMode));
 	Fake(Method(fakeSystem, digitalWrite));
+	Fake(Method(fakeSystem, delayMicroseconds));
 	modbus->config(&fakeSerial.get(), &fakeSystem.get(), 1200, 4);
 
 	bool s1 = modbus->beginTransmission();
@@ -572,9 +578,11 @@ TEST_F(ModbusSerialTests, ModbusSerial_WriteFromFrame_BeginTransmission)
 {
 	USE_FAKE;
 	Fake(Method(fakeSerial, begin));
+	Fake(Method(fakeSerial, flush));
 	When(Method(fakeSerial, write)).AlwaysReturn(1);
 	Fake(Method(fakeSystem, pinMode));
 	Fake(Method(fakeSystem, digitalWrite));
+	Fake(Method(fakeSystem, delayMicroseconds));
 	modbus->config(&fakeSerial.get(), &fakeSystem.get(), 1200, 4);
 
 	modbus->resetFrame(3);
@@ -599,8 +607,10 @@ TEST_F(ModbusSerialTests, ModbusSerial_Begin_End_Transmission)
 {
 	USE_FAKE;
 	Fake(Method(fakeSerial, begin));
+	Fake(Method(fakeSerial, flush));
 	Fake(Method(fakeSystem, pinMode));
 	Fake(Method(fakeSystem, digitalWrite));
+	Fake(Method(fakeSystem, delayMicroseconds));
 	modbus->config(&fakeSerial.get(), &fakeSystem.get(), 1200, 4);
 
 	bool t1 = modbus->_transmitting;

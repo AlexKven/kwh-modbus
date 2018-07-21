@@ -180,7 +180,10 @@ protected_testable:
 		if (_transmitting)
 			return false;
 		if (_txPin != -1)
+		{
 			_system->digitalWrite(_txPin, HIGH);
+			frameDelay(); // *untested
+		}
 		_transmitting = true;
 		return true;
 	}
@@ -190,7 +193,11 @@ protected_testable:
 		if (!_transmitting)
 			return false;
 		if (_txPin != -1)
+		{
+			flush(); // *untested
+			frameDelay(); // *untested
 			_system->digitalWrite(_txPin, LOW);
+		}
 		_transmitting = false;
 		return true;
 	}
