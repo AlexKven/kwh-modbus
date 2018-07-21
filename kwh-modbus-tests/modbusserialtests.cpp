@@ -400,8 +400,6 @@ TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_All)
 	ASSERT_EQ(writeQueue.size(), 0);
 }
 
-// Add ModbusSerial_writeFromFrame_All once supported by MockSerialStream
-
 TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_Lower_Length)
 {
 	USE_FAKE_SYSTEM;
@@ -641,3 +639,7 @@ TEST_F(ModbusSerialTests, ModbusSerial_Begin_End_Transmission)
 	Verify(Method(fakeSystem, digitalWrite).Using(4, LOW)).Exactly(3);
 	Verify(Method(fakeSystem, digitalWrite).Using(4, HIGH)).Twice();
 }
+
+// pending tests:
+// * Add ModbusSerial_writeFromFrame_All once supported by MockSerialStream
+// * calcCrc() once I have sample CRC data
