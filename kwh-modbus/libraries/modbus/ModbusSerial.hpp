@@ -65,6 +65,7 @@ private:
 private_testable:
 	unsigned int _t15; // inter character time out
 	unsigned int _t35; // frame delay
+	bool _transmitting = false;
 protected_testable:
 	int available()
 	{
@@ -73,6 +74,13 @@ protected_testable:
 
 	bool write(byte val)
 	{
+		if (!_transmitting)
+		{
+			beginTransmission();
+			bool result = write(val);
+			endTransmission();
+			return result;
+		}
 		return (_port->write(val) > 0);
 	}
 
@@ -137,6 +145,13 @@ protected_testable:
 
 	int writeFromFrame(int length = -1, int offset = 0)
 	{
+		if (!_transmitting)
+		{
+			beginTransmission();
+			int result = writeFromFrame(length, offset);
+			endTransmission();
+			return result;
+		}
 		if (length == -1)
 			length = this->getFrameLength() - offset;
 		byte *frame = this->getFramePtr();
@@ -158,6 +173,26 @@ protected_testable:
 			byteDelay();
 		}
 		return length;
+	}
+
+	bool beginTransmission()
+	{
+		if (_transmitting)
+			return false;
+		if (_txPin != -1)
+			_system->digitalWrite(_txPin, HIGH);
+		_transmitting = true;
+		return true;
+	}
+
+	bool endTransmission()
+	{
+		if (!_transmitting)
+			return false;
+		if (_txPin != -1)
+			_system->digitalWrite(_txPin, LOW);
+		_transmitting = false;
+		return true;
 	}
 
 public:

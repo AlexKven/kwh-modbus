@@ -508,3 +508,136 @@ TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_Offset_Lower_Length)
 	writeQueue.pop();
 	ASSERT_EQ(writeQueue.size(), 0);
 }
+
+TEST_F(ModbusSerialTests, ModbusSerial_WriteTwice_NoBeginTransmission)
+{
+	USE_FAKE;
+	Fake(Method(fakeSerial, begin));
+	When(Method(fakeSerial, write)).AlwaysReturn(1);
+	Fake(Method(fakeSystem, pinMode));
+	Fake(Method(fakeSystem, digitalWrite));
+	modbus->config(&fakeSerial.get(), &fakeSystem.get(), 1200, 4);
+
+	modbus->write(5);
+	modbus->write(5);
+
+	Verify(Method(fakeSerial, write).Using(5)).Twice();
+	Verify(Method(fakeSystem, digitalWrite).Using(4, LOW)).Exactly(3);
+	Verify(Method(fakeSystem, digitalWrite).Using(4, HIGH)).Twice();
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_WriteFromFrame_NoBeginTransmission)
+{
+	USE_FAKE;
+	Fake(Method(fakeSerial, begin));
+	When(Method(fakeSerial, write)).AlwaysReturn(1);
+	Fake(Method(fakeSystem, pinMode));
+	Fake(Method(fakeSystem, digitalWrite));
+	modbus->config(&fakeSerial.get(), &fakeSystem.get(), 1200, 4);
+
+	modbus->resetFrame(3);
+	auto frame = modbus->getFramePtr();
+	setArray(frame,
+		(byte)3,
+		(byte)3,
+		(byte)3);
+	modbus->writeFromFrame();
+	modbus->writeFromFrame();
+
+	Verify(Method(fakeSerial, write).Using(3)).Exactly(6);
+	Verify(Method(fakeSystem, digitalWrite).Using(4, LOW)).Exactly(3);
+	Verify(Method(fakeSystem, digitalWrite).Using(4, HIGH)).Twice();
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_WriteTwice_BeginTransmission)
+{
+	USE_FAKE;
+	Fake(Method(fakeSerial, begin));
+	When(Method(fakeSerial, write)).AlwaysReturn(1);
+	Fake(Method(fakeSystem, pinMode));
+	Fake(Method(fakeSystem, digitalWrite));
+	modbus->config(&fakeSerial.get(), &fakeSystem.get(), 1200, 4);
+
+	bool s1 = modbus->beginTransmission();
+	modbus->write(5);
+	modbus->write(5);
+	bool s2 = modbus->endTransmission();
+
+	ASSERT_TRUE(s1);
+	ASSERT_TRUE(s2);
+	Verify(Method(fakeSerial, write).Using(5)).Twice();
+	Verify(Method(fakeSystem, digitalWrite).Using(4, LOW)).Twice();
+	Verify(Method(fakeSystem, digitalWrite).Using(4, HIGH)).Once();
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_WriteFromFrame_BeginTransmission)
+{
+	USE_FAKE;
+	Fake(Method(fakeSerial, begin));
+	When(Method(fakeSerial, write)).AlwaysReturn(1);
+	Fake(Method(fakeSystem, pinMode));
+	Fake(Method(fakeSystem, digitalWrite));
+	modbus->config(&fakeSerial.get(), &fakeSystem.get(), 1200, 4);
+
+	modbus->resetFrame(3);
+	auto frame = modbus->getFramePtr();
+	setArray(frame,
+		(byte)3,
+		(byte)3,
+		(byte)3);
+	bool s1 = modbus->beginTransmission();
+	modbus->writeFromFrame();
+	modbus->writeFromFrame();
+	bool s2 = modbus->endTransmission();
+
+	ASSERT_TRUE(s1);
+	ASSERT_TRUE(s2);
+	Verify(Method(fakeSerial, write).Using(3)).Exactly(6);
+	Verify(Method(fakeSystem, digitalWrite).Using(4, LOW)).Twice();
+	Verify(Method(fakeSystem, digitalWrite).Using(4, HIGH)).Once();
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_Begin_End_Transmission)
+{
+	USE_FAKE;
+	Fake(Method(fakeSerial, begin));
+	Fake(Method(fakeSystem, pinMode));
+	Fake(Method(fakeSystem, digitalWrite));
+	modbus->config(&fakeSerial.get(), &fakeSystem.get(), 1200, 4);
+
+	bool t1 = modbus->_transmitting;
+	bool s1 = modbus->endTransmission();
+	bool t2 = modbus->_transmitting;
+	bool s2 = modbus->beginTransmission();
+	bool t3 = modbus->_transmitting;
+	bool s3 = modbus->beginTransmission();
+	bool t4 = modbus->_transmitting;
+	bool s4 = modbus->endTransmission();
+	bool t5 = modbus->_transmitting;
+	bool s5 = modbus->endTransmission();
+	bool t6 = modbus->_transmitting;
+	bool s6 = modbus->beginTransmission();
+	bool t7 = modbus->_transmitting;
+	bool s7 = modbus->endTransmission();
+	bool t8 = modbus->_transmitting;
+
+	ASSERT_FALSE(s1);
+	ASSERT_TRUE(s2);
+	ASSERT_FALSE(s3);
+	ASSERT_TRUE(s4);
+	ASSERT_FALSE(s5);
+	ASSERT_TRUE(s6);
+	ASSERT_TRUE(s7);
+
+	ASSERT_FALSE(t1);
+	ASSERT_FALSE(t2);
+	ASSERT_TRUE(t3);
+	ASSERT_TRUE(t4);
+	ASSERT_FALSE(t5);
+	ASSERT_FALSE(t6);
+	ASSERT_TRUE(t7);
+	ASSERT_FALSE(t8);
+
+	Verify(Method(fakeSystem, digitalWrite).Using(4, LOW)).Exactly(3);
+	Verify(Method(fakeSystem, digitalWrite).Using(4, HIGH)).Twice();
+}
