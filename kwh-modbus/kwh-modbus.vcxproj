@@ -76,6 +76,7 @@
     <ClInclude Include="interfaces\ISystemFunctions.h" />
     <ClInclude Include="libraries\modbusMaster\crc16.h" />
     <ClInclude Include="libraries\modbusMaster\modbusmaster.h" />
+    <ClInclude Include="libraries\modbusMaster\ModbusMaster.hpp" />
     <ClInclude Include="libraries\modbusMaster\word.h" />
     <ClInclude Include="libraries\modbusSlave\modbusserial.h" />
     <ClInclude Include="libraries\modbusSlave\ModbusSlave.hpp" />
