@@ -81,7 +81,20 @@ protected_testable:
 			endTransmission();
 			return result;
 		}
-		return (_port->write(val) > 0);
+		return (_port->write(val) == 1);
+	}
+
+	bool writeWord(word val)
+	{
+		if (!_transmitting)
+		{
+			beginTransmission();
+			bool result = writeWord(val);
+			endTransmission();
+			return result;
+		}
+		return (_port->write(highByte(val)) == 1 &&
+				_port->write(lowByte(val)) == 1);
 	}
 
 	int read()

@@ -80,8 +80,7 @@ public:
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
 		word crc = calcCrc(_slaveId, frame, length);
-		write(crc >> 8);
-		write(crc w& 0xFF);
+		writeWord(crc);
 
 		endTransmission();
 		return true;

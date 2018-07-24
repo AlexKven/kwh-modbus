@@ -157,6 +157,48 @@ TEST_F(ModbusSerialTests, ModbusSerial_Write_Success)
 	ASSERT_TRUE(success);
 }
 
+TEST_F(ModbusSerialTests, ModbusSerial_WriteWord_Success)
+{
+	USE_FAKE;
+	CONFIG_MODBUS_FAKE_ALL;
+	When(Method(fakeSerial, write)).Return(1).Return(1);
+
+	word write = 703;
+	bool success = modbus->writeWord(write);
+
+	Verify(Method(fakeSerial, write).Using(191)).Once();
+	Verify(Method(fakeSerial, write).Using(2)).Once();
+	ASSERT_TRUE(success);
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_WriteWord_Failure_First)
+{
+	USE_FAKE;
+	CONFIG_MODBUS_FAKE_ALL;
+	When(Method(fakeSerial, write)).Return(0).Return(1);
+
+	word write = 703;
+	bool success = modbus->writeWord(write);
+
+	Verify(Method(fakeSerial, write).Using(191)).Never();
+	Verify(Method(fakeSerial, write).Using(2)).Once();
+	ASSERT_FALSE(success);
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_WriteWord_Failure_Second)
+{
+	USE_FAKE;
+	CONFIG_MODBUS_FAKE_ALL;
+	When(Method(fakeSerial, write)).Return(1).Return(0);
+
+	word write = 703;
+	bool success = modbus->writeWord(write);
+
+	Verify(Method(fakeSerial, write).Using(191)).Once();
+	Verify(Method(fakeSerial, write).Using(2)).Once();
+	ASSERT_FALSE(success);
+}
+
 TEST_F(ModbusSerialTests, ModbusSerial_Write_Failure)
 {
 	USE_FAKE;
@@ -653,3 +695,4 @@ TEST_F(ModbusSerialTests, ModbusSerial_Begin_End_Transmission)
 // pending tests:
 // * Add ModbusSerial_writeFromFrame_All once supported by MockSerialStream
 // * calcCrc() once I have sample CRC data
+// * write(word val)
