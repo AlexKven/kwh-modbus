@@ -144,6 +144,48 @@ TEST_F(ModbusSerialTests, ModbusSerial_Read_Failure)
 	ASSERT_FALSE(success);
 }
 
+TEST_F(ModbusSerialTests, ModbusSerial_ReadWord_Success)
+{
+	USE_FAKE;
+	CONFIG_MODBUS_FAKE_ALL;
+	When(Method(fakeSerial, read)).Return(2).Return(191);
+
+	word result = 3;
+	bool success = modbus->readWord(result);
+
+	Verify(Method(fakeSerial, read)).Twice();
+	ASSERT_EQ(result, 703);
+	ASSERT_TRUE(success);
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_ReadWord_Failure_First)
+{
+	USE_FAKE;
+	CONFIG_MODBUS_FAKE_ALL;
+	When(Method(fakeSerial, read)).Return(-1);
+
+	word result = 3;
+	bool success = modbus->readWord(result);
+
+	Verify(Method(fakeSerial, read)).Once();
+	ASSERT_EQ(result, 3);
+	ASSERT_FALSE(success);
+}
+
+TEST_F(ModbusSerialTests, ModbusSerial_ReadWord_Failure_Second)
+{
+	USE_FAKE;
+	CONFIG_MODBUS_FAKE_ALL;
+	When(Method(fakeSerial, read)).Return(2).Return(-1);
+
+	word result = 3;
+	bool success = modbus->readWord(result);
+
+	Verify(Method(fakeSerial, read)).Twice();
+	ASSERT_EQ(result, 3);
+	ASSERT_FALSE(success);
+}
+
 TEST_F(ModbusSerialTests, ModbusSerial_Write_Success)
 {
 	USE_FAKE;

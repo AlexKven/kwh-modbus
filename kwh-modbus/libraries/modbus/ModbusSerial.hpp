@@ -111,6 +111,18 @@ protected_testable:
 		return true;
 	}
 
+	bool readWord(word &result)
+	{
+		int high = _port->read();
+		if (high == -1)
+			return false;
+		int low = _port->read();
+		if (low == -1)
+			return false;
+		result = (high << 8) | low;
+		return true;
+	}
+
 	void flush()
 	{
 		_port->flush();
