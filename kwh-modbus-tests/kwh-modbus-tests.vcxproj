@@ -40,6 +40,7 @@
   <ItemGroup>
     <ClCompile Include="MockSerialStreamTests.cpp" />
     <ClCompile Include="ModbusArrayTests.cpp" />
+    <ClCompile Include="ModbusMasterSlaveTests.cpp" />
     <ClCompile Include="ModbusMemoryTests.cpp" />
     <ClCompile Include="ModbusSerialTests.cpp" />
     <ClCompile Include="ModbusSlaveTests.cpp" />
