@@ -4,11 +4,16 @@ template<typename TSerial, typename TSystemFunctions, typename TBase>
 class ModbusMaster : public ModbusSerial<TSerial, TSystemFunctions, TBase>
 {
 public:
-	bool task()
+	void send()
 	{
 		sendPDU();
-		word length;
-		while (length = awaitIncomingSerial() == 0);
+	}
+
+	bool receive()
+	{
+		word length = awaitIncomingSerial();
+		if (length == 0)
+			return false;
 
 		this->resetFrame(length);
 		readToFrame();

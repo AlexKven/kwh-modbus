@@ -18,11 +18,11 @@ public:
 		return _slaveId;
 	}
 
-	void task()
+	bool task()
 	{
 		word length = awaitIncomingSerial();
 		if (length == 0)
-			return;
+			return false;
 
 		this->resetFrame(length);
 		readToFrame();
@@ -37,6 +37,7 @@ public:
 		}
 
 		this->resetFrame(0);
+		return true;
 	}
 
 	bool readInputFrame()

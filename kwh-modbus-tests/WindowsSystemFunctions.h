@@ -3,7 +3,7 @@
 #include "WindowsFunctions.h"
 
 class WindowsSystemFunctions
-	: ISystemFunctions
+	: public ISystemFunctions
 {
 private:
 	WindowsFunctions _windows;
