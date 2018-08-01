@@ -71,5 +71,5 @@ TEST_F(ModbusMasterSlaveTests, MultithreadingTest)
 	auto t3 = wsf.createThread(wait_thread, new int(4000));
 	auto t4 = wsf.createThread(wait_thread, new int(15000));
 	auto t5 = wsf.createThread(wait_thread, new int(6000));
-	wsf.waitForThreads(t1, t2, t3, t4, t5);
+	wsf.waitForThreads(5, t1, t2, t3, t4, t5);
 }

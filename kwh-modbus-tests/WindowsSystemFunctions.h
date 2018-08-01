@@ -6,8 +6,6 @@ class WindowsSystemFunctions
 	: ISystemFunctions
 {
 private:
-	wait_status waitForThreads(handle *threads, int num, int size, handle head);
-	wait_status waitForThreads(handle *threads, int num, int size, handle head, handle tail...);
 	WindowsFunctions _windows;
 public:
 	WindowsSystemFunctions();
@@ -18,5 +16,5 @@ public:
 	void delayMicroseconds(unsigned long us);
 	unsigned long millis();
 	handle createThread(void(*func)(void*), void* param);
-	wait_status waitForThreads(handle threads...);
+	wait_status waitForThreads(int num, ...);
 };
