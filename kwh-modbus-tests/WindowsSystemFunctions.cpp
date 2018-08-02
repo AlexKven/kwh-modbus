@@ -32,16 +32,16 @@ void WindowsSystemFunctions::delayMicroseconds(unsigned long us)
 
 unsigned long WindowsSystemFunctions::millis()
 {
-	//return GetTickCount64();
-	return 0;
+	return _windows.RelativeMicroseconds() / 1000;
+}
+
+unsigned long WindowsSystemFunctions::micros()
+{
+	return _windows.RelativeMicroseconds();
 }
 
 handle WindowsSystemFunctions::createThread(void (*func)(void*), void* param)
 {
-	//auto data = new thread_data();
-	//data->func = func;
-	//data->param = param;
-	//return CreateThread(NULL, 0, thread_func, data, 0, 0);
 	return _windows.Windows_CreateThread(func, param);
 }
 

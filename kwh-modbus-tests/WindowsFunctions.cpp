@@ -44,3 +44,16 @@ wait_status WindowsFunctions::Windows_WaitForMultipleObjects(int num, handle* ob
 	else
 		return wait_failed;
 }
+
+unsigned long long WindowsFunctions::RelativeMicroseconds()
+{
+	// From Stack Overflow:
+	// https://stackoverflow.com/questions/4568221/c-get-system-time-to-microsecond-accuracy-on-windows
+	FILETIME ft;
+	GetSystemTimeAsFileTime(&ft);
+	unsigned long long tt = ft.dwHighDateTime;
+	tt <<= 32;
+	tt |= ft.dwLowDateTime;
+	tt /= 10;
+	//tt -= 11644473600000000ULL; Not needed because it's relative?
+}

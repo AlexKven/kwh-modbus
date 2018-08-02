@@ -17,4 +17,5 @@ public:
 	void Windows_Sleep(int millis);
 	handle Windows_CreateThread(void(*func)(void*), void* param);
 	wait_status Windows_WaitForMultipleObjects(int num, handle* objects, bool waitAll, int timeout);
+	unsigned long long RelativeMicroseconds();
 };

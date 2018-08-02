@@ -15,6 +15,7 @@ public:
 	void delay(unsigned long ms);
 	void delayMicroseconds(unsigned long us);
 	unsigned long millis();
+	unsigned long micros();
 	handle createThread(void(*func)(void*), void* param);
 	wait_status waitForThreads(int num, ...);
 };
