@@ -49,7 +49,7 @@ TEST_F(ModbusArrayTests, ModbusArray_Hreg)
 
 TEST_F(ModbusArrayTests, ModbusArray_Frame_Byte)
 {
-	bool success1 = modbus->resetFrame(10);
+	bool success1 = modbus->resetFrame(11);
 	byte *ptr = modbus->getFramePtr();
 	word len = modbus->getFrameLength();
 
@@ -57,9 +57,9 @@ TEST_F(ModbusArrayTests, ModbusArray_Frame_Byte)
 	bool success3 = modbus->setFrameReg(5, 703);
 	word regValue;
 
-	parseArray(ptr + 6, regValue);
+	parseArray(ptr + 7, regValue);
 
-	ASSERT_EQ(len, 10);
+	ASSERT_EQ(len, 11);
 	ASSERT_EQ(success1, true);
 	ASSERT_EQ(success2, true);
 	ASSERT_EQ(success3, false);
@@ -90,7 +90,7 @@ TEST_F(ModbusArrayTests, ModbusArray_FrameRegister)
 
 	word reg = modbus->getFrameReg(3);
 
-	ASSERT_EQ(len, 10);
+	ASSERT_EQ(len, 11);
 	ASSERT_EQ(success1, true);
 	ASSERT_EQ(success2, true);
 	ASSERT_EQ(success3, false);
@@ -201,7 +201,7 @@ TEST_F(ModbusArrayTests, Modbus_ReceivePDU_ReadRegisters_Success)
 	word frameLength = modbus->getFrameLength();
 	frame = modbus->getFramePtr();
 
-	ASSERT_EQ(frameLength, 8);
+	ASSERT_EQ(frameLength, 9);
 	for (int i = 0; i < 4; i++)
 	{
 		ASSERT_EQ(modbus->getFrameReg(i), modbus->Hreg(i + 5));

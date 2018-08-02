@@ -24,7 +24,8 @@ public:
 		if (length == 0)
 			return false;
 
-		this->resetFrame(length);
+		if (!this->resetFrame(length))
+			return false;
 		readToFrame();
 		
 		if (this->readInputFrame())

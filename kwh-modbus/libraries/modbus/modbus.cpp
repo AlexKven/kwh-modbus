@@ -30,20 +30,20 @@ word Modbus::getFrameLength()
 
 bool Modbus::resetFrameRegs(word numRegs)
 {
-	return resetFrame(numRegs * 2);
+	return resetFrame(numRegs * 2 + 1);
 }
 
 word Modbus::getFrameReg(word address)
 {
-	word* wordPtr = (word*)getFramePtr(); 
+	word* wordPtr = (word*)(getFramePtr() + 1); 
 	return wordPtr[address];
 }
 
 bool Modbus::setFrameReg(word address, word value)
 {
-	if (address * 2 >= getFrameLength())
+	if (address * 2 >= getFrameLength() - 1)
 		return false;
-	word* wordPtr = (word*)getFramePtr();
+	word* wordPtr = (word*)(getFramePtr() + 1);
 	wordPtr[address] = value;
 	return true;
 }
@@ -113,6 +113,7 @@ void Modbus::readRegisters(word startreg, word numregs) {
         return;
     }
 
+	getFramePtr()[0] = MB_FC_READ_REGS;
     word val;
     word i = 0;
 	while(numregs--) {

@@ -22,7 +22,7 @@ unsigned long time_max = MILLIS_MAX
 
 using namespace fakeit;
 
-class ModbusMasterSlaveTests : public ::testing::Test
+class ModbusIntegrationTests : public ::testing::Test
 {
 protected:
 	ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory> *slave = new ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory>();
@@ -31,10 +31,12 @@ protected:
 	queue<byte> *masterIn;
 	MockSerialStream *slaveSerial;
 	MockSerialStream *masterSerial;
+	bool masterSuccess = false;
+	bool slaveSuccess = false;
 
-public:
 	static WindowsSystemFunctions *system;
 
+public:
 	void SetUp()
 	{
 		system = new WindowsSystemFunctions();
@@ -43,7 +45,6 @@ public:
 		slaveSerial = new MockSerialStream(slaveIn, masterIn);
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
 		slave->config(slaveSerial, system, 1200);
-		slave->setSlaveId(23);
 		master->config(masterSerial, system, 1200);
 	}
 
@@ -57,46 +58,50 @@ public:
 
 	static void slave_thread(void *param)
 	{
+		ModbusIntegrationTests* fixture = (ModbusIntegrationTests*)param;
+		fixture->slaveSuccess = false;
 		TIMEOUT_START(2000);
-		ModbusMasterSlaveTests* fixture = (ModbusMasterSlaveTests*)param;
-		fixture->slave->addHreg(3, 703);
-		fixture->slave->addHreg(4, 513);
 		while (!fixture->slave->task())
 			TIMEOUT_CHECK;
+		fixture->slaveSuccess = true;
 	}
 
 	static void master_thread(void *param)
 	{
+		ModbusIntegrationTests* fixture = (ModbusIntegrationTests*)param;
+		fixture->masterSuccess = false;
 		TIMEOUT_START(2000);
-		ModbusMasterSlaveTests* fixture = (ModbusMasterSlaveTests*)param;
-		fixture->master->resetFrame(6);
-		auto frame = fixture->master->getFramePtr();
-		frame[0] = 23;
-		frame[1] = MB_FC_READ_REGS;
-		frame[2] = 0;
-		frame[3] = 3;
-		frame[4] = 0;
-		frame[5] = 2;
 
 		fixture->master->send();
 		while (!fixture->master->receive())
 			TIMEOUT_CHECK;
-
-		frame = fixture->master->getFramePtr();
-		word frameLength = fixture->master->getFrameLength();
+		fixture->masterSuccess = true;
 	}
 };
 
-WindowsSystemFunctions *ModbusMasterSlaveTests::system;
+WindowsSystemFunctions *ModbusIntegrationTests::system;
 
-TEST_F(ModbusMasterSlaveTests, ModbusSlave)
+TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs)
 {
+	// Set slave
+	slave->setSlaveId(23);
+	slave->addHreg(3, 703);
+	slave->addHreg(4, 513);
 
-}
+	// Set master
+	master->setRequest_ReadRegisters(23, 3, 2);
 
-TEST_F(ModbusMasterSlaveTests, ModbusMasterSlaveTests_FullTest)
-{
+	// Start both master and slave
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+	
+	bool integrity = master->verifyResponseIntegrity();
+	word regCount;
+	word* regPtr;
+	bool isReadRegs = master->isReadRegsResponse(regCount, regPtr);
+	assertArrayEq<word, word>(regPtr, 703, 513);
 }

@@ -3,6 +3,9 @@
 template<typename TSerial, typename TSystemFunctions, typename TBase>
 class ModbusMaster : public ModbusSerial<TSerial, TSystemFunctions, TBase>
 {
+private_testable:
+	byte _recipientId = 0;
+
 public:
 	void send()
 	{
@@ -31,5 +34,49 @@ public:
 		writeFromFrame();
 		writeWord(crc);
 		endTransmission();
+	}
+
+	bool setRequest_ReadRegisters(byte recipientId, word regStart, word regCount)
+	{
+		if (!this->resetFrame(6))
+			return false;
+		byte *frame = this->getFramePtr();
+
+		_recipientId = recipientId;
+		frame[0] = recipientId;
+		frame[1] = MB_FC_READ_REGS;
+		frame[2] = regStart >> 8;
+		frame[3] = regStart;
+		frame[4] = regCount >> 8;
+		frame[5] = regCount;
+		return true;
+	}
+
+	bool verifyResponseIntegrity()
+	{
+		byte *frame = this->getFramePtr();
+		word length = this->getFrameLength();
+
+		unsigned int crc = ((frame[length - 2] << 8) | frame[length - 1]);
+
+		//Slave Check
+		if (frame[0] != _recipientId)
+			return false;
+
+		//CRC Check
+		if (crc != this->calcCrc(frame[0], frame + 1, length - 3))
+			return false;
+	}
+
+	bool isReadRegsResponse(word &countOut, word* &regsOut)
+	{
+		byte *frame = this->getFramePtr();
+		word length = this->getFrameLength();
+		if (length < 4 || length % 2 != 0)
+			return false;
+		if (frame[1] != MB_FC_READ_REGS)
+			return false;
+		countOut = (length - 4) / 2;
+		regsOut = (word*)(frame + 2);
 	}
 };
