@@ -14,12 +14,17 @@
 #include "WindowsSystemFunctions.h"
 #include <queue>
 
+#define TIMEOUT_START(MILLIS_MAX) unsigned long time_start = system->millis(); \
+unsigned long time_max = MILLIS_MAX
+
+#define TIMEOUT_CHECK if (system->millis() - time_start > time_max) return
+#define TIMEOUT_CHECK_RETURN(RETURN_VALUE) if (system->millis() - time_start > time_max) return RETURN_VALUE
+
 using namespace fakeit;
 
 class ModbusMasterSlaveTests : public ::testing::Test
 {
 protected:
-	Mock<ISystemFunctions> fakeSystem;
 	ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory> *slave = new ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory>();
 	ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory> *master = new ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>();
 	queue<byte> *slaveIn;
@@ -28,15 +33,18 @@ protected:
 	MockSerialStream *masterSerial;
 
 public:
+	static WindowsSystemFunctions *system;
+
 	void SetUp()
 	{
+		system = new WindowsSystemFunctions();
 		slaveIn = new queue<byte>();
 		masterIn = new queue<byte>();
 		slaveSerial = new MockSerialStream(slaveIn, masterIn);
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
-		slave->config(slaveSerial, &fakeSystem.get(), 1200);
+		slave->config(slaveSerial, system, 1200);
 		slave->setSlaveId(23);
-		master->config(masterSerial, &fakeSystem.get(), 1200);
+		master->config(masterSerial, system, 1200);
 	}
 
 	void TearDown()
@@ -47,25 +55,20 @@ public:
 		delete masterSerial;
 	}
 
-
-	static void wait_thread(void* milliseconds)
-	{
-		WindowsFunctions func;
-		func.Windows_Sleep(*(int*)milliseconds);
-	}
-
 	static void slave_thread(void *param)
 	{
+		TIMEOUT_START(2000);
 		ModbusMasterSlaveTests* fixture = (ModbusMasterSlaveTests*)param;
 		fixture->slave->addHreg(3, 703);
 		fixture->slave->addHreg(4, 513);
-		while (!fixture->slave->task());
+		while (!fixture->slave->task())
+			TIMEOUT_CHECK;
 	}
 
 	static void master_thread(void *param)
 	{
+		TIMEOUT_START(2000);
 		ModbusMasterSlaveTests* fixture = (ModbusMasterSlaveTests*)param;
-
 		fixture->master->resetFrame(6);
 		auto frame = fixture->master->getFramePtr();
 		frame[0] = 23;
@@ -76,45 +79,24 @@ public:
 		frame[5] = 2;
 
 		fixture->master->send();
-		while (!fixture->master->receive());
+		while (!fixture->master->receive())
+			TIMEOUT_CHECK;
 
 		frame = fixture->master->getFramePtr();
 		word frameLength = fixture->master->getFrameLength();
 	}
 };
 
+WindowsSystemFunctions *ModbusMasterSlaveTests::system;
+
 TEST_F(ModbusMasterSlaveTests, ModbusSlave)
 {
-	Fake(Method(fakeSystem, delay));
-	Fake(Method(fakeSystem, delayMicroseconds));
-	Fake(Method(fakeSystem, digitalWrite));
-	Fake(Method(fakeSystem, pinMode));
-	When(Method(fakeSystem, millis)).AlwaysReturn(0);
 
-
-}
-
-TEST_F(ModbusMasterSlaveTests, MultithreadingTest)
-{
-	WindowsSystemFunctions wsf;
-	auto t1 = wsf.createThread(wait_thread, new int(2000));
-	auto t2 = wsf.createThread(wait_thread, new int(9000));
-	auto t3 = wsf.createThread(wait_thread, new int(4000));
-	auto t4 = wsf.createThread(wait_thread, new int(15000));
-	auto t5 = wsf.createThread(wait_thread, new int(6000));
-	wsf.waitForThreads(5, t1, t2, t3, t4, t5);
 }
 
 TEST_F(ModbusMasterSlaveTests, ModbusMasterSlaveTests_FullTest)
 {
-	Fake(Method(fakeSystem, delay));
-	Fake(Method(fakeSystem, delayMicroseconds));
-	Fake(Method(fakeSystem, digitalWrite));
-	Fake(Method(fakeSystem, pinMode));
-	When(Method(fakeSystem, millis)).AlwaysReturn(0);
-
-	WindowsSystemFunctions wsf;
-	auto t_master = wsf.createThread(master_thread, this);
-	auto t_slave = wsf.createThread(slave_thread, this);
-	wsf.waitForThreads(2, t_master, t_slave);
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
 }

@@ -56,4 +56,5 @@ unsigned long long WindowsFunctions::RelativeMicroseconds()
 	tt |= ft.dwLowDateTime;
 	tt /= 10;
 	//tt -= 11644473600000000ULL; Not needed because it's relative?
+	return tt;
 }
