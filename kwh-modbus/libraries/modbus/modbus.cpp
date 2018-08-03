@@ -30,20 +30,20 @@ word Modbus::getFrameLength()
 
 bool Modbus::resetFrameRegs(word numRegs)
 {
-	return resetFrame(numRegs * 2 + 1);
+	return resetFrame(numRegs * 2);
 }
 
 word Modbus::getFrameReg(word address)
 {
-	word* wordPtr = (word*)(getFramePtr() + 1); 
+	word* wordPtr = (word*)(getFramePtr()); 
 	return wordPtr[address];
 }
 
 bool Modbus::setFrameReg(word address, word value)
 {
-	if (address * 2 >= getFrameLength() - 1)
+	if (address * 2 >= getFrameLength())
 		return false;
-	word* wordPtr = (word*)(getFramePtr() + 1);
+	word* wordPtr = (word*)(getFramePtr());
 	wordPtr[address] = value;
 	return true;
 }
@@ -56,7 +56,7 @@ word Modbus::Hreg(word offset) {
     return Reg(offset);
 }
 
-void Modbus::receivePDU(byte* frame) {
+bool Modbus::receivePDU(byte* frame) {
     byte fcode  = frame[0];
     word field1 = (word)frame[1] << 8 | (word)frame[2];
     word field2 = (word)frame[3] << 8 | (word)frame[4];
@@ -65,21 +65,22 @@ void Modbus::receivePDU(byte* frame) {
 
         case MB_FC_WRITE_REG:
             //field1 = reg, field2 = value
-            this->writeSingleRegister(field1, field2);
+            return this->writeSingleRegister(field1, field2);
         break;
 
         case MB_FC_READ_REGS:
             //field1 = startreg, field2 = numregs
-            this->readRegisters(field1, field2);
+            return this->readRegisters(field1, field2);
         break;
 
         case MB_FC_WRITE_REGS:
             //field1 = startreg, field2 = status
-            this->writeMultipleRegisters(frame,field1, field2, frame[5]);
+            return this->writeMultipleRegisters(frame,field1, field2, frame[5]);\
         break;
 
         default:
             this->exceptionResponse(fcode, MB_EX_ILLEGAL_FUNCTION);
+			return false;
     }
 }
 
@@ -93,24 +94,24 @@ void Modbus::exceptionResponse(byte fcode, byte excode) {
     _reply = MB_REPLY_NORMAL;
 }
 
-void Modbus::readRegisters(word startreg, word numregs) {
+bool Modbus::readRegisters(word startreg, word numregs) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x007D) {
         this->exceptionResponse(MB_FC_READ_REGS, MB_EX_ILLEGAL_VALUE);
-        return;
+        return false;
     }
 
     //Check address range
     if (!this->validRange(startreg, numregs)) {
         this->exceptionResponse(MB_FC_READ_REGS, MB_EX_ILLEGAL_ADDRESS);
-        return;
+        return false;
     }
 
 
     //Clean frame buffer
     if (!resetFrameRegs(numregs)) {
         this->exceptionResponse(MB_FC_READ_REGS, MB_EX_SLAVE_FAILURE);
-        return;
+        return false;
     }
 
 	getFramePtr()[0] = MB_FC_READ_REGS;
@@ -125,36 +126,38 @@ void Modbus::readRegisters(word startreg, word numregs) {
 	}
 
     _reply = MB_REPLY_NORMAL;
+	return true;
 }
 
-void Modbus::writeSingleRegister(word reg, word value) {
+bool Modbus::writeSingleRegister(word reg, word value) {
     //No necessary verify illegal value (EX_ILLEGAL_VALUE) - because using word (0x0000 - 0x0FFFF)
     //Check Address and execute (reg exists?)
     if (!this->Hreg(reg, value)) {
         this->exceptionResponse(MB_FC_WRITE_REG, MB_EX_ILLEGAL_ADDRESS);
-        return;
+        return false;
     }
 
     //Check for failure
     if (this->Hreg(reg) != value) {
         this->exceptionResponse(MB_FC_WRITE_REG, MB_EX_SLAVE_FAILURE);
-        return;
+        return false;
     }
 
     _reply = MB_REPLY_ECHO;
+	return true;
 }
 
-void Modbus::writeMultipleRegisters(byte* inputFrame,word startreg, word numoutputs, byte bytecount) {
+bool Modbus::writeMultipleRegisters(byte* inputFrame,word startreg, word numoutputs, byte bytecount) {
     //Check value
     if (numoutputs < 0x0001 || numoutputs > 0x007B || bytecount != 2 * numoutputs) {
         this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_ILLEGAL_VALUE);
-        return;
+        return false;
     }
 
 	//Check address range
 	if (!this->validRange(startreg, numoutputs)) {
 		this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_ILLEGAL_ADDRESS);
-		return;
+		return false;
 	}
 
     word val;
@@ -168,7 +171,7 @@ void Modbus::writeMultipleRegisters(byte* inputFrame,word startreg, word numoutp
 	//Clean frame buffer
 	if (!resetFrame(5)) {
 		this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_SLAVE_FAILURE);
-		return;
+		return false;
 	}
 	byte* frame = getFramePtr();
 
@@ -179,6 +182,7 @@ void Modbus::writeMultipleRegisters(byte* inputFrame,word startreg, word numoutp
 	frame[4] = numoutputs & 0x00FF;
 
     _reply = MB_REPLY_NORMAL;
+	return true;
 }
 
 

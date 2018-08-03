@@ -61,7 +61,7 @@ TEST_F(ModbusMemoryTests, ModbusMemory_Hreg)
 
 TEST_F(ModbusMemoryTests, ModbusMemory_Frame_Byte)
 {
-	modbus->resetFrame(11);
+	modbus->resetFrame(10);
 	byte *ptr = modbus->getFramePtr();
 	word len = modbus->getFrameLength();
 
@@ -69,9 +69,9 @@ TEST_F(ModbusMemoryTests, ModbusMemory_Frame_Byte)
 	bool success2 = modbus->setFrameReg(5, 703);
 	word regValue;
 
-	parseArray(ptr + 7, regValue);
+	parseArray(ptr + 6, regValue);
 
-	ASSERT_EQ(len, 11);
+	ASSERT_EQ(len, 10);
 	ASSERT_EQ(success1, true);
 	ASSERT_EQ(success2, false);
 	ASSERT_EQ(regValue, 703);
@@ -88,7 +88,7 @@ TEST_F(ModbusMemoryTests, ModbusMemory_FrameRegister)
 
 	word reg = modbus->getFrameReg(3);
 
-	ASSERT_EQ(len, 11);
+	ASSERT_EQ(len, 10);
 	ASSERT_EQ(success1, true);
 	ASSERT_EQ(success2, false);
 	ASSERT_EQ(reg, 703);
@@ -122,11 +122,12 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_IllegalAddress)
 		revBytes(5),
 		revBytes(703));
 
-	modbus->receivePDU(frame);
+	bool success = modbus->receivePDU(frame);
 
 	word frameLength = modbus->getFrameLength();
 	frame = modbus->getFramePtr();
 
+	ASSERT_FALSE(success);
 	assertArrayEq<byte, byte>(frame,
 		MB_FC_WRITE_REG + 0x80,
 		MB_EX_ILLEGAL_ADDRESS);
@@ -146,11 +147,12 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_SlaveFailure)
 		revBytes(5),
 		revBytes(703));
 
-	modbus->receivePDU(frame);
+	bool success = modbus->receivePDU(frame);
 
 	word frameLength = modbus->getFrameLength();
 	frame = modbus->getFramePtr();
 
+	ASSERT_FALSE(success);
 	assertArrayEq<byte, byte>(frame,
 		MB_FC_WRITE_REG + 0x80,
 		MB_EX_SLAVE_FAILURE);
@@ -167,8 +169,9 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegister_Success)
 		revBytes<word>(5),
 		revBytes<word>(703));
 
-	modbus->receivePDU(frame);
+	bool success = modbus->receivePDU(frame);
 
+	ASSERT_TRUE(success);
 	ASSERT_EQ(modbus->_reply, MB_REPLY_ECHO);
 	ASSERT_EQ(modbus->Reg(5), 703);
 }
@@ -184,12 +187,13 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_Success)
 		revBytes<word>(5),
 		revBytes<word>(4));
 
-	modbus->receivePDU(frame);
+	bool success = modbus->receivePDU(frame);
 
 	word frameLength = modbus->getFrameLength();
 	frame = modbus->getFramePtr();
 
-	ASSERT_EQ(frameLength, 9);
+	ASSERT_TRUE(success);
+	ASSERT_EQ(frameLength, 8);
 	for (int i = 0; i < 4; i++)
 	{
 		ASSERT_EQ(modbus->getFrameReg(i), modbus->Hreg(i + 5));
@@ -207,11 +211,12 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_IllegalAddress)
 		revBytes<word>(5),
 		revBytes<word>(4));
 
-	modbus->receivePDU(frame);
+	bool success = modbus->receivePDU(frame);
 
 	word frameLength = modbus->getFrameLength();
 	frame = modbus->getFramePtr();
 
+	ASSERT_FALSE(success);
 	assertArrayEq<byte, byte>(frame,
 		MB_FC_READ_REGS + 0x80,
 		MB_EX_ILLEGAL_ADDRESS);
@@ -227,11 +232,12 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_IllegalValue)
 		revBytes(5),
 		revBytes(0));
 
-	modbus->receivePDU(frame);
+	bool success = modbus->receivePDU(frame);
 
 	word frameLength = modbus->getFrameLength();
 	frame = modbus->getFramePtr();
 
+	ASSERT_FALSE(success);
 	assertArrayEq<byte, byte>(frame,
 		MB_FC_READ_REGS + 0x80,
 		MB_EX_ILLEGAL_VALUE);
@@ -253,11 +259,12 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_ReadRegisters_SlaveFailure)
 	modbus->resetFrame(2);
 	When(Method(mock, resetFrame)).Return(false).Return(true);
 
-	modbus->receivePDU(frame);
+	bool success = modbus->receivePDU(frame);
 
 	word frameLength = modbus->getFrameLength();
 	frame = modbus->getFramePtr();
 
+	ASSERT_FALSE(success);
 	assertArrayEq<byte, byte>(frame,
 		MB_FC_READ_REGS + 0x80,
 		MB_EX_SLAVE_FAILURE);
@@ -283,11 +290,12 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegisters_Success)
 		revBytes<word>(125),
 		revBytes<word>(625));
 
-	modbus->receivePDU(frame);
+	bool success = modbus->receivePDU(frame);
 
 	word frameLength = modbus->getFrameLength();
 	frame = modbus->getFramePtr();
 
+	ASSERT_TRUE(success);
 	assertArrayEq<byte, word, word>(frame,
 		MB_FC_WRITE_REGS,
 		input_start,
@@ -323,11 +331,12 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegisters_IllegalAddress)
 		revBytes<word>(125),
 		revBytes<word>(625));
 
-	modbus->receivePDU(frame);
+	bool success = modbus->receivePDU(frame);
 
 	word frameLength = modbus->getFrameLength();
 	frame = modbus->getFramePtr();
 
+	ASSERT_FALSE(success);
 	assertArrayEq<byte, byte>(frame,
 		MB_FC_WRITE_REGS + 0x80,
 		MB_EX_ILLEGAL_ADDRESS);
@@ -353,11 +362,12 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegisters_IllegalValue)
 		revBytes<word>(125),
 		revBytes<word>(625));
 
-	modbus->receivePDU(frame);
+	bool success = modbus->receivePDU(frame);
 
 	word frameLength = modbus->getFrameLength();
 	frame = modbus->getFramePtr();
 
+	ASSERT_FALSE(success);
 	assertArrayEq<byte, byte>(frame,
 		MB_FC_WRITE_REGS + 0x80,
 		MB_EX_ILLEGAL_VALUE);
@@ -383,11 +393,12 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegisters_IllegalValue_BadByteC
 		revBytes<word>(125),
 		revBytes<word>(625));
 
-	modbus->receivePDU(frame);
+	bool success = modbus->receivePDU(frame);
 
 	word frameLength = modbus->getFrameLength();
 	frame = modbus->getFramePtr();
 
+	ASSERT_FALSE(success);
 	assertArrayEq<byte, byte>(frame,
 		MB_FC_WRITE_REGS + 0x80,
 		MB_EX_ILLEGAL_VALUE);
@@ -417,11 +428,12 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_WriteRegisters_SlaveFailure)
 	// Do the frame reset for the error in advance, since we'll mock it.
 	When(Method(mock, resetFrame)).Return(false).Return(true);
 
-	modbus->receivePDU(frame);
+	bool success = modbus->receivePDU(frame);
 
 	word frameLength = modbus->getFrameLength();
 	frame = modbus->getFramePtr();
 
+	ASSERT_FALSE(success);
 	assertArrayEq<byte, byte>(frame,
 		MB_FC_WRITE_REGS + 0x80,
 		MB_EX_SLAVE_FAILURE);
@@ -442,11 +454,12 @@ TEST_F(ModbusMemoryTests, Modbus_ReceivePDU_IllegalFunction)
 		input_start,
 		input_length);
 
-	modbus->receivePDU(frame);
+	bool success = modbus->receivePDU(frame);
 
 	word frameLength = modbus->getFrameLength();
 	frame = modbus->getFramePtr();
 
+	ASSERT_FALSE(success);
 	assertArrayEq<byte, byte>(frame,
 		42 + 0x80,
 		MB_EX_ILLEGAL_FUNCTION);

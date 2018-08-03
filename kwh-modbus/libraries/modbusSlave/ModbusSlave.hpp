@@ -5,6 +5,8 @@ class ModbusSlave : public ModbusSerial<TSerial, TSystemFunctions, TBase>
 {
 private:
 	byte  _slaveId;
+	byte _replyFunctionCode;
+	bool _exceptionResponse;
 
 public:
 	bool setSlaveId(byte slaveId)
@@ -60,9 +62,10 @@ public:
 			return false;
 		}
 
+		_replyFunctionCode = frame[1];
 		//PDU starts after first byte
 		//framesize PDU = framesize - address(1) - crc(2)
-		this->receivePDU(frame + 1);
+		_exceptionResponse = !this->receivePDU(frame + 1);
 		//No reply to Broadcasts
 		if (address == 0xFF) this->_reply = MB_REPLY_OFF;
 		return true;
@@ -74,6 +77,10 @@ public:
 
 		//Send slaveId
 		write(_slaveId);
+
+		//Resend function code if no exception response
+		if (!_exceptionResponse)
+			write(_replyFunctionCode);
 
 		//Send PDU
 		writeFromFrame();
