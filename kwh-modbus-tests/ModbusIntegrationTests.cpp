@@ -98,10 +98,62 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs)
 
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
-	
+
 	bool integrity = master->verifyResponseIntegrity();
 	word regCount;
 	word* regPtr;
 	bool isReadRegs = master->isReadRegsResponse(regCount, regPtr);
 	assertArrayEq<word, word>(regPtr, 703, 513);
+}
+
+TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success)
+{
+	// Set slave
+	slave->setSlaveId(23);
+	slave->addHreg(3, 703);
+	slave->addHreg(4, 513);
+
+	// Set master
+	master->setRequest_ReadRegisters(23, 3, 2);
+
+	// Start both master and slave
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+
+	bool integrity = master->verifyResponseIntegrity();
+	word regCount;
+	word* regPtr;
+	bool isReadRegs = master->isReadRegsResponse(regCount, regPtr);
+	ASSERT_EQ(regCount, 2);
+	assertArrayEq<word, word>(regPtr, 703, 513);
+}
+
+TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
+{
+	// Set slave
+	slave->setSlaveId(23);
+	slave->addHreg(3, 703);
+	slave->addHreg(4, 513);
+
+	// Set master
+	master->setRequest_ReadRegisters(23, 3, 3);
+
+	// Start both master and slave
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+
+	bool integrity = master->verifyResponseIntegrity();
+	byte fcode;
+	byte excode;
+	bool isReadRegs = master->isExceptionResponse(fcode, excode);
+	ASSERT_EQ(fcode, MB_FC_READ_REGS);
+	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }

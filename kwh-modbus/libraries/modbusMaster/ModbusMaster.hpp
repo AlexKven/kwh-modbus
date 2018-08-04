@@ -79,4 +79,20 @@ public:
 		countOut = (length - 4) / 2;
 		regsOut = (word*)(frame + 2);
 	}
+
+	bool isExceptionResponse(byte &fcode, byte &excode)
+	{
+		byte *frame = this->getFramePtr();
+		word length = this->getFrameLength();
+		if (length != 5)
+			return false;
+		if (frame[1] >= 128)
+		{
+			fcode = frame[1] - 128;
+			excode = frame[2];
+			return true;
+		}
+		else
+			return false;
+	}
 };
