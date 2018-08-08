@@ -47,11 +47,6 @@ enum {
 
 class Modbus {
     private:
-        bool readRegisters(word startreg, word numregs);
-        bool writeSingleRegister(word reg, word value);
-        bool writeMultipleRegisters(byte* frame,word startreg, word numoutputs, byte bytecount);
-        void exceptionResponse(byte fcode, byte excode);
-
 		byte *_frame;
 		word  _length;
 
@@ -60,13 +55,12 @@ class Modbus {
 
 		virtual bool Reg(word address, word value) = 0;
 		virtual word Reg(word address) = 0;
-        bool receivePDU(byte* frame);
 
 		virtual bool resetFrame(word byteLength);
 		virtual byte* getFramePtr();
 		virtual word getFrameLength();
 
-		bool resetFrameRegs(word numRegs);
+		bool resetFrameRegs(word numRegs, bool begin);
 		word getFrameReg(word address);
 		virtual bool setFrameReg(word address, word value);
     public:
