@@ -75,7 +75,7 @@ bool Modbus::receivePDU(byte* frame) {
 
         case MB_FC_WRITE_REGS:
             //field1 = startreg, field2 = status
-            return this->writeMultipleRegisters(frame,field1, field2, frame[5]);\
+            return this->writeMultipleRegisters(frame, field1, field2, frame[5]);
         break;
 
         default:

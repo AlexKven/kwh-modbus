@@ -52,6 +52,22 @@ public:
 		return true;
 	}
 
+	bool setRequest_WriteRegister(byte recipientId, word regIndex, word regValue)
+	{
+		if (!this->resetFrame(6))
+			return false;
+		byte *frame = this->getFramePtr();
+
+		_recipientId = recipientId;
+		frame[0] = recipientId;
+		frame[1] = MB_FC_WRITE_REG;
+		frame[2] = regIndex >> 8;
+		frame[3] = regIndex;
+		frame[4] = regValue >> 8;
+		frame[5] = regValue;
+		return true;
+	}
+
 	bool verifyResponseIntegrity()
 	{
 		byte *frame = this->getFramePtr();
@@ -64,7 +80,7 @@ public:
 			return false;
 
 		//CRC Check
-		if (crc != this->calcCrc(frame[0], frame + 1, length - 3))
+		if (crc != this->calcCrc(frame[0], frame + 2, length - 4))
 			return false;
 	}
 
@@ -93,6 +109,16 @@ public:
 			return true;
 		}
 		else
+			return false;
+	}
+
+	bool isWriteRegResponse()
+	{
+		byte *frame = this->getFramePtr();
+		word length = this->getFrameLength();
+		if (length < 4 || length % 2 != 0)
+			return false;
+		if (frame[1] != MB_FC_WRITE_REG)
 			return false;
 	}
 };

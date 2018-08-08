@@ -60,7 +60,7 @@ public:
 	{
 		ModbusIntegrationTests* fixture = (ModbusIntegrationTests*)param;
 		fixture->slaveSuccess = false;
-		TIMEOUT_START(2000);
+		TIMEOUT_START(10000);
 		while (!fixture->slave->task())
 			TIMEOUT_CHECK;
 		fixture->slaveSuccess = true;
@@ -70,7 +70,7 @@ public:
 	{
 		ModbusIntegrationTests* fixture = (ModbusIntegrationTests*)param;
 		fixture->masterSuccess = false;
-		TIMEOUT_START(2000);
+		TIMEOUT_START(10000);
 
 		fixture->master->send();
 		while (!fixture->master->receive())
@@ -103,6 +103,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs)
 	word regCount;
 	word* regPtr;
 	bool isReadRegs = master->isReadRegsResponse(regCount, regPtr);
+	ASSERT_TRUE(integrity);
 	assertArrayEq<word, word>(regPtr, 703, 513);
 }
 
@@ -128,6 +129,8 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success)
 	word regCount;
 	word* regPtr;
 	bool isReadRegs = master->isReadRegsResponse(regCount, regPtr);
+	ASSERT_TRUE(integrity);
+	ASSERT_TRUE(isReadRegs);
 	ASSERT_EQ(regCount, 2);
 	assertArrayEq<word, word>(regPtr, 703, 513);
 }
@@ -154,6 +157,33 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
 	byte fcode;
 	byte excode;
 	bool isReadRegs = master->isExceptionResponse(fcode, excode);
+	ASSERT_TRUE(integrity);
+	ASSERT_TRUE(isReadRegs);
 	ASSERT_EQ(fcode, MB_FC_READ_REGS);
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
+}
+
+TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
+{
+	// Set slave
+	slave->setSlaveId(23);
+	slave->addHreg(3, 0);
+
+	// Set master
+	master->setRequest_WriteRegister(21, 3, 703);
+
+	// Start both master and slave
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+
+	bool integrity = master->verifyResponseIntegrity();
+	bool isWriteReg = master->isWriteRegResponse();
+	word reg = slave->Hreg(3);
+	ASSERT_TRUE(integrity);
+	ASSERT_TRUE(isWriteReg);
+	ASSERT_EQ(reg, 703);
 }
