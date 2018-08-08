@@ -18,8 +18,8 @@ protected:
 public:
 	void SetUp()
 	{
-		registerArray = new word[10];
-		modbus->init(registerArray, 5, 10, 12);
+		registerArray = new word[12];
+		modbus->init(registerArray, 5, 10, 14);
 	}
 
 	void TearDown()
@@ -53,8 +53,8 @@ TEST_F(ModbusArrayTests, ModbusArray_Frame_Byte)
 	byte *ptr = modbus->getFramePtr();
 	word len = modbus->getFrameLength();
 
-	bool success2 = modbus->setFrameReg(3, 703);
-	bool success3 = modbus->setFrameReg(5, 703);
+	bool success2 = modbus->setFrameReg(3, 703, 0);
+	bool success3 = modbus->setFrameReg(5, 703, 0);
 	word regValue;
 
 	parseArray(ptr + 6, regValue);
@@ -72,7 +72,7 @@ TEST_F(ModbusArrayTests, ModbusArray_Frame_Byte_BeyondMaxFrame)
 	byte *ptr = modbus->getFramePtr();
 	word len = modbus->getFrameLength();
 
-	bool success2 = modbus->setFrameReg(3, 703);
+	bool success2 = modbus->setFrameReg(3, 703, 0);
 
 	ASSERT_EQ(len, 0);
 	ASSERT_EQ(success1, false);
@@ -81,16 +81,16 @@ TEST_F(ModbusArrayTests, ModbusArray_Frame_Byte_BeyondMaxFrame)
 
 TEST_F(ModbusArrayTests, ModbusArray_FrameRegister)
 {
-	bool success1 = modbus->resetFrameRegs(5, 0);
+	bool success1 = modbus->resetFrameRegs(5, 2);
 	byte *ptr = modbus->getFramePtr();
 	word len = modbus->getFrameLength();
 
-	bool success2 = modbus->setFrameReg(3, 703);
-	bool success3 = modbus->setFrameReg(5, 703);
+	bool success2 = modbus->setFrameReg(3, 703, 2);
+	bool success3 = modbus->setFrameReg(5, 703, 2);
 
-	word reg = modbus->getFrameReg(3);
+	word reg = modbus->getFrameReg(3, 2);
 
-	ASSERT_EQ(len, 10);
+	ASSERT_EQ(len, 12);
 	ASSERT_EQ(success1, true);
 	ASSERT_EQ(success2, true);
 	ASSERT_EQ(success3, false);
@@ -99,12 +99,12 @@ TEST_F(ModbusArrayTests, ModbusArray_FrameRegister)
 
 TEST_F(ModbusArrayTests, ModbusMemory_FrameRegister_BeyondMaxFrame)
 {
-	bool success1 = modbus->resetFrameRegs(10, 0);
+	bool success1 = modbus->resetFrameRegs(10, 4);
 	byte *ptr = modbus->getFramePtr();
 	word len = modbus->getFrameLength();
 
-	bool success2 = modbus->setFrameReg(3, 703);
-	bool success3 = modbus->setFrameReg(5, 703);
+	bool success2 = modbus->setFrameReg(3, 703, 4);
+	bool success3 = modbus->setFrameReg(5, 703, 4);
 
 	ASSERT_EQ(len, 0);
 	ASSERT_EQ(success1, false);

@@ -80,7 +80,7 @@ public:
 			return false;
 
 		//CRC Check
-		if (crc != this->calcCrc(frame[0], frame + 2, length - 4))
+		if (crc != this->calcCrc(frame[0], frame + 1, length - 3))
 			return false;
 	}
 

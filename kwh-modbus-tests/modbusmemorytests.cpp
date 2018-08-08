@@ -61,17 +61,17 @@ TEST_F(ModbusMemoryTests, ModbusMemory_Hreg)
 
 TEST_F(ModbusMemoryTests, ModbusMemory_Frame_Byte)
 {
-	modbus->resetFrame(10);
+	modbus->resetFrame(13);
 	byte *ptr = modbus->getFramePtr();
 	word len = modbus->getFrameLength();
 
-	bool success1 = modbus->setFrameReg(3, 703);
-	bool success2 = modbus->setFrameReg(5, 703);
+	bool success1 = modbus->setFrameReg(3, 703, 3);
+	bool success2 = modbus->setFrameReg(5, 703, 3);
 	word regValue;
 
-	parseArray(ptr + 6, regValue);
+	parseArray(ptr + 9, regValue);
 
-	ASSERT_EQ(len, 10);
+	ASSERT_EQ(len, 13);
 	ASSERT_EQ(success1, true);
 	ASSERT_EQ(success2, false);
 	ASSERT_EQ(regValue, 703);
@@ -79,16 +79,16 @@ TEST_F(ModbusMemoryTests, ModbusMemory_Frame_Byte)
 
 TEST_F(ModbusMemoryTests, ModbusMemory_FrameRegister)
 {
-	modbus->resetFrameRegs(5, 0);
+	modbus->resetFrameRegs(5, 1);
 	byte *ptr = modbus->getFramePtr();
 	word len = modbus->getFrameLength();
 
-	bool success1 = modbus->setFrameReg(3, 703);
-	bool success2 = modbus->setFrameReg(5, 703);
+	bool success1 = modbus->setFrameReg(3, 703, 1);
+	bool success2 = modbus->setFrameReg(5, 703, 1);
 
-	word reg = modbus->getFrameReg(3);
+	word reg = modbus->getFrameReg(3, 1);
 
-	ASSERT_EQ(len, 10);
+	ASSERT_EQ(len, 11);
 	ASSERT_EQ(success1, true);
 	ASSERT_EQ(success2, false);
 	ASSERT_EQ(reg, 703);

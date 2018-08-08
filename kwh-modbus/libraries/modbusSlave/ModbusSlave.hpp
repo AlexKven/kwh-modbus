@@ -45,7 +45,7 @@ private:
 			//retrieve the value from the register bank for the current register
 			val = this->Hreg(startreg + i);
 			//write the high byte of the register value
-			setFrameReg(i, val);
+			setFrameReg(i, val, 1);
 			i++;
 		}
 
@@ -67,11 +67,18 @@ private:
 			return false;
 		}
 
+		if (!resetFrame(1)) {
+			this->exceptionResponse(MB_FC_READ_REGS, MB_EX_SLAVE_FAILURE);
+			return false;
+		}
+
+		this->getFramePtr()[0] = MB_FC_WRITE_REG;
+
 		_reply = MB_REPLY_ECHO;
 		return true;
 	}
 
-	bool writeMultipleRegisters(byte* inputFrame, word startreg, word numoutputs, byte bytecount, byte begin = 7) {
+	bool writeMultipleRegisters(byte* inputFrame, word startreg, word numoutputs, byte bytecount, byte begin = 6) {
 		//Check value
 		if (numoutputs < 0x0001 || numoutputs > 0x007B || bytecount != 2 * numoutputs) {
 			this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_ILLEGAL_VALUE);
@@ -87,7 +94,7 @@ private:
 		word val;
 		word i = 0;
 		while (i < numoutputs) {
-			val = (word)inputFrame[begin + i * 2] << 8 | (word)inputFrame[begin + i * 2];
+			val = (word)inputFrame[begin + i * 2] << 8 | (word)inputFrame[begin + 1 + i * 2];
 			this->Hreg(startreg + i, val);
 			i++;
 		}

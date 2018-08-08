@@ -28,22 +28,22 @@ word Modbus::getFrameLength()
 	return _length;
 }
 
-bool Modbus::resetFrameRegs(word numRegs, bool begin)
+bool Modbus::resetFrameRegs(word numRegs, byte begin)
 {
 	return resetFrame(numRegs * 2 + begin);
 }
 
-word Modbus::getFrameReg(word address)
+word Modbus::getFrameReg(word address, byte begin)
 {
-	word* wordPtr = (word*)(getFramePtr()); 
+	word* wordPtr = (word*)(getFramePtr() + begin); 
 	return wordPtr[address];
 }
 
-bool Modbus::setFrameReg(word address, word value)
+bool Modbus::setFrameReg(word address, word value, byte begin)
 {
-	if (address * 2 >= getFrameLength())
+	if (address * 2 + begin >= getFrameLength())
 		return false;
-	word* wordPtr = (word*)(getFramePtr());
+	word* wordPtr = (word*)(getFramePtr() + begin);
 	wordPtr[address] = value;
 	return true;
 }

@@ -130,10 +130,10 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_ReadRegisters_Success)
 	frame = modbus->getFramePtr();
 
 	ASSERT_TRUE(success);
-	ASSERT_EQ(frameLength, 8);
+	ASSERT_EQ(frameLength, 9);
 	for (int i = 0; i < 4; i++)
 	{
-		ASSERT_EQ(modbus->getFrameReg(i), modbus->Hreg(i + 5));
+		ASSERT_EQ(modbus->getFrameReg(i, 1), modbus->Hreg(i + 5));
 	}
 }
 

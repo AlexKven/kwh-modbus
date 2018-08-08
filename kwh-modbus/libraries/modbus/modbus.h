@@ -60,9 +60,9 @@ class Modbus {
 		virtual byte* getFramePtr();
 		virtual word getFrameLength();
 
-		bool resetFrameRegs(word numRegs, bool begin);
-		word getFrameReg(word address);
-		virtual bool setFrameReg(word address, word value);
+		bool resetFrameRegs(word numRegs, byte begin);
+		word getFrameReg(word address, byte begin);
+		virtual bool setFrameReg(word address, word value, byte begin);
     public:
         Modbus();
 
