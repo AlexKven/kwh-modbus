@@ -81,32 +81,6 @@ public:
 
 WindowsSystemFunctions *ModbusIntegrationTests::system;
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs)
-{
-	// Set slave
-	slave->setSlaveId(23);
-	slave->addHreg(3, 703);
-	slave->addHreg(4, 513);
-
-	// Set master
-	master->setRequest_ReadRegisters(23, 3, 2);
-
-	// Start both master and slave
-	auto t_master = system->createThread(master_thread, this);
-	auto t_slave = system->createThread(slave_thread, this);
-	system->waitForThreads(2, t_master, t_slave);
-
-	ASSERT_TRUE(slaveSuccess);
-	ASSERT_TRUE(masterSuccess);
-
-	bool integrity = master->verifyResponseIntegrity();
-	word regCount;
-	word* regPtr;
-	bool isReadRegs = master->isReadRegsResponse(regCount, regPtr);
-	ASSERT_TRUE(integrity);
-	assertArrayEq<word, word>(regPtr, 703, 513);
-}
-
 TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success)
 {
 	// Set slave
