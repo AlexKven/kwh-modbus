@@ -170,7 +170,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
 	slave->addHreg(3, 0);
 
 	// Set master
-	master->setRequest_WriteRegister(21, 3, 703);
+	master->setRequest_WriteRegister(23, 3, 703);
 
 	// Start both master and slave
 	auto t_master = system->createThread(master_thread, this);

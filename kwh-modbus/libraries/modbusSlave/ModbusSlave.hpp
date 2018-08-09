@@ -67,13 +67,6 @@ private:
 			return false;
 		}
 
-		if (!resetFrame(1)) {
-			this->exceptionResponse(MB_FC_READ_REGS, MB_EX_SLAVE_FAILURE);
-			return false;
-		}
-
-		this->getFramePtr()[0] = MB_FC_WRITE_REG;
-
 		_reply = MB_REPLY_ECHO;
 		return true;
 	}
@@ -231,7 +224,7 @@ public:
 		return true;
 	}
 
-	bool echo()
+	bool echo(bool fCodeOnly = true)
 	{
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
@@ -239,7 +232,14 @@ public:
 
 		beginTransmission();
 
-		writeFromFrame();
+		if (fCodeOnly)
+		{
+			writeFromFrame(2);
+			word crc = calcCrc(_slaveId, frame + 1, 1);
+			writeWord(crc);
+		}
+		else
+			writeFromFrame();
 
 		endTransmission();
 		return true;
