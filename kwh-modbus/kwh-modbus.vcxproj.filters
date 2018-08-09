@@ -17,6 +17,12 @@
     <ClCompile Include="noArduino\SystemFunctions.cpp">
       <Filter>noArduino</Filter>
     </ClCompile>
+    <ClCompile Include="libraries\arduinoClasses\ArduinoSerial.cpp">
+      <Filter>libraries\arduinoClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\arduinoClasses\ArduinoSystem.cpp">
+      <Filter>libraries\arduinoClasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\modbusMaster\crc16.h">
@@ -67,6 +73,12 @@
     <ClInclude Include="libraries\modbusMaster\ModbusMaster.hpp">
       <Filter>libraries\modbusMaster</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\arduinoClasses\ArduinoSerial.h">
+      <Filter>libraries\arduinoClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\arduinoClasses\ArduinoSystem.h">
+      <Filter>libraries\arduinoClasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -95,6 +107,9 @@
     </Filter>
     <Filter Include="libraries\modbusHelpers">
       <UniqueIdentifier>{98765850-cd37-4bb5-b89c-8bc84e543526}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\arduinoClasses">
+      <UniqueIdentifier>{5b12c040-ca27-4a80-9942-f934e5b34c1b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

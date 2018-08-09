@@ -1,1 +1,0 @@
-#define PROJECT(file) "C:\GitHub\kwh-modbus\kwh-modbus\kwh-modbus\" ## file

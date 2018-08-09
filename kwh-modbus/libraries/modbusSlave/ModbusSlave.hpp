@@ -15,7 +15,7 @@ private:
 		frame[0] = fcode + 0x80;
 		frame[1] = excode;
 
-		_reply = MB_REPLY_NORMAL;
+		this->_reply = MB_REPLY_NORMAL;
 	}
 
 	bool readRegisters(word startreg, word numregs) {
@@ -49,7 +49,7 @@ private:
 			i++;
 		}
 
-		_reply = MB_REPLY_NORMAL;
+		this->_reply = MB_REPLY_NORMAL;
 		return true;
 	}
 
@@ -67,7 +67,7 @@ private:
 			return false;
 		}
 
-		_reply = MB_REPLY_ECHO;
+		this->_reply = MB_REPLY_ECHO;
 		return true;
 	}
 
@@ -105,7 +105,7 @@ private:
 		frame[3] = numoutputs >> 8;
 		frame[4] = numoutputs & 0x00FF;
 
-		_reply = MB_REPLY_NORMAL;
+		this->_reply = MB_REPLY_NORMAL;
 		return true;
 	}
 

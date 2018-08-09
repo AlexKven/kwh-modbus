@@ -64,6 +64,8 @@
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="libraries\arduinoClasses\ArduinoSerial.cpp" />
+    <ClCompile Include="libraries\arduinoClasses\ArduinoSystem.cpp" />
     <ClCompile Include="libraries\modbus\Modbus.cpp" />
     <ClCompile Include="libraries\modbus\ModbusArray.cpp" />
     <ClCompile Include="mock\MockSerialStream.cpp" />
@@ -74,6 +76,8 @@
   <ItemGroup>
     <ClInclude Include="interfaces\ISerialStream.h" />
     <ClInclude Include="interfaces\ISystemFunctions.h" />
+    <ClInclude Include="libraries\arduinoClasses\ArduinoSerial.h" />
+    <ClInclude Include="libraries\arduinoClasses\ArduinoSystem.h" />
     <ClInclude Include="libraries\modbusMaster\crc16.h" />
     <ClInclude Include="libraries\modbusMaster\modbusmaster.h" />
     <ClInclude Include="libraries\modbusMaster\ModbusMaster.hpp" />

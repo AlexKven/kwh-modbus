@@ -1,32 +1,43 @@
 #include "Arduino.h"
-#include "modbus.h"
-#include "modbusmemory.h"
-#include "modbusserial.h"
+#include "Modbus.h"
+#include "ModbusArray.h"
+#include "ModbusSerial.hpp"
+#include "ModbusSlave.hpp"
+#include "HardwareSerial.h"
 
 
 class ArduinoFunctions
 {
-  void DelayMicroseconds(long len)
+public:
+  void delayMicroseconds(long len)
   {
-    
+    delayMicroseconds(len);
   }
 
-  void DigitalWrite(unsigned char pin, unsigned char value)
+  void digitalWrite(unsigned char pin, unsigned char value)
   {
-    
+    digitalWrite(pin, value);
   }
 
-  void PinMode(unsigned char pin, unsigned char mode)
+  uint8_t digitalRead(unsigned char pin)
   {
-    
+    return digitalRead(pin);
+  }
+
+  void pinMode(unsigned char pin, unsigned char mode)
+  {
+    pinMode(pin, mode);
   }
 };
 
 void setup() {
   // put your setup code here, to run once:
   //Serial *ser = &Serial1;
+
   
-  ModbusMemory<ModbusSerial<HardwareSerial, ArduinoFunctions, Modbus>> slave;
+  
+  ModbusSlave<HardwareSerial, ArduinoFunctions, ModbusArray> slave;
+  slave.config(&Serial1, new ArduinoFunctions(), 1200, 4);
   
 }
 
