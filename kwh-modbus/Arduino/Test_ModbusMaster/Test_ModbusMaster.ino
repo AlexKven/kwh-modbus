@@ -2,7 +2,7 @@
 #include "Modbus.h"
 #include "ModbusArray.h"
 #include "ModbusSerial.hpp"
-#include "ModbusSlave.hpp"
+#include "ModbusMaster.hpp"
 #include "HardwareSerial.h"
 
 
@@ -31,44 +31,35 @@ public:
 };
 
 word *registers = new word[15];
-ModbusSlave<HardwareSerial, ArduinoFunctions, ModbusArray> slave;
+ModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray> master;
 
 void setup() {
   // put your setup code here, to run once:
-  //Serial *ser = &Serial1;
-
-  for (int i = 0; i < 15; i++)
-  {
-    registers[i] = 0;
-  }
-
   Serial.begin(9600);
   Serial.println("Starting...");
-  
-  slave.config(&Serial1, new ArduinoFunctions(), 19200, 4);
-  Serial.println("Slave initialized");
-  slave.init(registers, 0, 15, 30);
-  slave.setSlaveId(3);
+
+  master.config(&Serial1, new ArduinoFunctions(), 19200, 4);
+  master.init(registers, 0, 15, 30);
+  Serial.println("Master initialized");
 }
+
+int i = 0;
+bool done = true;
 
 void loop() {
 //  // put your main code here, to run repeatedly:
-//  Serial.println(Serial1.available());
-  slave.task();
-
-  for (int i = 0; i < 15; i++)
+  if (done)
   {
-    Serial.print(registers[i]);
-    Serial.print(" ");
+    master.setRequest_WriteRegister(3, 3, i++);
+    master.send();
+    Serial.println("Master done");
+    done = false;
   }
-  Serial.println("");
-//  delay(2000);
+  else
+  {
+    done = master.receive();
+  }
 //
-//  if (Serial1.available())
-//  {
-//    while (Serial1.available())
-//    Serial.print(Serial1.read());
-//  }
 //  if (Serial.available())
 //  {
 //    while (Serial.available())
@@ -80,5 +71,10 @@ void loop() {
 //      digitalWrite(4, LOW);
 //      delay(30);
 //    }
+//  }
+//  if (Serial1.available())
+//  {
+//    while (Serial1.available())
+//    Serial.print(Serial1.read());
 //  }
 }
