@@ -187,3 +187,38 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
 	ASSERT_TRUE(isWriteReg);
 	ASSERT_EQ(reg, 703);
 }
+
+TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
+{
+	// Set slave
+	slave->setSlaveId(23);
+	slave->addHreg(3, 0);
+	slave->addHreg(4, 0);
+	slave->addHreg(5, 0);
+
+	// Create register array
+	word *regs = new word[3];
+	setArray<word, word, word>(regs, 701, 702, 703);
+
+	// Set master
+	master->setRequest_WriteRegisters(23, 3, 3, regs);
+
+	// Start both master and slave
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+
+	bool integrity = master->verifyResponseIntegrity();
+	bool isWriteRegs = master->isWriteRegsResponse();
+	word reg3 = slave->Hreg(3);
+	word reg4 = slave->Hreg(4);
+	word reg5 = slave->Hreg(5);
+	ASSERT_TRUE(integrity);
+	ASSERT_TRUE(isWriteRegs);
+	ASSERT_EQ(reg3, 701);
+	ASSERT_EQ(reg4, 702);
+	ASSERT_EQ(reg5, 703);
+}
