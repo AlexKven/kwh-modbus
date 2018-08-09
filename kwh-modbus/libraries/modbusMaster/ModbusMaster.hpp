@@ -84,7 +84,7 @@ public:
 		frame[6] = regCount * 2;
 		for (int i = 0; i < regCount; i++)
 		{
-			this->setFrameReg(i, regValues[i], 7);
+			this->setFrameReg(i, revWord(regValues[i]), 7);
 		}
 		return true;
 	}

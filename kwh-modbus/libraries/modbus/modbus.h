@@ -70,6 +70,8 @@ class Modbus {
         word Hreg(word offset);
 
 		virtual bool validRange(word startReg, word numReg) = 0;
+
+		static word revWord(word input);
 };
 
 #endif //MODBUS_H

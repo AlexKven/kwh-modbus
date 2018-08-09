@@ -13,6 +13,7 @@
     <ClCompile Include="MockSerialStreamTests.cpp" />
     <ClCompile Include="ModbusSlaveTests.cpp" />
     <ClCompile Include="ModbusIntegrationTests.cpp" />
+    <ClCompile Include="ModbusTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

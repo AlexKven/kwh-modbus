@@ -56,4 +56,7 @@ word Modbus::Hreg(word offset) {
     return Reg(offset);
 }
 
-
+word Modbus::revWord(word input)
+{
+	return (input & 0x00FF) << 8 | input >> 8;
+}

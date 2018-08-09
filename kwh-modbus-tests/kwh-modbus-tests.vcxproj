@@ -44,6 +44,7 @@
     <ClCompile Include="ModbusMemoryTests.cpp" />
     <ClCompile Include="ModbusSerialTests.cpp" />
     <ClCompile Include="ModbusSlaveTests.cpp" />
+    <ClCompile Include="ModbusTests.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="pch.cpp">
