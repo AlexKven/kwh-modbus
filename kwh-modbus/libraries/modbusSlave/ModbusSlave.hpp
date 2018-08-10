@@ -18,6 +18,7 @@ private:
 		this->_reply = MB_REPLY_NORMAL;
 	}
 
+	// Tested with receivePDU
 	bool readRegisters(word startreg, word numregs) {
 		//Check value (numregs)
 		if (numregs < 0x0001 || numregs > 0x007D) {
@@ -53,6 +54,7 @@ private:
 		return true;
 	}
 
+	// Tested with receivePDU
 	bool writeSingleRegister(word reg, word value) {
 		//No necessary verify illegal value (EX_ILLEGAL_VALUE) - because using word (0x0000 - 0x0FFFF)
 		//Check Address and execute (reg exists?)
@@ -71,6 +73,7 @@ private:
 		return true;
 	}
 
+	// Tested with receivePDU
 	bool writeMultipleRegisters(byte* inputFrame, word startreg, word numoutputs, byte bytecount, byte begin = 6) {
 		//Check value
 		if (numoutputs < 0x0001 || numoutputs > 0x007B || bytecount != 2 * numoutputs) {
@@ -110,12 +113,14 @@ private:
 	}
 
 public:
+	// Not tested: trivial
 	bool setSlaveId(byte slaveId)
 	{
 		_slaveId = slaveId;
 		return true;
 	}
 
+	// Not tested: trivial
 	byte getSlaveId()
 	{
 		return _slaveId;

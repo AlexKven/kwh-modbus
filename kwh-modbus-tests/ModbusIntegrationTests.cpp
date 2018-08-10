@@ -130,9 +130,9 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
 	bool integrity = master->verifyResponseIntegrity();
 	byte fcode;
 	byte excode;
-	bool isReadRegs = master->isExceptionResponse(fcode, excode);
+	bool isException = master->isExceptionResponse(fcode, excode);
 	ASSERT_TRUE(integrity);
-	ASSERT_TRUE(isReadRegs);
+	ASSERT_TRUE(isException);
 	ASSERT_EQ(fcode, MB_FC_READ_REGS);
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
@@ -160,6 +160,33 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
 	ASSERT_TRUE(integrity);
 	ASSERT_TRUE(isWriteReg);
 	ASSERT_EQ(reg, 703);
+}
+
+TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure)
+{
+	// Set slave
+	slave->setSlaveId(23);
+	slave->addHreg(3, 0);
+
+	// Set master
+	master->setRequest_WriteRegister(23, 4, 703);
+
+	// Start both master and slave
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+
+	bool integrity = master->verifyResponseIntegrity();
+	byte fcode;
+	byte excode;
+	bool isException = master->isExceptionResponse(fcode, excode);
+	ASSERT_TRUE(integrity);
+	ASSERT_TRUE(isException);
+	ASSERT_EQ(fcode, MB_FC_WRITE_REG);
+	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
 TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
@@ -195,4 +222,37 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
 	ASSERT_EQ(reg3, 701);
 	ASSERT_EQ(reg4, 702);
 	ASSERT_EQ(reg5, 703);
+}
+
+TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure)
+{
+	// Set slave
+	slave->setSlaveId(23);
+	slave->addHreg(3, 0);
+	slave->addHreg(4, 0);
+	slave->addHreg(5, 0);
+
+	// Create register array
+	word *regs = new word[4];
+	setArray<word, word, word>(regs, 701, 702, 703, 704);
+
+	// Set master
+	master->setRequest_WriteRegisters(23, 3, 4, regs);
+
+	// Start both master and slave
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+
+	bool integrity = master->verifyResponseIntegrity();
+	byte fcode;
+	byte excode;
+	bool isException = master->isExceptionResponse(fcode, excode);
+	ASSERT_TRUE(integrity);
+	ASSERT_TRUE(isException);
+	ASSERT_EQ(fcode, MB_FC_WRITE_REGS);
+	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }

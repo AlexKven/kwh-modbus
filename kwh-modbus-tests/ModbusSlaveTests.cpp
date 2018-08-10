@@ -18,7 +18,7 @@
 #define USE_MOCK Mock<ModbusMemory> mock = Mock<ModbusMemory>(*modbus)
 #define USE_MOCK_SERIAL std::queue<uint8_t> readQueue; \
 std::queue<uint8_t> writeQueue; \
-MockSerialStream mockSerial = MockSerialStream(&readQueue, &writeQueue);
+MockSerialStream mockSerial = MockSerialStream(&readQueue, &writeQueue)
 
 using namespace fakeit;
 
@@ -45,11 +45,7 @@ protected:
 	}
 };
 
-TEST_F(ModbusSlaveTests, ModbusSlave)
-{
-}
-
-TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegister_IllegalAddress)
+TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegister_IllegalAddress)
 {
 	modbus->resetFrame(5);
 	byte *frame = modbus->getFramePtr();
@@ -70,7 +66,7 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegister_IllegalAddress)
 		MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegister_SlaveFailure)
+TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegister_SlaveFailure)
 {
 	USE_MOCK;
 	When(OverloadedMethod(mock, Hreg, bool(word, word))).Return(true);
@@ -95,7 +91,7 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegister_SlaveFailure)
 		MB_EX_SLAVE_FAILURE);
 }
 
-TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegister_Success)
+TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegister_Success)
 {
 	modbus->resetFrame(5);
 	modbus->addHreg(5, 3);
@@ -113,7 +109,7 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegister_Success)
 	ASSERT_EQ(modbus->Reg(5), 703);
 }
 
-TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_ReadRegisters_Success)
+TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_Success)
 {
 	modbus->resetFrame(5);
 	setup_FourRegisters();
@@ -137,7 +133,7 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_ReadRegisters_Success)
 	}
 }
 
-TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_ReadRegisters_IllegalAddress)
+TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_IllegalAddress)
 {
 	modbus->resetFrame(5);
 	setup_FourRegisters(true);
@@ -159,7 +155,7 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_ReadRegisters_IllegalAddress)
 		MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_ReadRegisters_IllegalValue)
+TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_IllegalValue)
 {
 	modbus->resetFrame(5);
 	byte *frame = modbus->getFramePtr();
@@ -180,7 +176,7 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_ReadRegisters_IllegalValue)
 		MB_EX_ILLEGAL_VALUE);
 }
 
-TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_ReadRegisters_SlaveFailure)
+TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_SlaveFailure)
 {
 	USE_MOCK;
 	modbus->resetFrame(5);
@@ -207,7 +203,7 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_ReadRegisters_SlaveFailure)
 		MB_EX_SLAVE_FAILURE);
 }
 
-TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegisters_Success)
+TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_Success)
 {
 	modbus->resetFrame(14);
 	setup_FourRegisters();
@@ -248,7 +244,7 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegisters_Success)
 	}
 }
 
-TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegisters_IllegalAddress)
+TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_IllegalAddress)
 {
 	modbus->resetFrame(14);
 	setup_FourRegisters(true);
@@ -279,7 +275,7 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegisters_IllegalAddress)
 		MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegisters_IllegalValue)
+TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_IllegalValue)
 {
 	modbus->resetFrame(14);
 	setup_FourRegisters();
@@ -310,7 +306,7 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegisters_IllegalValue)
 		MB_EX_ILLEGAL_VALUE);
 }
 
-TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegisters_IllegalValue_BadByteCount)
+TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_IllegalValue_BadByteCount)
 {
 	modbus->resetFrame(14);
 	setup_FourRegisters();
@@ -341,7 +337,7 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegisters_IllegalValue_BadByteCo
 		MB_EX_ILLEGAL_VALUE);
 }
 
-TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegisters_SlaveFailure)
+TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_SlaveFailure)
 {
 	USE_MOCK;
 	modbus->resetFrame(14);
@@ -376,7 +372,7 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_WriteRegisters_SlaveFailure)
 		MB_EX_SLAVE_FAILURE);
 }
 
-TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_IllegalFunction)
+TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_IllegalFunction)
 {
 	modbus->resetFrame(5);
 	setup_FourRegisters();
@@ -400,4 +396,79 @@ TEST_F(ModbusSlaveTests, Modbus_ReceivePDU_IllegalFunction)
 	assertArrayEq<byte, byte>(frame,
 		42 + 0x80,
 		MB_EX_ILLEGAL_FUNCTION);
+}
+
+TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Success)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	modbus->config(&mockSerial, &fakeSystem.get(), 9600);
+	setup_FourRegisters();
+	readQueue.push(19);
+	readQueue.push(MB_FC_READ_REGS);
+	readQueue.push(0);
+	readQueue.push(5);
+	readQueue.push(0);
+	readQueue.push(4);
+	byte crcArray[5] = { MB_FC_READ_REGS , 0, 5, 0, 4 };
+	word crc = modbus->calcCrc(19, crcArray, 5);
+	readQueue.push(crc >> 8);
+	readQueue.push(crc & 0xFF);
+
+	modbus->setSlaveId(19);
+	modbus->resetFrame(8);
+	modbus->readToFrame();
+	bool success = modbus->readInputFrame();
+
+	ASSERT_TRUE(success);
+}
+
+TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_WrongSlave)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	modbus->config(&mockSerial, &fakeSystem.get(), 9600);
+	setup_FourRegisters();
+	readQueue.push(17);
+	readQueue.push(MB_FC_READ_REGS);
+	readQueue.push(0);
+	readQueue.push(5);
+	readQueue.push(0);
+	readQueue.push(4);
+	byte crcArray[5] = { MB_FC_READ_REGS , 0, 5, 0, 4 };
+	word crc = modbus->calcCrc(17, crcArray, 5);
+	readQueue.push(crc >> 8);
+	readQueue.push(crc & 0xFF);
+
+	modbus->setSlaveId(19);
+	modbus->resetFrame(8);
+	modbus->readToFrame();
+	bool success = modbus->readInputFrame();
+
+	ASSERT_FALSE(success);
+}
+
+TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_BadCRC)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	modbus->config(&mockSerial, &fakeSystem.get(), 9600);
+	setup_FourRegisters();
+	readQueue.push(19);
+	readQueue.push(MB_FC_READ_REGS);
+	readQueue.push(0);
+	readQueue.push(5);
+	readQueue.push(0);
+	readQueue.push(4);
+	byte crcArray[5] = { MB_FC_READ_REGS , 0, 1, 0, 4 };
+	word crc = modbus->calcCrc(19, crcArray, 5);
+	readQueue.push(crc >> 8);
+	readQueue.push(crc & 0xFF);
+
+	modbus->setSlaveId(19);
+	modbus->resetFrame(8);
+	modbus->readToFrame();
+	bool success = modbus->readInputFrame();
+
+	ASSERT_FALSE(success);
 }
