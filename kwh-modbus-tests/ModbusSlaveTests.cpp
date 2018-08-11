@@ -472,3 +472,172 @@ TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_BadCRC)
 
 	ASSERT_FALSE(success);
 }
+
+TEST_F(ModbusSlaveTests, ModbuSlave_sendPDU)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	Fake(Method(fakeSystem, pinMode));
+	Fake(Method(fakeSystem, digitalWrite));
+	Fake(Method(fakeSystem, delay));
+	Fake(Method(fakeSystem, delayMicroseconds));
+	modbus->config(&mockSerial, &fakeSystem.get(), 9600, 4);
+
+	modbus->setSlaveId(19);
+	modbus->resetFrame(8);
+	setArray<byte, byte, byte, byte, byte, byte, byte, byte>(modbus->getFramePtr(),
+		1, 1, 2, 3, 5, 8, 13, 21);
+	word crc = modbus->calcCrc(19, modbus->getFramePtr(), 8);
+	bool success = modbus->sendPDU();
+
+	ASSERT_TRUE(success);
+	Verify(Method(fakeSystem, digitalWrite).Using(4, LOW)).Twice();
+	Verify(Method(fakeSystem, digitalWrite).Using(4, HIGH)).Once();
+
+	ASSERT_EQ(writeQueue.front(), 19);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 1);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 1);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 2);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 3);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 5);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 8);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 13);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 21);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), crc >> 8);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), crc & 0xFF);
+}
+
+TEST_F(ModbusSlaveTests, ModbuSlave_echo_everything)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	Fake(Method(fakeSystem, pinMode));
+	Fake(Method(fakeSystem, digitalWrite));
+	Fake(Method(fakeSystem, delay));
+	Fake(Method(fakeSystem, delayMicroseconds));
+	modbus->config(&mockSerial, &fakeSystem.get(), 9600, 4);
+
+	modbus->setSlaveId(23); // should not matter
+	modbus->resetFrame(8);
+	setArray<byte, byte, byte, byte, byte, byte, byte, byte>(modbus->getFramePtr(),
+		1, 1, 2, 3, 5, 8, 13, 21);
+	// does not recalculate crc, just sends the frame back
+	bool success = modbus->echo(false);
+
+	ASSERT_TRUE(success);
+	Verify(Method(fakeSystem, digitalWrite).Using(4, LOW)).Twice();
+	Verify(Method(fakeSystem, digitalWrite).Using(4, HIGH)).Once();
+
+	ASSERT_EQ(writeQueue.front(), 1);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 1);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 2);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 3);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 5);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 8);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 13);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 21);
+}
+
+TEST_F(ModbusSlaveTests, ModbuSlave_echo_fCodeOnly)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	Fake(Method(fakeSystem, pinMode));
+	Fake(Method(fakeSystem, digitalWrite));
+	Fake(Method(fakeSystem, delay));
+	Fake(Method(fakeSystem, delayMicroseconds));
+	modbus->config(&mockSerial, &fakeSystem.get(), 9600, 4);
+
+	modbus->setSlaveId(23); // should not matter except for crc
+	modbus->resetFrame(8);
+	setArray<byte, byte, byte, byte, byte, byte, byte, byte>(modbus->getFramePtr(),
+		19, 1, 2, 3, 5, 8, 13, 21);
+	word crc = modbus->calcCrc(23, new byte(1), 1);
+	// does recalculate crc because the reduced frame is actually different
+	// than the received frame
+	bool success = modbus->echo(true);
+
+	ASSERT_TRUE(success);
+	Verify(Method(fakeSystem, digitalWrite).Using(4, LOW)).Twice();
+	Verify(Method(fakeSystem, digitalWrite).Using(4, HIGH)).Once();
+
+	ASSERT_EQ(writeQueue.front(), 19);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 1);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), crc >> 8);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), crc & 0xFF);
+}
+
+TEST_F(ModbusSlaveTests, ModbusSlave_task_Success)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	Fake(Method(fakeSystem, pinMode));
+	Fake(Method(fakeSystem, digitalWrite));
+	Fake(Method(fakeSystem, delay));
+	Fake(Method(fakeSystem, delayMicroseconds));
+	modbus->config(&mockSerial, &fakeSystem.get(), 9600);
+	setup_FourRegisters();
+	readQueue.push(19);
+	readQueue.push(MB_FC_READ_REGS);
+	readQueue.push(0);
+	readQueue.push(5);
+	readQueue.push(0);
+	readQueue.push(4);
+	byte *crcArray =  new byte[5] { MB_FC_READ_REGS , 0, 5, 0, 4 };
+	word crc = modbus->calcCrc(19, crcArray, 5);
+	readQueue.push(crc >> 8);
+	readQueue.push(crc & 0xFF);
+
+	modbus->setSlaveId(19);
+	bool success = modbus->task();
+
+	crcArray = new byte[9];
+	setArray<byte, word, word, word, word>(crcArray, MB_FC_READ_REGS, 111, 703, 902, 429);
+	crc = modbus->calcCrc(19, crcArray, 9);
+
+	ASSERT_EQ(writeQueue.front(), 19);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), MB_FC_READ_REGS);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 111 & 0xFF);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 111 >> 8);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 703 & 0xFF);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 703 >> 8);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 902 & 0xFF);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 902 >> 8);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 429 & 0xFF);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), 429 >> 8);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), crc >> 8);
+	writeQueue.pop();
+	ASSERT_EQ(writeQueue.front(), crc & 0xFF);
+
+	ASSERT_TRUE(success);
+}

@@ -149,6 +149,7 @@ public:
 		return true;
 	}
 
+	// Tested
 	bool readInputFrame()
 	{
 		byte *frame = this->getFramePtr();
@@ -177,6 +178,7 @@ public:
 		return true;
 	}
 
+	// Tested
 	bool receivePDU(byte* frame) {
 		byte fcode = frame[0];
 		word field1 = (word)frame[1] << 8 | (word)frame[2];
@@ -205,6 +207,7 @@ public:
 		}
 	}
 
+	// Tested
 	bool sendPDU()
 	{
 		beginTransmission();
@@ -229,6 +232,7 @@ public:
 		return true;
 	}
 
+	// Tested
 	bool echo(bool fCodeOnly = true)
 	{
 		byte *frame = this->getFramePtr();
