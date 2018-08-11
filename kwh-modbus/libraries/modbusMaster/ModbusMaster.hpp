@@ -7,6 +7,7 @@ private_testable:
 	byte _recipientId = 0;
 
 public:
+	// Tested with sendPDU
 	void send()
 	{
 		sendPDU();
@@ -23,6 +24,7 @@ public:
 		return true;
 	}
 
+	// Tested
 	void sendPDU()
 	{
 		byte *frame = this->getFramePtr();

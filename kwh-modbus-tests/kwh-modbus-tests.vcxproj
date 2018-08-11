@@ -41,6 +41,7 @@
     <ClCompile Include="MockSerialStreamTests.cpp" />
     <ClCompile Include="ModbusArrayTests.cpp" />
     <ClCompile Include="ModbusIntegrationTests.cpp" />
+    <ClCompile Include="ModbusMasterTests.cpp" />
     <ClCompile Include="ModbusMemoryTests.cpp" />
     <ClCompile Include="ModbusSerialTests.cpp" />
     <ClCompile Include="ModbusSlaveTests.cpp" />
