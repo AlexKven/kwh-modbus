@@ -6,7 +6,6 @@
 */
 
 #include "Modbus.h"
-#include "ModbusHelpers.h"
 //#define USE_SOFTWARE_SERIAL
 
 //#define DEBUG_MODE

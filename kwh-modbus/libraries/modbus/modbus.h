@@ -6,7 +6,7 @@
 #ifndef MODBUS_H
 #define MODBUS_H
 
-#include "ModbusHelpers.h"
+#include "../../noArduino/TestHelpers.h"
 
 #ifdef NO_ARDUINO
 #include "../../noArduino/ArduinoMacros.h"

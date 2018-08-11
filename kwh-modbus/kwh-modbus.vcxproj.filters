@@ -43,9 +43,6 @@
     <ClInclude Include="libraries\modbus\ModbusArray.h">
       <Filter>libraries\modbus</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\modbus\ModbusHelpers.h">
-      <Filter>libraries\modbus</Filter>
-    </ClInclude>
     <ClInclude Include="libraries\modbus\ModbusSerial.hpp">
       <Filter>libraries\modbus</Filter>
     </ClInclude>
@@ -79,6 +76,12 @@
     <ClInclude Include="libraries\arduinoClasses\ArduinoSystem.h">
       <Filter>libraries\arduinoClasses</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\resillientTask\ResillientTask.h">
+      <Filter>libraries\resillientTask</Filter>
+    </ClInclude>
+    <ClInclude Include="noArduino\TestHelpers.h">
+      <Filter>noArduino</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -110,6 +113,9 @@
     </Filter>
     <Filter Include="libraries\arduinoClasses">
       <UniqueIdentifier>{5b12c040-ca27-4a80-9942-f934e5b34c1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\resillientTask">
+      <UniqueIdentifier>{f8f3a419-aad4-4e29-ad44-407d162404c8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

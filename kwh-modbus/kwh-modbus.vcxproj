@@ -86,12 +86,13 @@
     <ClInclude Include="libraries\modbusSlave\ModbusSlave.hpp" />
     <ClInclude Include="libraries\modbus\Modbus.h" />
     <ClInclude Include="libraries\modbus\ModbusArray.h" />
-    <ClInclude Include="libraries\modbus\ModbusHelpers.h" />
     <ClInclude Include="libraries\modbus\ModbusSerial.hpp" />
+    <ClInclude Include="libraries\resillientTask\ResillientTask.h" />
     <ClInclude Include="mock\MockSerialStream.h" />
     <ClInclude Include="noArduino\SystemFunctions.h" />
     <ClInclude Include="noArduino\ArduinoMacros.h" />
     <ClInclude Include="noArduino\ModbusMemory.h" />
+    <ClInclude Include="noArduino\TestHelpers.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
