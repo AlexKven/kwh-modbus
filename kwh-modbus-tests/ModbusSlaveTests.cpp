@@ -603,7 +603,7 @@ TEST_F(ModbusSlaveTests, ModbusSlave_task_Success)
 	readQueue.push(5);
 	readQueue.push(0);
 	readQueue.push(4);
-	byte *crcArray =  new byte[5] { MB_FC_READ_REGS , 0, 5, 0, 4 };
+	byte *crcArray = new byte[5]{ MB_FC_READ_REGS , 0, 5, 0, 4 };
 	word crc = modbus->calcCrc(19, crcArray, 5);
 	readQueue.push(crc >> 8);
 	readQueue.push(crc & 0xFF);
@@ -638,6 +638,54 @@ TEST_F(ModbusSlaveTests, ModbusSlave_task_Success)
 	ASSERT_EQ(writeQueue.front(), crc >> 8);
 	writeQueue.pop();
 	ASSERT_EQ(writeQueue.front(), crc & 0xFF);
+
+	ASSERT_TRUE(success);
+}
+
+TEST_F(ModbusSlaveTests, ModbusSlave_task_FailEmpty)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	Fake(Method(fakeSystem, pinMode));
+	Fake(Method(fakeSystem, digitalWrite));
+	Fake(Method(fakeSystem, delay));
+	Fake(Method(fakeSystem, delayMicroseconds));
+	modbus->config(&mockSerial, &fakeSystem.get(), 9600);
+	setup_FourRegisters();
+
+	modbus->setSlaveId(19);
+	bool success = modbus->task();
+
+	ASSERT_FALSE(success);
+}
+
+TEST_F(ModbusSlaveTests, ModbusSlave_task_Success_WrongRecipient)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	Fake(Method(fakeSystem, pinMode));
+	Fake(Method(fakeSystem, digitalWrite));
+	Fake(Method(fakeSystem, delay));
+	Fake(Method(fakeSystem, delayMicroseconds));
+	modbus->config(&mockSerial, &fakeSystem.get(), 9600);
+	setup_FourRegisters();
+	readQueue.push(19);
+	readQueue.push(MB_FC_READ_REGS);
+	readQueue.push(0);
+	readQueue.push(5);
+	readQueue.push(0);
+	readQueue.push(4);
+	byte *crcArray = new byte[5]{ MB_FC_READ_REGS , 0, 5, 0, 4 };
+	word crc = modbus->calcCrc(19, crcArray, 5);
+	readQueue.push(crc >> 8);
+	readQueue.push(crc & 0xFF);
+
+	modbus->setSlaveId(17);
+	bool success = modbus->task();
+
+	crcArray = new byte[9];
+	setArray<byte, word, word, word, word>(crcArray, MB_FC_READ_REGS, 111, 703, 902, 429);
+	crc = modbus->calcCrc(19, crcArray, 9);
 
 	ASSERT_TRUE(success);
 }

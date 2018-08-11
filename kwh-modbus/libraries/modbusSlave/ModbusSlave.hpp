@@ -126,6 +126,7 @@ public:
 		return _slaveId;
 	}
 
+	// Tested
 	bool task()
 	{
 		word length = awaitIncomingSerial();
