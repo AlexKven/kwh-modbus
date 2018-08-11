@@ -95,3 +95,204 @@ TEST_F(ModbusMasterTests, ModbusMaster_setRequest_WriteRegisters)
 	assertArrayEq<byte, byte, byte, byte, byte, byte, byte, byte, byte, byte, byte, byte, byte, byte, byte>
 		(modbus->getFramePtr(), 29, MB_FC_WRITE_REGS, 0, 7, 0, 4, 8, 0, 2, 0, 3, 0, 5, 1, 1);
 }
+
+TEST_F(ModbusMasterTests, ModbusMaster_verifyResponseIntegrity_Success)
+{
+	modbus->resetFrame(5);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte>(frame, 13, 41, 43);
+	word crc = modbus->calcCrc(13, frame + 1, 2);
+	setArray<word>(frame + 3, revBytes(crc));
+	modbus->_recipientId = 13;
+
+	bool success = modbus->verifyResponseIntegrity();
+	ASSERT_TRUE(success);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_verifyResponseIntegrity_Fail_WrongRecipient)
+{
+	modbus->resetFrame(5);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte>(frame, 13, 41, 43);
+	word crc = modbus->calcCrc(13, frame + 1, 2);
+	setArray<word>(frame + 3, revBytes(crc));
+	modbus->_recipientId = 11;
+
+	bool success = modbus->verifyResponseIntegrity();
+	ASSERT_FALSE(success);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_verifyResponseIntegrity_Fail_BadCRC)
+{
+	modbus->resetFrame(5);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte>(frame, 13, 41, 43);
+	word crc = modbus->calcCrc(13, frame + 1, 2) - 1234;
+	setArray<word>(frame + 3, revBytes(crc));
+	modbus->_recipientId = 13;
+
+	bool success = modbus->verifyResponseIntegrity();
+	ASSERT_FALSE(success);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_isReadRegsResponse_True)
+{
+	modbus->resetFrame(6);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte, byte, byte, byte>(
+		frame, 13, MB_FC_READ_REGS, 43, 42, 41, 40);
+
+	word count = 0;
+	word *regs = nullptr;
+
+	bool result = modbus->isReadRegsResponse(count, regs);
+	ASSERT_TRUE(result);
+	ASSERT_EQ(count, 1);
+	assertArrayEq<word>(regs, 42 * 256 + 43);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_isReadRegsResponse_False_OddLength)
+{
+	modbus->resetFrame(5);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte, byte, byte>(
+		frame, 13, MB_FC_READ_REGS, 43, 42, 41);
+
+	word count = 0;
+	word *regs = nullptr;
+
+	bool result = modbus->isReadRegsResponse(count, regs);
+	ASSERT_FALSE(result);
+	ASSERT_EQ(count, 0);
+	ASSERT_EQ(regs, nullptr);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_isReadRegsResponse_FALSE_WrongFCode)
+{
+	modbus->resetFrame(6);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte, byte, byte, byte>(
+		frame, 13, MB_FC_WRITE_REGS, 43, 42, 41, 40);
+
+	word count = 0;
+	word *regs = nullptr;
+
+	bool result = modbus->isReadRegsResponse(count, regs);
+	ASSERT_FALSE(result);
+	ASSERT_EQ(count, 0);
+	ASSERT_EQ(regs, nullptr);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_isExceptionResponse_True)
+{
+	modbus->resetFrame(5);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte, byte, byte>(
+		frame, 13, MB_FC_READ_REGS + 128, MB_EX_SLAVE_FAILURE, 42, 41);
+
+	byte fCode = 0;
+	byte exCode = 0;
+
+	bool result = modbus->isExceptionResponse(fCode, exCode);
+	ASSERT_TRUE(result);
+	ASSERT_EQ(fCode, MB_FC_READ_REGS);
+	ASSERT_EQ(exCode, MB_EX_SLAVE_FAILURE);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_isExceptionResponse_False_WrongLength)
+{
+	modbus->resetFrame(4);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte, byte>(
+		frame, 13, MB_FC_READ_REGS + 128, MB_EX_SLAVE_FAILURE, 42);
+
+	byte fCode = 0;
+	byte exCode = 0;
+
+	bool result = modbus->isExceptionResponse(fCode, exCode);
+	ASSERT_FALSE(result);
+	ASSERT_EQ(fCode, 0);
+	ASSERT_EQ(exCode, 0);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_isExceptionResponse_False_ImproperFCode)
+{
+	modbus->resetFrame(5);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte, byte, byte>(
+		frame, 13, MB_FC_READ_REGS, MB_EX_SLAVE_FAILURE, 42, 41);
+
+	byte fCode = 0;
+	byte exCode = 0;
+
+	bool result = modbus->isExceptionResponse(fCode, exCode);
+	ASSERT_FALSE(result);
+	ASSERT_EQ(fCode, 0);
+	ASSERT_EQ(exCode, 0);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegResponse_True)
+{
+	modbus->resetFrame(6);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte, byte, byte>(
+		frame, 13, MB_FC_WRITE_REG, 43, 42, 41, 40);
+
+	bool result = modbus->isWriteRegResponse();
+	ASSERT_TRUE(result);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegResponse_False_WrongFCode)
+{
+	modbus->resetFrame(6);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte, byte, byte>(
+		frame, 13, MB_FC_WRITE_REGS, 43, 42, 41, 40);
+
+	bool result = modbus->isWriteRegResponse();
+	ASSERT_FALSE(result);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegResponse_False_BadLength)
+{
+	modbus->resetFrame(7);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte, byte, byte>(
+		frame, 13, MB_FC_WRITE_REG, 43, 42, 41, 40, 39);
+
+	bool result = modbus->isWriteRegResponse();
+	ASSERT_FALSE(result);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegsResponse_True)
+{
+	modbus->resetFrame(8);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte, byte, byte>(
+		frame, 13, MB_FC_WRITE_REGS, 43, 42, 41, 40, 39, 38);
+
+	bool result = modbus->isWriteRegsResponse();
+	ASSERT_TRUE(result);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegsResponse_False_WrongFCode)
+{
+	modbus->resetFrame(6);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte, byte, byte>(
+		frame, 13, MB_FC_READ_REGS, 43, 42, 41, 40, 39, 38);
+
+	bool result = modbus->isWriteRegsResponse();
+	ASSERT_FALSE(result);
+}
+
+TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegsResponse_False_BadLength)
+{
+	modbus->resetFrame(7);
+	byte *frame = modbus->getFramePtr();
+	setArray<byte, byte, byte, byte, byte>(
+		frame, 13, MB_FC_WRITE_REGS, 43, 42, 41, 40, 39);
+
+	bool result = modbus->isWriteRegsResponse();
+	ASSERT_FALSE(result);
+}

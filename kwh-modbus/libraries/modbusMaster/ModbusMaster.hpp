@@ -38,6 +38,7 @@ public:
 		endTransmission();
 	}
 
+	// Tested
 	bool setRequest_ReadRegisters(byte recipientId, word regStart, word regCount)
 	{
 		if (!this->resetFrame(6))
@@ -54,6 +55,7 @@ public:
 		return true;
 	}
 
+	// Tested
 	bool setRequest_WriteRegister(byte recipientId, word regIndex, word regValue)
 	{
 		if (!this->resetFrame(6))
@@ -70,6 +72,7 @@ public:
 		return true;
 	}
 
+	// Tested
 	bool setRequest_WriteRegisters(byte recipientId, word regStart, word regCount, word *regValues)
 	{
 		if (!this->resetFrameRegs(regCount, 7))
@@ -91,6 +94,7 @@ public:
 		return true;
 	}
 
+	// Tested
 	bool verifyResponseIntegrity()
 	{
 		byte *frame = this->getFramePtr();
@@ -105,8 +109,10 @@ public:
 		//CRC Check
 		if (crc != this->calcCrc(frame[0], frame + 1, length - 3))
 			return false;
+		return true;
 	}
 
+	// Tested
 	bool isReadRegsResponse(word &countOut, word* &regsOut)
 	{
 		byte *frame = this->getFramePtr();
@@ -117,8 +123,10 @@ public:
 			return false;
 		countOut = (length - 4) / 2;
 		regsOut = (word*)(frame + 2);
+		return true;
 	}
 
+	// Tested
 	bool isExceptionResponse(byte &fcode, byte &excode)
 	{
 		byte *frame = this->getFramePtr();
@@ -133,18 +141,22 @@ public:
 		}
 		else
 			return false;
+		return true;
 	}
 
+	// Tested
 	bool isWriteRegResponse()
 	{
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
-		if (length < 4 || length % 2 != 0)
+		if (length != 4 && length != 6)
 			return false;
 		if (frame[1] != MB_FC_WRITE_REG)
 			return false;
+		return true;
 	}
 
+	// Tested
 	bool isWriteRegsResponse()
 	{
 		byte *frame = this->getFramePtr();
@@ -153,5 +165,6 @@ public:
 			return false;
 		if (frame[1] != MB_FC_WRITE_REGS)
 			return false;
+		return true;
 	}
 };
