@@ -8,14 +8,15 @@ enum TaskStatus : byte
 	TaskNotStarted = 0,
 	TaskInProgress = 1,
 	TaskFailure = 2,
-	TaskComplete = 3,
-	TaskTimeOut = 4,
-	TaskFullyAttempted = 5,
-	TaskFatal = 6
+	TaskAttemptTimeOut = 3,
+	TaskComplete = 4,
+	TaskTimeOut = 5,
+	TaskFullyAttempted = 6,
+	TaskFatal = 7
 };
 
 template<typename S>
-class ResillientTask<S>
+class ResillientTask
 {
 private_testable:
 	TaskStatus _status = TaskNotStarted;
@@ -32,6 +33,7 @@ protected_testable:
 	virtual TaskStatus begin() = 0;
 	virtual TaskStatus check() = 0;
 	virtual TaskStatus retry() = 0;
+	virtual void disposed() {}
 	virtual TaskStatus onAutoStatusChange(TaskStatus status)
 	{
 		return status;
@@ -39,9 +41,9 @@ protected_testable:
 
 	bool reachedTryLimit()
 	{
-		if (_maxTries = 0)
+		if (_maxTries == 0)
 			return false;
-		return _maxTries >= _currentTries;
+		return _currentTries >= _maxTries;
 	}
 
 	bool reachedMaxTime(unsigned long long curTime)
@@ -81,27 +83,89 @@ public:
 				_lastBeginTime = curTime;
 				break;
 			case TaskInProgress:
-				_status = check();
 				if (reachedMaxTime(curTime))
 				{
-					if (_status < 3)
+					if (_status < 4)
 					{
-						_status = TaskTimeOut;
+						_status = onAutoStatusChange(TaskTimeOut);
+						tryAgain = true;
 					}
 				}
+				else if (reachedMaxTimePerTry(curTime))
+				{
+					if (_status < 4)
+					{
+						_status = onAutoStatusChange(TaskAttemptTimeOut);
+						tryAgain = true;
+					}
+				}
+				else
+				{
+					_status = check();
+				}
+				break;
+			case TaskFailure:
 				if (reachedTryLimit())
 				{
 					_status = check();
-					if (_status < 3)
+					if (_status < 4)
 					{
-						_status = TaskFullyAttempted;
+						_status = onAutoStatusChange(TaskFullyAttempted);
+						tryAgain = true;
 					}
 				}
+				else if (reachedMaxTime(curTime))
+				{
+					if (_status < 4)
+					{
+						_status = onAutoStatusChange(TaskTimeOut);
+						tryAgain = true;
+					}
+				}
+				else if (reachedMinTimePerTry(curTime))
+				{
+					_lastBeginTime = curTime;
+					_currentTries++;
+					_status = retry();
+				}
+				break;
+				case TaskAttemptTimeOut:
+					if (reachedTryLimit())
+					{
+						_status = check();
+						if (_status < 4)
+						{
+							_status = onAutoStatusChange(TaskFullyAttempted);
+							tryAgain = true;
+						}
+					}
+					else if (reachedMaxTime(curTime))
+					{
+						if (_status < 4)
+						{
+							_status = onAutoStatusChange(TaskTimeOut);
+							tryAgain = true;
+						}
+					}
+					else if (reachedMinTimePerTry(curTime))
+					{
+						_lastBeginTime = curTime;
+						_currentTries++;
+						_status = retry();
+					}
+					break;
 				break;
 			}
 
 		} while (tryAgain);
-		return (_status >= 3);
+		return (_status >= 4);
+	}
+
+	bool work(TaskStatus &statusOut)
+	{
+		auto result = work();
+		statusOut = _status;
+		return result;
 	}
 
 	TaskStatus getStatus()
@@ -147,5 +211,10 @@ public:
 	void setminTimePerTryMicros(unsigned long long value)
 	{
 		_minTimePerTryMicros = value;
+	}
+
+	void setSystem(S *system)
+	{
+		_system = system;
 	}
 };

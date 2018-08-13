@@ -473,7 +473,7 @@ TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_BadCRC)
 	ASSERT_FALSE(success);
 }
 
-TEST_F(ModbusSlaveTests, ModbuSlave_sendPDU)
+TEST_F(ModbusSlaveTests, ModbusSlave_sendPDU)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -517,7 +517,7 @@ TEST_F(ModbusSlaveTests, ModbuSlave_sendPDU)
 	ASSERT_EQ(writeQueue.front(), crc & 0xFF);
 }
 
-TEST_F(ModbusSlaveTests, ModbuSlave_echo_everything)
+TEST_F(ModbusSlaveTests, ModbusSlave_echo_everything)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -555,7 +555,7 @@ TEST_F(ModbusSlaveTests, ModbuSlave_echo_everything)
 	ASSERT_EQ(writeQueue.front(), 21);
 }
 
-TEST_F(ModbusSlaveTests, ModbuSlave_echo_fCodeOnly)
+TEST_F(ModbusSlaveTests, ModbusSlave_echo_fCodeOnly)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
