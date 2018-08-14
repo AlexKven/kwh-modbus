@@ -158,6 +158,8 @@ public:
 			}
 
 		} while (tryAgain);
+		if (_status >= 4)
+			disposed();
 		return (_status >= 4);
 	}
 
