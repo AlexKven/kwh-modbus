@@ -49,17 +49,22 @@ public:
 	}
 };
 
+#define RTT_TIMEOUT(timeout_ms) if (system->millis() - _testStartTime >= timeout_ms) \
+{ GTEST_FATAL_FAILURE_("Timed out. May be stuck in loop");}
+
 class ResillientTaskTests : public ::testing::Test
 {
 protected:
 	TestResillientTask *task;
 	WindowsSystemFunctions *system;
+	unsigned long long _testStartTime;
 public:
 	void SetUp()
 	{
 		task = new TestResillientTask();
 		system = new WindowsSystemFunctions();
 		task->setSystem(system);
+		_testStartTime = system->millis();
 	}
 
 	void TearDown()
@@ -77,7 +82,10 @@ TEST_F(ResillientTaskTests, Task_CompletesImmediately)
 	auto status = TaskNotStarted;
 
 	while (!task->work(status))
+	{
 		workCount++;
+		RTT_TIMEOUT(1000);
+	}
 
 	ASSERT_TRUE(disposed);
 	ASSERT_EQ(status, TaskComplete);
@@ -95,8 +103,11 @@ TEST_F(ResillientTaskTests, Task_CompletesOneCheck)
 	auto status = TaskNotStarted;
 
 	while (!task->work(status))
+	{
 		workCount++;
-
+		RTT_TIMEOUT(1000);
+	}
+	
 	ASSERT_TRUE(disposed);
 	ASSERT_EQ(status, TaskComplete);
 	ASSERT_EQ(task->_currentTries, 1);
@@ -121,7 +132,10 @@ TEST_F(ResillientTaskTests, Task_CompletesThreeChecks)
 	auto status = TaskNotStarted;
 
 	while (!task->work(status))
+	{
 		workCount++;
+		RTT_TIMEOUT(1000);
+	}
 
 	ASSERT_TRUE(disposed);
 	ASSERT_EQ(status, TaskComplete);
@@ -162,7 +176,10 @@ TEST_F(ResillientTaskTests, Task_CompletesThreeChecks_FourAttempts)
 	auto status = TaskNotStarted;
 
 	while (!task->work(status))
+	{
 		workCount++;
+		RTT_TIMEOUT(1000);
+	}
 
 	ASSERT_TRUE(disposed);
 	ASSERT_EQ(status, TaskComplete);
@@ -205,7 +222,10 @@ TEST_F(ResillientTaskTests, Task_ExceededMaxTries)
 	auto status = TaskNotStarted;
 
 	while (!task->work(status))
+	{
 		workCount++;
+		RTT_TIMEOUT(1000);
+	}
 
 	ASSERT_TRUE(disposed);
 	ASSERT_EQ(status, TaskFullyAttempted);
@@ -289,6 +309,7 @@ TEST_F(ResillientTaskTests, Task_ExceededMaxTime)
 	{
 		workCount++;
 		system->delay(50);
+		RTT_TIMEOUT(1000);
 	}
 
 	ASSERT_TRUE(disposed);
