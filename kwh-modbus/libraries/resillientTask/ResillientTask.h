@@ -21,6 +21,7 @@ class ResillientTask
 private_testable:
 	TaskStatus _status = TaskNotStarted;
 	int _currentTries = 0;
+	int _totalCycles = 0;
 	unsigned long long _lastBeginTime = 0;
 	unsigned long long _initialBeginTime = 0;
 	int _maxTries = 0;
@@ -68,6 +69,7 @@ public:
 	bool work()
 	{
 		bool tryAgain = false;
+		bool previouslyCompleted = (_status >= 4);
 		do
 		{
 			tryAgain = false;
@@ -158,8 +160,11 @@ public:
 			}
 
 		} while (tryAgain);
-		if (_status >= 4)
+		if (_status >= 4 && !previouslyCompleted)
+		{
 			disposed();
+			_totalCycles++;
+		}
 		return (_status >= 4);
 	}
 
@@ -195,22 +200,22 @@ public:
 		_maxTimeMicros = value;
 	}
 
-	unsigned long long getmaxTimePerTryMicros()
+	unsigned long long getMaxTimePerTryMicros()
 	{
 		return _maxTimePerTryMicros;
 	}
 
-	void setmaxTimePerTryMicros(unsigned long long value)
+	void setMaxTimePerTryMicros(unsigned long long value)
 	{
 		_maxTimePerTryMicros = value;
 	}
 
-	unsigned long long getminTimePerTryMicros()
+	unsigned long long getMinTimePerTryMicros()
 	{
 		return _minTimePerTryMicros;
 	}
 
-	void setminTimePerTryMicros(unsigned long long value)
+	void setMinTimePerTryMicros(unsigned long long value)
 	{
 		_minTimePerTryMicros = value;
 	}
