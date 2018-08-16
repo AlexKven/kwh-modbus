@@ -1,6 +1,8 @@
 #pragma once
 #include "../interfaces/ISerialStream.h"
+#include "../../kwh-modbus/noArduino/TestHelpers.h"
 #include <queue>
+#include <random>
 
 using namespace std;
 using std::queue;
@@ -25,11 +27,19 @@ public:
 	MockSerialStream(queue<uint8_t> *_queue, bool writeOnly);
 	MockSerialStream();
 
+	void setPerBitErrorProb(double probability);
+	double getPerBitErrorProb();
+
 	~MockSerialStream();
-private:
+private_testable:
 	queue<uint8_t> *readQueue;
 	queue<uint8_t> *writeQueue;
 	long baud = -1;
 	bool _isListening = true;
 	bool externalQueues = false;
+	double  _perBitErrorProb = 0;
+
+	uint8_t randomlyErroredByte();
+
+	static bool randomBool(double trueProbability);
 };

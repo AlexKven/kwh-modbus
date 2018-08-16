@@ -29,6 +29,16 @@ MockSerialStream::MockSerialStream()
 	writeQueue = new queue<uint8_t>();
 }
 
+void MockSerialStream::setPerBitErrorProb(double probability)
+{
+	_perBitErrorProb = probability;
+}
+
+double MockSerialStream::getPerBitErrorProb()
+{
+	return _perBitErrorProb;
+}
+
 MockSerialStream::~MockSerialStream()
 {
 	if (!externalQueues)
@@ -36,6 +46,25 @@ MockSerialStream::~MockSerialStream()
 		delete this->readQueue;
 		delete this->writeQueue;
 	}
+}
+
+uint8_t MockSerialStream::randomlyErroredByte()
+{
+	return randomBool(_perBitErrorProb) * 0x01 |
+		randomBool(_perBitErrorProb) * 0x02 |
+		randomBool(_perBitErrorProb) * 0x04 |
+		randomBool(_perBitErrorProb) * 0x08 |
+		randomBool(_perBitErrorProb) * 0x10 |
+		randomBool(_perBitErrorProb) * 0x20 |
+		randomBool(_perBitErrorProb) * 0x40 |
+		randomBool(_perBitErrorProb) * 0x80;
+}
+
+bool MockSerialStream::randomBool(double trueProbability)
+{
+	int compare = RAND_MAX * trueProbability;
+	int randValue = rand();
+	return (compare > randValue);
 }
 
 void MockSerialStream::begin(long _baud)
