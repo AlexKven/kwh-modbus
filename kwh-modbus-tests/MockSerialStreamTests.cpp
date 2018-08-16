@@ -4,6 +4,7 @@
 #include "../kwh-modbus/mock/MockSerialStream.h"
 #include "test_helpers.h"
 #include <queue>
+#include "WindowsFunctions.h"
 
 using namespace fakeit;
 
@@ -174,4 +175,72 @@ TEST_F(MockSerialStreamTests, MockSerialStream_ReadWrite_TwoStreams)
 
 	ASSERT_EQ(stream1.available(), 0);
 	ASSERT_EQ(stream2.available(), 0);
+}
+
+TEST_F(MockSerialStreamTests, MockSerialStream_RandomBool)
+{
+	int trueCount01 = 0;
+	int trueCount1 = 0;
+	int trueCount10 = 0;
+	int trueCount25 = 0;
+	int trueCount50 = 0;
+	int trueCount75 = 0;
+	int trueCount90 = 0;
+	int trueCount99 = 0;
+	int trueCount999 = 0;
+	int totalCount = 10000;
+	WindowsFunctions win;
+
+	srand(win.RelativeMicroseconds());
+
+	for (int i = 0; i < totalCount; i++)
+	{
+		if (MockSerialStream::randomBool(.001))
+			trueCount01++;
+		if (MockSerialStream::randomBool(.01))
+			trueCount1++;
+		if (MockSerialStream::randomBool(.1))
+			trueCount10++;
+		if (MockSerialStream::randomBool(.25))
+			trueCount25++;
+		if (MockSerialStream::randomBool(.5))
+			trueCount50++;
+		if (MockSerialStream::randomBool(.75))
+			trueCount75++;
+		if (MockSerialStream::randomBool(.9))
+			trueCount90++;
+		if (MockSerialStream::randomBool(.99))
+			trueCount99++;
+		if (MockSerialStream::randomBool(.999))
+			trueCount999++;
+	}
+
+	ASSERT_NEAR(trueCount01, 10, 8);
+	ASSERT_NEAR(trueCount1, 100, 25);
+	ASSERT_NEAR(trueCount10, 1000, 50);
+	ASSERT_NEAR(trueCount25, 2500, 75);
+	ASSERT_NEAR(trueCount50, 5000, 100);
+	ASSERT_NEAR(trueCount75, 7500, 75);
+	ASSERT_NEAR(trueCount90, 9000, 50);
+	ASSERT_NEAR(trueCount99, 9900, 25);
+	ASSERT_NEAR(trueCount999, 9990, 8);
+}
+
+TEST_F(MockSerialStreamTests, MockSerialStream_RandomlyErroredByte)
+{
+	MockSerialStream stream;
+	stream.setPerBitErrorProb(0.083); // Roughly 50% of bytes should be correct
+	int errCount = 0;
+	int totalCount = 1000;
+	WindowsFunctions win;
+
+	srand(win.RelativeMicroseconds());
+	
+	for (int i = 0; i < totalCount; i++)
+	{
+		if (stream.randomlyErroredByte() != 0)
+			errCount++;
+	}
+
+	ASSERT_NEAR(errCount, 500, 50);
 }

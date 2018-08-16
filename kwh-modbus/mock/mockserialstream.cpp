@@ -129,7 +129,7 @@ int MockSerialStream::read()
 		return -1;
 	else
 	{
-		auto res = readQueue->front();
+		auto res = readQueue->front() ^ randomlyErroredByte();
 		readQueue->pop();
 		return res;
 	}

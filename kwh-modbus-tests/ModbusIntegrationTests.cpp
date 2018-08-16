@@ -39,10 +39,13 @@ protected:
 public:
 	void SetUp()
 	{
+		WindowsFunctions win;
+		srand(win.RelativeMicroseconds());
 		system = new WindowsSystemFunctions();
 		slaveIn = new queue<byte>();
 		masterIn = new queue<byte>();
 		slaveSerial = new MockSerialStream(slaveIn, masterIn);
+		slaveSerial->setPerBitErrorProb(.00127);
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
 		slave->config(slaveSerial, system, 1200);
 		master->config(masterSerial, system, 1200);
@@ -60,7 +63,7 @@ public:
 	{
 		ModbusIntegrationTests* fixture = (ModbusIntegrationTests*)param;
 		fixture->slaveSuccess = false;
-		TIMEOUT_START(10000);
+		TIMEOUT_START(5000);
 		while (!fixture->slave->task())
 			TIMEOUT_CHECK;
 		fixture->slaveSuccess = true;
@@ -70,7 +73,7 @@ public:
 	{
 		ModbusIntegrationTests* fixture = (ModbusIntegrationTests*)param;
 		fixture->masterSuccess = false;
-		TIMEOUT_START(10000);
+		TIMEOUT_START(5000);
 
 		fixture->master->send();
 		while (!fixture->master->receive())
