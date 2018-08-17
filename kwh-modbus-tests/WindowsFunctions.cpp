@@ -22,6 +22,7 @@ WindowsFunctions::WindowsFunctions()
 void WindowsFunctions::Windows_Sleep(int millis)
 {
 	Sleep(millis);
+
 }
 
 handle WindowsFunctions::Windows_CreateThread(void(*func)(void*), void* param)
@@ -30,6 +31,7 @@ handle WindowsFunctions::Windows_CreateThread(void(*func)(void*), void* param)
 	data->func = func;
 	data->param = param;
 	return CreateThread(NULL, 0, thread_func, data, 0, 0);
+	
 }
 
 wait_status WindowsFunctions::Windows_WaitForMultipleObjects(int num, handle* objects, bool waitAll, int timeout)
@@ -57,4 +59,20 @@ unsigned long long WindowsFunctions::RelativeMicroseconds()
 	tt /= 10;
 	//tt -= 11644473600000000ULL; Not needed because it's relative?
 	return tt;
+}
+
+bool WindowsFunctions::Windows_CryptGenRandom(int length, uint8_t* ptr)
+{
+	if (_hProv == NULL)
+	{
+		if (!CryptAcquireContextA(&_hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET))
+			return false;
+	}
+	return CryptGenRandom(_hProv, length, ptr);
+}
+
+WindowsFunctions::~WindowsFunctions()
+{
+	if (_hProv != NULL)
+		CryptReleaseContext;
 }

@@ -64,6 +64,7 @@ bool MockSerialStream::randomBool(double trueProbability)
 {
 	int compare = RAND_MAX * trueProbability;
 	int randValue = rand();
+	srand(randValue);
 	return (compare > randValue);
 }
 
@@ -129,7 +130,9 @@ int MockSerialStream::read()
 		return -1;
 	else
 	{
-		auto res = readQueue->front() ^ randomlyErroredByte();
+		uint8_t error = randomlyErroredByte();
+		auto res = readQueue->front();
+		res = res ^ error;
 		readQueue->pop();
 		return res;
 	}

@@ -40,12 +40,14 @@ public:
 	void SetUp()
 	{
 		WindowsFunctions win;
-		srand(win.RelativeMicroseconds());
+		unsigned int seed;
+		bool success = win.RandomWhatever(seed);
+		srand(seed);
 		system = new WindowsSystemFunctions();
 		slaveIn = new queue<byte>();
 		masterIn = new queue<byte>();
 		slaveSerial = new MockSerialStream(slaveIn, masterIn);
-		slaveSerial->setPerBitErrorProb(.00127);
+		slaveSerial->setPerBitErrorProb(.00128);
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
 		slave->config(slaveSerial, system, 1200);
 		master->config(masterSerial, system, 1200);
@@ -127,6 +129,8 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
 
+	ASSERT_EQ(slaveSerial->numErrors, 0);
+
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
 
@@ -154,6 +158,8 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
 
+	ASSERT_EQ(slaveSerial->numErrors, 0);
+
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
 
@@ -178,6 +184,8 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure)
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_EQ(slaveSerial->numErrors, 0);
 
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
@@ -211,6 +219,8 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_EQ(slaveSerial->numErrors, 0);
 
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
@@ -246,6 +256,8 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure)
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_EQ(slaveSerial->numErrors, 0);
 
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);

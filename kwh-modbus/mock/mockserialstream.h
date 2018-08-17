@@ -31,6 +31,8 @@ public:
 	double getPerBitErrorProb();
 
 	~MockSerialStream();
+
+	int numErrors = 0;
 private_testable:
 	queue<uint8_t> *readQueue;
 	queue<uint8_t> *writeQueue;
