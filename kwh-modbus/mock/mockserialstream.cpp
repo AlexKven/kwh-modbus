@@ -1,6 +1,9 @@
 #include "MockSerialStream.h"
 #include <queue>
 
+vector<unsigned int > *MockSerialStream::_randSeeds = nullptr;
+int MockSerialStream::_curSeed = 0;
+
 MockSerialStream::MockSerialStream(std::queue<uint8_t>* _readQueue, std::queue<uint8_t>* _writeQueue)
 {
 	externalQueues = true;
@@ -62,10 +65,30 @@ uint8_t MockSerialStream::randomlyErroredByte()
 
 bool MockSerialStream::randomBool(double trueProbability)
 {
-	int compare = RAND_MAX * trueProbability;
-	int randValue = rand();
-	srand(randValue);
+	int compare = 32768 * trueProbability;
+	int randValue = random();
+	//srand(randValue);
 	return (compare > randValue);
+}
+
+void MockSerialStream::randomSeed(unsigned int seed)
+{
+	if (_randSeeds == nullptr)
+		_randSeeds = new vector<unsigned int >();
+	_randSeeds->push_back(seed);
+}
+
+unsigned int MockSerialStream::random()
+{
+	auto nextSeed = _curSeed + 1;
+	if (nextSeed >= _randSeeds->size())
+		nextSeed = 0;
+	auto next = _randSeeds->at(_curSeed) * 1103515245 + 12345;
+	auto result = (unsigned int)(next / 65536) % 32768;
+	next = next ^ _randSeeds->at(nextSeed);
+	_randSeeds->at(nextSeed) = next;
+	_curSeed = nextSeed;
+	return result;
 }
 
 void MockSerialStream::begin(long _baud)

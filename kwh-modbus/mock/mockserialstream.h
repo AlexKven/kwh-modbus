@@ -2,7 +2,7 @@
 #include "../interfaces/ISerialStream.h"
 #include "../../kwh-modbus/noArduino/TestHelpers.h"
 #include <queue>
-#include <random>
+#include <vector>
 
 using namespace std;
 using std::queue;
@@ -31,8 +31,6 @@ public:
 	double getPerBitErrorProb();
 
 	~MockSerialStream();
-
-	int numErrors = 0;
 private_testable:
 	queue<uint8_t> *readQueue;
 	queue<uint8_t> *writeQueue;
@@ -43,5 +41,10 @@ private_testable:
 
 	uint8_t randomlyErroredByte();
 
+	static vector<unsigned int > *_randSeeds;
+	static int _curSeed;
+
 	static bool randomBool(double trueProbability);
+	static void randomSeed(unsigned int seed);
+	static unsigned int random();
 };

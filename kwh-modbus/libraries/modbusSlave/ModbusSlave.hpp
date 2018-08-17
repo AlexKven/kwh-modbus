@@ -165,6 +165,8 @@ public:
 			return false;
 		}
 
+		auto ccrc = calcCrc(frame[0], frame + 1, length - 3);
+
 		//CRC Check
 		if (crc != this->calcCrc(frame[0], frame + 1, length - 3)) {
 			return false;
