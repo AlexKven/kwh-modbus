@@ -3,6 +3,7 @@
 #include "../../kwh-modbus/noArduino/TestHelpers.h"
 #include <queue>
 #include <vector>
+#include "../libraries/random/Random.h"
 
 using namespace std;
 using std::queue;
@@ -38,6 +39,7 @@ private_testable:
 	bool _isListening = true;
 	bool externalQueues = false;
 	double  _perBitErrorProb = 0;
+	Random *random = nullptr;
 
 	uint8_t randomlyErroredByte();
 

@@ -23,6 +23,9 @@
     <ClCompile Include="libraries\arduinoClasses\ArduinoSystem.cpp">
       <Filter>libraries\arduinoClasses</Filter>
     </ClCompile>
+    <ClCompile Include="libraries\random\Random.cpp">
+      <Filter>libraries\random</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\modbusMaster\crc16.h">
@@ -82,6 +85,9 @@
     <ClInclude Include="noArduino\TestHelpers.h">
       <Filter>noArduino</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\random\Random.h">
+      <Filter>libraries\random</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -116,6 +122,9 @@
     </Filter>
     <Filter Include="libraries\resillientTask">
       <UniqueIdentifier>{f8f3a419-aad4-4e29-ad44-407d162404c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\random">
+      <UniqueIdentifier>{c2aeb6fb-1a17-411e-b82a-d4700ad5cb0d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

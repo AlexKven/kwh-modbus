@@ -19,9 +19,7 @@ public:
 		readQueue = new std::queue<uint8_t>();
 		writeQueue = new std::queue<uint8_t>();
 		WindowsFunctions win;
-		unsigned int seed;
-		bool success = win.RandomWhatever(seed);
-		MockSerialStream::randomSeed(seed);
+		MockSerialStream::randomSeed(time(NULL));
 	}
 
 	void TearDown()
@@ -193,9 +191,6 @@ TEST_F(MockSerialStreamTests, MockSerialStream_RandomBool)
 	int trueCount99 = 0;
 	int trueCount999 = 0;
 	int totalCount = 10000;
-	WindowsFunctions win;
-
-	//srand(win.RelativeMicroseconds());
 
 	for (int i = 0; i < totalCount; i++)
 	{

@@ -68,6 +68,7 @@
     <ClCompile Include="libraries\arduinoClasses\ArduinoSystem.cpp" />
     <ClCompile Include="libraries\modbus\Modbus.cpp" />
     <ClCompile Include="libraries\modbus\ModbusArray.cpp" />
+    <ClCompile Include="libraries\random\Random.cpp" />
     <ClCompile Include="mock\MockSerialStream.cpp" />
     <ClCompile Include="noArduino\ModbusMemory.cpp" />
     <ClCompile Include="noArduino\SystemFunctions.cpp" />
@@ -87,6 +88,7 @@
     <ClInclude Include="libraries\modbus\Modbus.h" />
     <ClInclude Include="libraries\modbus\ModbusArray.h" />
     <ClInclude Include="libraries\modbus\ModbusSerial.hpp" />
+    <ClInclude Include="libraries\random\Random.h" />
     <ClInclude Include="libraries\resillientTask\ResillientTask.h" />
     <ClInclude Include="mock\MockSerialStream.h" />
     <ClInclude Include="noArduino\SystemFunctions.h" />
