@@ -39,43 +39,28 @@ protected:
 public:
 	void SetUp()
 	{
-		WindowsFunctions win;
-		unsigned int seed;
-		bool success = win.RandomWhatever(seed);
-		MockSerialStream::randomSeed(seed);
 		system = new WindowsSystemFunctions();
 		slaveIn = new queue<byte>();
 		masterIn = new queue<byte>();
 		slaveSerial = new MockSerialStream(slaveIn, masterIn);
-		slaveSerial->setPerBitErrorProb(.00130);
-		//byte bte1 = slaveSerial->randomlyErroredByte();
-		//byte bte2 = slaveSerial->randomlyErroredByte();
-		//byte bte3 = slaveSerial->randomlyErroredByte();
-		//byte bte4 = slaveSerial->randomlyErroredByte();
-		//byte bte5 = slaveSerial->randomlyErroredByte();
-		//byte bte6 = slaveSerial->randomlyErroredByte();
-		//byte bte7 = slaveSerial->randomlyErroredByte();
-		//byte bte8 = slaveSerial->randomlyErroredByte();
-		//byte bte9 = slaveSerial->randomlyErroredByte();
-		//byte bte10 = slaveSerial->randomlyErroredByte();
-		//byte bte11 = slaveSerial->randomlyErroredByte();
-		//byte bte12 = slaveSerial->randomlyErroredByte();
-		//byte bte13 = slaveSerial->randomlyErroredByte();
-		//byte bte14 = slaveSerial->randomlyErroredByte();
-		//byte bte15 = slaveSerial->randomlyErroredByte();
-		//byte bte16 = slaveSerial->randomlyErroredByte();
-		//byte bte17 = slaveSerial->randomlyErroredByte();
-		//byte bte18 = slaveSerial->randomlyErroredByte();
-		//byte bte19 = slaveSerial->randomlyErroredByte();
-		//byte bte20 = slaveSerial->randomlyErroredByte();
-		//byte bte21 = slaveSerial->randomlyErroredByte();
-		//byte bte22 = slaveSerial->randomlyErroredByte();
-		//byte bte23 = slaveSerial->randomlyErroredByte();
-		//byte bte24 = slaveSerial->randomlyErroredByte();
-		//byte bte25 = slaveSerial->randomlyErroredByte();
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
+
+		seedRandom(slaveSerial);
+		seedRandom(masterSerial);
+
 		slave->config(slaveSerial, system, 1200);
 		master->config(masterSerial, system, 1200);
+	}
+
+	void seedRandom(MockSerialStream *stream)
+	{
+		WindowsFunctions win;
+		uint8_t seed[16];
+		bool success = win.Windows_CryptGenRandom(16, seed);
+		if (success)
+			stream->randomSeed(16, seed);
+		else
+			stream->randomSeed(time(NULL), time(NULL), time(NULL), time(NULL));
 	}
 
 	void TearDown()

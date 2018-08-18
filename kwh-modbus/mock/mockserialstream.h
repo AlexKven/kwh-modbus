@@ -39,14 +39,14 @@ private_testable:
 	bool _isListening = true;
 	bool externalQueues = false;
 	double  _perBitErrorProb = 0;
-	Random *random = nullptr;
+	Random random;
 
 	uint8_t randomlyErroredByte();
 
 	static vector<unsigned int > *_randSeeds;
 	static int _curSeed;
 
-	static bool randomBool(double trueProbability);
-	static void randomSeed(unsigned int seed);
-	static unsigned int random();
+	bool randomBool(double trueProbability);
+	void randomSeed(unsigned int seed1, unsigned int seed2, unsigned int seed3, unsigned int seed4);
+	void randomSeed(int seedLength, uint8_t *seed);
 };

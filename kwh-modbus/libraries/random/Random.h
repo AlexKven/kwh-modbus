@@ -7,13 +7,20 @@
 class Random
 {
 private:
-	uint32_t _z1, _z2, _z3, _z4;
+	// default seed values. Providing your own
+	// seed highly recommended;
+	uint32_t _z1 = 12345,
+		_z2 = 12345,
+		_z3 = 12345,
+		_z4 = 12345;
 	void validateSeed();
 
 public:
-	Random(uint32_t seed1, uint32_t seed2, uint32_t seed3, uint32_t seed4);
-	Random(int seedLength, uint8_t *seed);
+	Random();
 
 	double randomDouble();
 	uint32_t randomUInt32();
+
+	void seed(uint32_t seed1, uint32_t seed2, uint32_t seed3, uint32_t seed4);
+	void seed(int seedLength, uint8_t *seed);
 };

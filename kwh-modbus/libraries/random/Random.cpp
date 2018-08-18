@@ -13,7 +13,28 @@ void Random::validateSeed()
 		_z4 += 127;
 }
 
-Random::Random(uint32_t seed1, uint32_t seed2, uint32_t seed3, uint32_t seed4)
+Random::Random() {}
+
+double Random::randomDouble()
+{
+	return randomUInt32() * 2.3283064365386963e-10;
+}
+
+uint32_t Random::randomUInt32()
+{
+	uint32_t b;
+	b = ((_z1 << 6) ^ _z1) >> 13;
+	_z1 = ((_z1 & 4294967294U) << 18) ^ b;
+	b = ((_z2 << 2) ^ _z2) >> 27;
+	_z2 = ((_z2 & 4294967288U) << 2) ^ b;
+	b = ((_z3 << 13) ^ _z3) >> 21;
+	_z3 = ((_z3 & 4294967280U) << 7) ^ b;
+	b = ((_z4 << 3) ^ _z4) >> 12;
+	_z4 = ((_z4 & 4294967168U) << 13) ^ b;
+	return (_z1 ^ _z2 ^ _z3 ^ _z4);
+}
+
+void Random::seed(uint32_t seed1, uint32_t seed2, uint32_t seed3, uint32_t seed4)
 {
 	_z1 = seed1;
 	_z2 = seed2;
@@ -22,7 +43,7 @@ Random::Random(uint32_t seed1, uint32_t seed2, uint32_t seed3, uint32_t seed4)
 	validateSeed();
 }
 
-Random::Random(int seedLength, uint8_t *seed)
+void Random::seed(int seedLength, uint8_t * seed)
 {
 	for (int i = 0; i < seedLength; i++)
 	{
@@ -43,7 +64,7 @@ Random::Random(int seedLength, uint8_t *seed)
 				_z3 = 0;
 			else if (i == 12)
 				_z4 = 0;
-			
+
 			uint32_t shift = seed[i] << (i % 4) * 8;
 			uint8_t which = i / 4;
 			switch (which)
@@ -59,34 +80,6 @@ Random::Random(int seedLength, uint8_t *seed)
 				break;
 			}
 		}
-		validateSeed();
 	}
-}
-
-double Random::randomDouble()
-{
-	uint32_t b;
-	b = ((_z1 << 6) ^ _z1) >> 13;
-	_z1 = ((_z1 & 4294967294U) << 18) ^ b;
-	b = ((_z2 << 2) ^ _z2) >> 27;
-	_z2 = ((_z2 & 4294967288U) << 2) ^ b;
-	b = ((_z3 << 13) ^ _z3) >> 21;
-	_z3 = ((_z3 & 4294967280U) << 7) ^ b;
-	b = ((_z4 << 3) ^ _z4) >> 12;
-	_z4 = ((_z4 & 4294967168U) << 13) ^ b;
-	return (_z1 ^ _z2 ^ _z3 ^ _z4) * 2.3283064365386963e-10;
-}
-
-uint32_t Random::randomUInt32()
-{
-	uint32_t b;
-	b = ((_z1 << 6) ^ _z1) >> 13;
-	_z1 = ((_z1 & 4294967294U) << 18) ^ b;
-	b = ((_z2 << 2) ^ _z2) >> 27;
-	_z2 = ((_z2 & 4294967288U) << 2) ^ b;
-	b = ((_z3 << 13) ^ _z3) >> 21;
-	_z3 = ((_z3 & 4294967280U) << 7) ^ b;
-	b = ((_z4 << 3) ^ _z4) >> 12;
-	_z4 = ((_z4 & 4294967168U) << 13) ^ b;
-	return (_z1 ^ _z2 ^ _z3 ^ _z4);
+	validateSeed();
 }

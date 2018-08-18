@@ -49,10 +49,6 @@ MockSerialStream::~MockSerialStream()
 		delete this->readQueue;
 		delete this->writeQueue;
 	}
-	if (random != nullptr)
-	{
-		delete random;
-	}
 }
 
 uint8_t MockSerialStream::randomlyErroredByte()
@@ -80,29 +76,18 @@ bool MockSerialStream::randomBool(double trueProbability)
 		else
 			return false;
 	}
-	int compare = 32768 * trueProbability;
-	int randValue = random();
-	//srand(randValue);
-	return (compare > randValue);
+	double compare = random.randomDouble();
+	return (trueProbability > compare);
 }
 
-void MockSerialStream::randomSeed(unsigned int seed)
+void MockSerialStream::randomSeed(unsigned int seed1, unsigned int seed2, unsigned int seed3, unsigned int seed4)
 {
-	if (_randSeeds == nullptr)
-		_randSeeds = new vector<unsigned int >();
-	_randSeeds->push_back(seed);
+	random.seed(seed1, seed2, seed3, seed4);
 }
 
-unsigned int MockSerialStream::random()
+void MockSerialStream::randomSeed(int seedLength, uint8_t * seed)
 {
-	auto next = _randSeeds->at(_curSeed);
-	next = next * 1103515245 + 12345;
-	return (unsigned int)(next / 65536) % 32768;
-	_randSeeds->at(_curSeed) = next;
-	_curSeed++;
-	if (_curSeed > _randSeeds->size())
-		_curSeed = 0;
-	return (unsigned int)(next / 65536) % 32768;
+	random.seed(seedLength, seed);
 }
 
 void MockSerialStream::begin(long _baud)

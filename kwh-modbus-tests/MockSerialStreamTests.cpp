@@ -19,13 +19,23 @@ public:
 		readQueue = new std::queue<uint8_t>();
 		writeQueue = new std::queue<uint8_t>();
 		WindowsFunctions win;
-		MockSerialStream::randomSeed(time(NULL));
 	}
 
 	void TearDown()
 	{
 		delete readQueue;
 		delete writeQueue;
+	}
+
+	void seedRandom(MockSerialStream &stream)
+	{
+		WindowsFunctions win;
+		uint8_t seed[16];
+		bool success = win.Windows_CryptGenRandom(16, seed);
+		if (success)
+			stream.randomSeed(16, seed);
+		else
+			stream.randomSeed(time(NULL), time(NULL), time(NULL), time(NULL));
 	}
 };
 
@@ -181,6 +191,9 @@ TEST_F(MockSerialStreamTests, MockSerialStream_ReadWrite_TwoStreams)
 
 TEST_F(MockSerialStreamTests, MockSerialStream_RandomBool)
 {
+	MockSerialStream stream;
+	seedRandom(stream);
+
 	int trueCount01 = 0;
 	int trueCount1 = 0;
 	int trueCount10 = 0;
@@ -190,44 +203,45 @@ TEST_F(MockSerialStreamTests, MockSerialStream_RandomBool)
 	int trueCount90 = 0;
 	int trueCount99 = 0;
 	int trueCount999 = 0;
-	int totalCount = 10000;
+	int totalCount = 100000;
 
 	for (int i = 0; i < totalCount; i++)
 	{
-		if (MockSerialStream::randomBool(.001))
+		if (stream.randomBool(.001))
 			trueCount01++;
-		if (MockSerialStream::randomBool(.01))
+		if (stream.randomBool(.01))
 			trueCount1++;
-		if (MockSerialStream::randomBool(.1))
+		if (stream.randomBool(.1))
 			trueCount10++;
-		if (MockSerialStream::randomBool(.25))
+		if (stream.randomBool(.25))
 			trueCount25++;
-		if (MockSerialStream::randomBool(.5))
+		if (stream.randomBool(.5))
 			trueCount50++;
-		if (MockSerialStream::randomBool(.75))
+		if (stream.randomBool(.75))
 			trueCount75++;
-		if (MockSerialStream::randomBool(.9))
+		if (stream.randomBool(.9))
 			trueCount90++;
-		if (MockSerialStream::randomBool(.99))
+		if (stream.randomBool(.99))
 			trueCount99++;
-		if (MockSerialStream::randomBool(.999))
+		if (stream.randomBool(.999))
 			trueCount999++;
 	}
 
-	ASSERT_NEAR(trueCount01, 10, 8);
-	ASSERT_NEAR(trueCount1, 100, 25);
-	ASSERT_NEAR(trueCount10, 1000, 50);
-	ASSERT_NEAR(trueCount25, 2500, 75);
-	ASSERT_NEAR(trueCount50, 5000, 100);
-	ASSERT_NEAR(trueCount75, 7500, 75);
-	ASSERT_NEAR(trueCount90, 9000, 50);
-	ASSERT_NEAR(trueCount99, 9900, 25);
-	ASSERT_NEAR(trueCount999, 9990, 8);
+	ASSERT_NEAR(trueCount01, 100, 50);
+	ASSERT_NEAR(trueCount1, 1000, 100);
+	ASSERT_NEAR(trueCount10, 10000, 150);
+	ASSERT_NEAR(trueCount25, 25000, 300);
+	ASSERT_NEAR(trueCount50, 50000, 500);
+	ASSERT_NEAR(trueCount75, 75000, 300);
+	ASSERT_NEAR(trueCount90, 90000, 150);
+	ASSERT_NEAR(trueCount99, 99000, 100);
+	ASSERT_NEAR(trueCount999, 99900, 50);
 }
 
 TEST_F(MockSerialStreamTests, MockSerialStream_RandomlyErroredByte)
 {
 	MockSerialStream stream;
+	seedRandom(stream);
 	stream.setPerBitErrorProb(0.083); // Roughly 50% of bytes should be correct
 	int errCount = 0;
 	int totalCount = 1000;

@@ -315,7 +315,7 @@ TEST_F(ResillientTaskTests, Task_ExceededMaxTime)
 	ASSERT_TRUE(disposed);
 	ASSERT_EQ(status, TaskTimeOut);
 	ASSERT_EQ(task->_currentTries, 1);
-	ASSERT_EQ(workCount, 4);
+	ASSERT_NEAR(workCount, 4, 1);
 }
 
 TEST_F(ResillientTaskTests, Task_ExceededMaxTimePerTry)
@@ -357,7 +357,7 @@ TEST_F(ResillientTaskTests, Task_ExceededMaxTimePerTry)
 	ASSERT_TRUE(disposed);
 	ASSERT_EQ(status, TaskComplete);
 	ASSERT_EQ(task->_currentTries, 4);
-	ASSERT_EQ(workCount, 6);
+	ASSERT_NEAR(workCount, 6, 1);
 }
 
 TEST_F(ResillientTaskTests, Task_ExceededMaxTimePerTryAndTotal)
@@ -398,7 +398,7 @@ TEST_F(ResillientTaskTests, Task_ExceededMaxTimePerTryAndTotal)
 	ASSERT_TRUE(disposed);
 	ASSERT_EQ(status, TaskTimeOut);
 	ASSERT_EQ(task->_currentTries, 3);
-	ASSERT_EQ(workCount, 5);
+	ASSERT_NEAR(workCount, 5, 1);
 }
 
 TEST_F(ResillientTaskTests, Task_MinTimePerAttempt)
@@ -451,5 +451,5 @@ TEST_F(ResillientTaskTests, Task_MinTimePerAttempt)
 	ASSERT_TRUE(disposed);
 	ASSERT_EQ(status, TaskComplete);
 	ASSERT_EQ(task->_currentTries, 4);
-	ASSERT_EQ(workCount, 14);
+	ASSERT_NEAR(workCount, 14, 2);
 }
