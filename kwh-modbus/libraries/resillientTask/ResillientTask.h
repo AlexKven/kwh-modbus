@@ -35,6 +35,7 @@ protected_testable:
 	virtual TaskStatus check() = 0;
 	virtual TaskStatus retry() = 0;
 	virtual void disposed() {}
+	virtual void onReset() {}
 	virtual TaskStatus onAutoStatusChange(TaskStatus status)
 	{
 		return status;
@@ -223,5 +224,16 @@ public:
 	void setSystem(S *system)
 	{
 		_system = system;
+	}
+
+	// Not tested
+	void reset()
+	{
+		_status = TaskNotStarted;
+		_currentTries = 0;
+		_totalCycles = 0;
+		_lastBeginTime = 0;
+		_initialBeginTime = 0;
+		onReset();
 	}
 };

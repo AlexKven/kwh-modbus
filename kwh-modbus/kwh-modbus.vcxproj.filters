@@ -28,9 +28,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="libraries\modbusSlave\modbusserial.h">
-      <Filter>libraries\modbusSlave</Filter>
-    </ClInclude>
     <ClInclude Include="libraries\modbus\Modbus.h">
       <Filter>libraries\modbus</Filter>
     </ClInclude>
@@ -70,14 +67,17 @@
     <ClInclude Include="libraries\arduinoClasses\ArduinoSystem.h">
       <Filter>libraries\arduinoClasses</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\resillientTask\ResillientTask.h">
-      <Filter>libraries\resillientTask</Filter>
-    </ClInclude>
     <ClInclude Include="noArduino\TestHelpers.h">
       <Filter>noArduino</Filter>
     </ClInclude>
     <ClInclude Include="libraries\random\Random.h">
       <Filter>libraries\random</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\resillientTask\ResillientTask.h">
+      <Filter>libraries\resillientTask</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\modbusSlaveTask\ResillientModbusTask.hpp">
+      <Filter>libraries\resillientModbusTask</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -111,11 +111,14 @@
     <Filter Include="libraries\arduinoClasses">
       <UniqueIdentifier>{5b12c040-ca27-4a80-9942-f934e5b34c1b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="libraries\random">
+      <UniqueIdentifier>{c2aeb6fb-1a17-411e-b82a-d4700ad5cb0d}</UniqueIdentifier>
+    </Filter>
     <Filter Include="libraries\resillientTask">
       <UniqueIdentifier>{f8f3a419-aad4-4e29-ad44-407d162404c8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="libraries\random">
-      <UniqueIdentifier>{c2aeb6fb-1a17-411e-b82a-d4700ad5cb0d}</UniqueIdentifier>
+    <Filter Include="libraries\resillientModbusTask">
+      <UniqueIdentifier>{21a065f3-f725-4ba1-a814-e849226023c0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
