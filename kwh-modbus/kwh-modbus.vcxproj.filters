@@ -28,17 +28,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="libraries\modbusMaster\crc16.h">
-      <Filter>libraries\modbusMaster</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\modbusMaster\word.h">
-      <Filter>libraries\modbusMaster</Filter>
-    </ClInclude>
     <ClInclude Include="libraries\modbusSlave\modbusserial.h">
       <Filter>libraries\modbusSlave</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\modbusMaster\modbusmaster.h">
-      <Filter>libraries\modbusMaster</Filter>
     </ClInclude>
     <ClInclude Include="libraries\modbus\Modbus.h">
       <Filter>libraries\modbus</Filter>
