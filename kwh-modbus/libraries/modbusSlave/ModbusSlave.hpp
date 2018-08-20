@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../modbus/ModbusSerial.hpp"
 
 template<typename TSerial, typename TSystemFunctions, typename TBase>

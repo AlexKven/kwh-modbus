@@ -9,6 +9,7 @@
 #include "../kwh-modbus/mock/MockSerialStream.h"
 #include "../kwh-modbus/libraries/modbusSlave/ModbusSlave.hpp"
 #include "../kwh-modbus/libraries/modbusMaster/ModbusMaster.hpp"
+#include "../kwh-modbus/libraries/resilientModbus/ResilientModbus.hpp"
 #include "test_helpers.h"
 #include "WindowsFunctions.h"
 #include "WindowsSystemFunctions.h"
@@ -22,11 +23,11 @@ unsigned long time_max = MILLIS_MAX
 
 using namespace fakeit;
 
-class ModbusIntegrationTests : public ::testing::Test
+class ResilientModbusIntegrationTests : public ::testing::Test
 {
 protected:
 	ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory> *slave = new ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory>();
-	ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory> *master = new ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>();
+	ResilientModbus<ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>, ISystemFunctions> *master = new ResilientModbus<ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>, ISystemFunctions>();
 	queue<byte> *slaveIn;
 	queue<byte> *masterIn;
 	MockSerialStream *slaveSerial;
@@ -45,8 +46,23 @@ public:
 		slaveSerial = new MockSerialStream(slaveIn, masterIn);
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
 
+		seedRandom(slaveSerial);
+		seedRandom(masterSerial);
+		masterSerial->setPerBitErrorProb(.03);
+
 		slave->config(slaveSerial, system, 1200);
 		master->config(masterSerial, system, 1200);
+	}
+
+	void seedRandom(MockSerialStream *stream)
+	{
+		WindowsFunctions win;
+		uint8_t seed[16];
+		bool success = win.Windows_CryptGenRandom(16, seed);
+		if (success)
+			stream->randomSeed(16, seed);
+		else
+			stream->randomSeed(time(NULL), time(NULL), time(NULL), time(NULL));
 	}
 
 	void TearDown()
@@ -59,29 +75,30 @@ public:
 
 	static void slave_thread(void *param)
 	{
-		ModbusIntegrationTests* fixture = (ModbusIntegrationTests*)param;
-		fixture->slaveSuccess = false;
+		ResilientModbusIntegrationTests* fixture = (ResilientModbusIntegrationTests*)param;
+		fixture->slaveSuccess = true;
 		TIMEOUT_START(5000);
-		while (!fixture->slave->task())
+		while (true)
 			TIMEOUT_CHECK;
 		fixture->slaveSuccess = true;
 	}
 
 	static void master_thread(void *param)
 	{
-		ModbusIntegrationTests* fixture = (ModbusIntegrationTests*)param;
+		ResilientModbusIntegrationTests* fixture = (ResilientModbusIntegrationTests*)param;
 		fixture->masterSuccess = false;
 		TIMEOUT_START(5000);
 
-		while (!fixture->master->receive())
+		fixture->master->send();
+		while (!fixture->master->work())
 			TIMEOUT_CHECK;
 		fixture->masterSuccess = true;
 	}
 };
 
-WindowsSystemFunctions *ModbusIntegrationTests::system;
+WindowsSystemFunctions *ResilientModbusIntegrationTests::system;
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success)
+TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_ReadRegs_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -109,7 +126,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success)
 	assertArrayEq<word, word>(regPtr, 703, 513);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
+TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_ReadRegs_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -137,7 +154,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
+TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_WriteReg_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -162,7 +179,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
 	ASSERT_EQ(reg, 703);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure)
+TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_WriteReg_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -189,7 +206,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure)
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
+TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_WriteRegs_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -224,7 +241,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
 	ASSERT_EQ(reg5, 703);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure)
+TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_WriteRegs_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
