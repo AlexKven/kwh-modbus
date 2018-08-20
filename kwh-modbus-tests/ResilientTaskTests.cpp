@@ -3,7 +3,7 @@
 
 #include "../kwh-modbus/interfaces/ISerialStream.h"
 #include "../kwh-modbus/noArduino/SystemFunctions.h"
-#include "../kwh-modbus/libraries/resillientTask/ResillientTask.h"
+#include "../kwh-modbus/libraries/resilientTask/ResilientTask.hpp"
 #include "test_helpers.h"
 #include "WindowsSystemFunctions.h"
 #include <functional>
@@ -13,7 +13,7 @@
 
 using namespace fakeit;
 
-class TestResillientTask : public ResillientTask<ISystemFunctions>
+class TestResilientTask : public ResilientTask<ISystemFunctions>
 {
 public:
 	std::function<TaskStatus()> beginLambda;
@@ -52,16 +52,16 @@ public:
 #define RTT_TIMEOUT(timeout_ms) if (system->millis() - _testStartTime >= timeout_ms) \
 { GTEST_FATAL_FAILURE_("Timed out. May be stuck in loop");}
 
-class ResillientTaskTests : public ::testing::Test
+class ResilientTaskTests : public ::testing::Test
 {
 protected:
-	TestResillientTask *task;
+	TestResilientTask *task;
 	WindowsSystemFunctions *system;
 	unsigned long long _testStartTime;
 public:
 	void SetUp()
 	{
-		task = new TestResillientTask();
+		task = new TestResilientTask();
 		system = new WindowsSystemFunctions();
 		task->setSystem(system);
 		_testStartTime = system->millis();
@@ -73,7 +73,7 @@ public:
 	}
 };
 
-TEST_F(ResillientTaskTests, Task_CompletesImmediately)
+TEST_F(ResilientTaskTests, Task_CompletesImmediately)
 {
 	bool disposed = false;
 	task->disposedLambda = [&disposed]() { disposed = true; };
@@ -93,7 +93,7 @@ TEST_F(ResillientTaskTests, Task_CompletesImmediately)
 	ASSERT_EQ(workCount, 0);
 }
 
-TEST_F(ResillientTaskTests, Task_CompletesOneCheck)
+TEST_F(ResilientTaskTests, Task_CompletesOneCheck)
 {
 	bool disposed = false;
 	task->disposedLambda = [&disposed]() { disposed = true; };
@@ -114,7 +114,7 @@ TEST_F(ResillientTaskTests, Task_CompletesOneCheck)
 	ASSERT_EQ(workCount, 1);
 }
 
-TEST_F(ResillientTaskTests, Task_CompletesThreeChecks)
+TEST_F(ResilientTaskTests, Task_CompletesThreeChecks)
 {
 	int checks = 3;
 	bool disposed = false;
@@ -143,7 +143,7 @@ TEST_F(ResillientTaskTests, Task_CompletesThreeChecks)
 	ASSERT_EQ(workCount, 3);
 }
 
-TEST_F(ResillientTaskTests, Task_CompletesThreeChecks_FourAttempts)
+TEST_F(ResilientTaskTests, Task_CompletesThreeChecks_FourAttempts)
 {
 	int checks = 3;
 	int attempts = 4;
@@ -187,7 +187,7 @@ TEST_F(ResillientTaskTests, Task_CompletesThreeChecks_FourAttempts)
 	ASSERT_EQ(workCount, 15);
 }
 
-TEST_F(ResillientTaskTests, Task_ExceededMaxTries)
+TEST_F(ResilientTaskTests, Task_ExceededMaxTries)
 {
 	int checks = 3;
 	int attempts = 4;
@@ -233,7 +233,7 @@ TEST_F(ResillientTaskTests, Task_ExceededMaxTries)
 	ASSERT_EQ(workCount, 12);
 }
 
-TEST_F(ResillientTaskTests, Task_ExceededMaxTries_Stubborn)
+TEST_F(ResilientTaskTests, Task_ExceededMaxTries_Stubborn)
 {
 	int checks = 3;
 	int attempts = 4;
@@ -288,7 +288,7 @@ TEST_F(ResillientTaskTests, Task_ExceededMaxTries_Stubborn)
 	ASSERT_EQ(workCount, 13);
 }
 
-TEST_F(ResillientTaskTests, Task_ExceededMaxTime)
+TEST_F(ResilientTaskTests, Task_ExceededMaxTime)
 {
 	task->setMaxTimeMicros(175000);
 	bool disposed = false;
@@ -318,7 +318,7 @@ TEST_F(ResillientTaskTests, Task_ExceededMaxTime)
 	ASSERT_NEAR(workCount, 4, 1);
 }
 
-TEST_F(ResillientTaskTests, Task_ExceededMaxTimePerTry)
+TEST_F(ResilientTaskTests, Task_ExceededMaxTimePerTry)
 {
 	task->setMaxTimePerTryMicros(50000);
 	bool disposed = false;
@@ -360,7 +360,7 @@ TEST_F(ResillientTaskTests, Task_ExceededMaxTimePerTry)
 	ASSERT_NEAR(workCount, 6, 1);
 }
 
-TEST_F(ResillientTaskTests, Task_ExceededMaxTimePerTryAndTotal)
+TEST_F(ResilientTaskTests, Task_ExceededMaxTimePerTryAndTotal)
 {
 	task->setMaxTimePerTryMicros(50000);
 	task->setMaxTimeMicros(105000);
@@ -401,7 +401,7 @@ TEST_F(ResillientTaskTests, Task_ExceededMaxTimePerTryAndTotal)
 	ASSERT_NEAR(workCount, 5, 1);
 }
 
-TEST_F(ResillientTaskTests, Task_MinTimePerAttempt)
+TEST_F(ResilientTaskTests, Task_MinTimePerAttempt)
 {
 	int checks = 2;
 	int attempts = 4;

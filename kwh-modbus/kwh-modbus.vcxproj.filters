@@ -73,11 +73,11 @@
     <ClInclude Include="libraries\random\Random.h">
       <Filter>libraries\random</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\resillientTask\ResillientTask.h">
-      <Filter>libraries\resillientTask</Filter>
+    <ClInclude Include="libraries\resilientTask\ResilientTask.hpp">
+      <Filter>libraries\resilientTask</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\modbusSlaveTask\ResillientModbusTask.hpp">
-      <Filter>libraries\resillientModbusTask</Filter>
+    <ClInclude Include="libraries\resilientModbus\ResilientModbus.hpp">
+      <Filter>libraries\resilientModbus</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -114,10 +114,10 @@
     <Filter Include="libraries\random">
       <UniqueIdentifier>{c2aeb6fb-1a17-411e-b82a-d4700ad5cb0d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="libraries\resillientTask">
+    <Filter Include="libraries\resilientTask">
       <UniqueIdentifier>{f8f3a419-aad4-4e29-ad44-407d162404c8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="libraries\resillientModbusTask">
+    <Filter Include="libraries\resilientModbus">
       <UniqueIdentifier>{21a065f3-f725-4ba1-a814-e849226023c0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>

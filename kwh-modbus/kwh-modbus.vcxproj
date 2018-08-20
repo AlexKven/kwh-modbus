@@ -80,13 +80,13 @@
     <ClInclude Include="libraries\arduinoClasses\ArduinoSerial.h" />
     <ClInclude Include="libraries\arduinoClasses\ArduinoSystem.h" />
     <ClInclude Include="libraries\modbusMaster\ModbusMaster.hpp" />
-    <ClInclude Include="libraries\modbusSlaveTask\ResillientModbusTask.hpp" />
     <ClInclude Include="libraries\modbusSlave\ModbusSlave.hpp" />
     <ClInclude Include="libraries\modbus\Modbus.h" />
     <ClInclude Include="libraries\modbus\ModbusArray.h" />
     <ClInclude Include="libraries\modbus\ModbusSerial.hpp" />
     <ClInclude Include="libraries\random\Random.h" />
-    <ClInclude Include="libraries\resillientTask\ResillientTask.h" />
+    <ClInclude Include="libraries\resilientModbus\ResilientModbus.hpp" />
+    <ClInclude Include="libraries\resilientTask\ResilientTask.hpp" />
     <ClInclude Include="mock\MockSerialStream.h" />
     <ClInclude Include="noArduino\SystemFunctions.h" />
     <ClInclude Include="noArduino\ArduinoMacros.h" />

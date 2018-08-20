@@ -16,7 +16,7 @@ enum TaskStatus : byte
 };
 
 template<typename S>
-class ResillientTask
+class ResilientTask
 {
 private_testable:
 	TaskStatus _status = TaskNotStarted;

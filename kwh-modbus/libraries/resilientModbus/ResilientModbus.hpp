@@ -1,8 +1,8 @@
 #include "../modbusSlave/ModbusSlave.hpp"
-#include "../resillientTask/ResillientTask.h"
+#include "../resilientTask/ResilientTask.hpp"
 
 template<typename TBase, typename TSystemFunctions>
-class ModbusSlaveTask<TBase, TSystemFunctions> : public ResillientTask<TSystemFunctions>, public TBase
+class ModbusSlaveTask<TBase, TSystemFunctions> : public ResilientTask<TSystemFunctions>, public TBase
 {
 protected_testable:
 	TaskStatus begin()
