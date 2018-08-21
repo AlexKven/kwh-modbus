@@ -73,6 +73,7 @@ public:
 		fixture->masterSuccess = false;
 		TIMEOUT_START(5000);
 
+		fixture->master->send();
 		while (!fixture->master->receive())
 			TIMEOUT_CHECK;
 		fixture->masterSuccess = true;

@@ -48,7 +48,7 @@ public:
 
 		seedRandom(slaveSerial);
 		seedRandom(masterSerial);
-		masterSerial->setPerBitErrorProb(.03);
+		masterSerial->setPerBitErrorProb(.05);
 
 		slave->config(slaveSerial, system, 1200);
 		master->config(masterSerial, system, 1200);
@@ -76,10 +76,13 @@ public:
 	static void slave_thread(void *param)
 	{
 		ResilientModbusIntegrationTests* fixture = (ResilientModbusIntegrationTests*)param;
-		fixture->slaveSuccess = true;
+		fixture->slaveSuccess = false;
 		TIMEOUT_START(5000);
-		while (true)
+		while (fixture->master->getStatus() < 4)
+		{
+			fixture->slave->task();
 			TIMEOUT_CHECK;
+		}
 		fixture->slaveSuccess = true;
 	}
 
@@ -89,7 +92,7 @@ public:
 		fixture->masterSuccess = false;
 		TIMEOUT_START(5000);
 
-		fixture->master->send();
+		//fixture->master->send();
 		while (!fixture->master->work())
 			TIMEOUT_CHECK;
 		fixture->masterSuccess = true;
@@ -261,8 +264,8 @@ TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_WriteReg
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
 
-	ASSERT_TRUE(slaveSuccess);
-	ASSERT_TRUE(masterSuccess);
+	ASSERT_TRUE(slaveSuccess) << "Total tries: " << master->_currentTries << endl;
+	ASSERT_TRUE(masterSuccess) << "Total tries: " << master->_currentTries << endl;
 
 	bool integrity = master->verifyResponseIntegrity();
 	byte fcode;

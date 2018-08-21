@@ -227,15 +227,15 @@ TEST_F(MockSerialStreamTests, MockSerialStream_RandomBool)
 			trueCount999++;
 	}
 
-	ASSERT_NEAR(trueCount01, 100, 50);
-	ASSERT_NEAR(trueCount1, 1000, 100);
-	ASSERT_NEAR(trueCount10, 10000, 150);
-	ASSERT_NEAR(trueCount25, 25000, 300);
+	ASSERT_NEAR(trueCount01, 100, 75);
+	ASSERT_NEAR(trueCount1, 1000, 125);
+	ASSERT_NEAR(trueCount10, 10000, 175);
+	ASSERT_NEAR(trueCount25, 25000, 350);
 	ASSERT_NEAR(trueCount50, 50000, 500);
-	ASSERT_NEAR(trueCount75, 75000, 300);
-	ASSERT_NEAR(trueCount90, 90000, 150);
-	ASSERT_NEAR(trueCount99, 99000, 100);
-	ASSERT_NEAR(trueCount999, 99900, 50);
+	ASSERT_NEAR(trueCount75, 75000, 350);
+	ASSERT_NEAR(trueCount90, 90000, 175);
+	ASSERT_NEAR(trueCount99, 99000, 125);
+	ASSERT_NEAR(trueCount999, 99900, 75);
 }
 
 TEST_F(MockSerialStreamTests, MockSerialStream_RandomlyErroredByte)
