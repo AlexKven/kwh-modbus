@@ -1,3 +1,4 @@
+#pragma once
 #include "pch.h"
 #include "fakeit.hpp"
 
@@ -22,6 +23,7 @@ unsigned long time_max = MILLIS_MAX
 
 using namespace fakeit;
 
+template<typename Tmaster>
 class ModbusIntegrationTests : public ::testing::Test
 {
 protected:
@@ -37,7 +39,7 @@ protected:
 	static WindowsSystemFunctions *system;
 
 public:
-	void SetUp()
+	virtual void SetUp()
 	{
 		system = new WindowsSystemFunctions();
 		slaveIn = new queue<byte>();
@@ -49,7 +51,7 @@ public:
 		master->config(masterSerial, system, 1200);
 	}
 
-	void TearDown()
+	virtual void TearDown()
 	{
 		delete slaveIn;
 		delete masterIn;
@@ -57,32 +59,40 @@ public:
 		delete masterSerial;
 	}
 
+	virtual void slaveThread()
+	{
+		this->slaveSuccess = false;
+		TIMEOUT_START(5000);
+		while (!this->slave->task())
+			TIMEOUT_CHECK;
+		this->slaveSuccess = true;
+	}
+
+	virtual void masterThread()
+	{
+		this->masterSuccess = false;
+		TIMEOUT_START(5000);
+
+		this->master->send();
+		while (!this->master->receive())
+			TIMEOUT_CHECK;
+		this->masterSuccess = true;
+	}
+
 	static void slave_thread(void *param)
 	{
-		ModbusIntegrationTests* fixture = (ModbusIntegrationTests*)param;
-		fixture->slaveSuccess = false;
-		TIMEOUT_START(5000);
-		while (!fixture->slave->task())
-			TIMEOUT_CHECK;
-		fixture->slaveSuccess = true;
+		((ModbusIntegrationTests<Tmaster>*)param)->slaveThread();
 	}
 
 	static void master_thread(void *param)
 	{
-		ModbusIntegrationTests* fixture = (ModbusIntegrationTests*)param;
-		fixture->masterSuccess = false;
-		TIMEOUT_START(5000);
-
-		fixture->master->send();
-		while (!fixture->master->receive())
-			TIMEOUT_CHECK;
-		fixture->masterSuccess = true;
+		((ModbusIntegrationTests<Tmaster>*)param)->masterThread();
 	}
 };
 
-WindowsSystemFunctions *ModbusIntegrationTests::system;
+TYPED_TEST_CASE_P(ModbusIntegrationTests);
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success)
+TYPED_TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -110,7 +120,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success)
 	assertArrayEq<word, word>(regPtr, 703, 513);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
+TYPED_TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -138,7 +148,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
+TYPED_TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -163,7 +173,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
 	ASSERT_EQ(reg, 703);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure)
+TYPED_TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -190,7 +200,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure)
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
+TYPED_TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -225,7 +235,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
 	ASSERT_EQ(reg5, 703);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure)
+TYPED_TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
