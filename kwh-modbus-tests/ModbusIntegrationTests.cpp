@@ -13,80 +13,39 @@
 #include "test_helpers.h"
 #include "WindowsFunctions.h"
 #include "WindowsSystemFunctions.h"
+#include "ModbusMasterIntegrationTestsFixture.h"
 #include <queue>
 
-#define TIMEOUT_START(MILLIS_MAX) unsigned long time_start = system->millis(); \
-unsigned long time_max = MILLIS_MAX
-
-#define TIMEOUT_CHECK if (system->millis() - time_start > time_max) return
-#define TIMEOUT_CHECK_RETURN(RETURN_VALUE) if (system->millis() - time_start > time_max) return RETURN_VALUE
 
 using namespace fakeit;
 
-template<typename Tmaster>
+template<typename T>
 class ModbusIntegrationTests : public ::testing::Test
 {
 protected:
-	ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory> *slave = new ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory>();
-	ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory> *master = new ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>();
-	queue<byte> *slaveIn;
-	queue<byte> *masterIn;
-	MockSerialStream *slaveSerial;
-	MockSerialStream *masterSerial;
-	bool masterSuccess = false;
-	bool slaveSuccess = false;
+	T *fixture = new T();
 
 	static WindowsSystemFunctions *system;
 
 public:
 	virtual void SetUp()
 	{
-		system = new WindowsSystemFunctions();
-		slaveIn = new queue<byte>();
-		masterIn = new queue<byte>();
-		slaveSerial = new MockSerialStream(slaveIn, masterIn);
-		masterSerial = new MockSerialStream(masterIn, slaveIn);
-
-		slave->config(slaveSerial, system, 1200);
-		master->config(masterSerial, system, 1200);
+		fixture->SetUp();
 	}
 
 	virtual void TearDown()
 	{
-		delete slaveIn;
-		delete masterIn;
-		delete slaveSerial;
-		delete masterSerial;
-	}
-
-	virtual void slaveThread()
-	{
-		this->slaveSuccess = false;
-		TIMEOUT_START(5000);
-		while (!this->slave->task())
-			TIMEOUT_CHECK;
-		this->slaveSuccess = true;
-	}
-
-	virtual void masterThread()
-	{
-		this->masterSuccess = false;
-		TIMEOUT_START(5000);
-
-		this->master->send();
-		while (!this->master->receive())
-			TIMEOUT_CHECK;
-		this->masterSuccess = true;
+		fixture->TearDown();
 	}
 
 	static void slave_thread(void *param)
 	{
-		((ModbusIntegrationTests<Tmaster>*)param)->slaveThread();
+		((ModbusIntegrationTests<Tmaster>*)param)->fixture->slaveThread();
 	}
 
 	static void master_thread(void *param)
 	{
-		((ModbusIntegrationTests<Tmaster>*)param)->masterThread();
+		((ModbusIntegrationTests<Tmaster>*)param)->fixture->masterThread();
 	}
 };
 
@@ -267,3 +226,18 @@ TYPED_TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure)
 	ASSERT_EQ(fcode, MB_FC_WRITE_REGS);
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
+
+REGISTER_TYPED_TEST_CASE_P(ModbusIntegrationTests,
+	ModbusIntegrationTests_ReadRegs_Success,
+	ModbusIntegrationTests_ReadRegs_Failure,
+	ModbusIntegrationTests_WriteReg_Success,
+	ModbusIntegrationTests_WriteReg_Failure,
+	ModbusIntegrationTests_WriteRegs_Success,
+	ModbusIntegrationTests_WriteRegs_Failure);
+
+
+typedef ::testing::Types<ModbusMasterIntegrationTestsFixture<ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>, ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory>>> MyTypes;
+INSTANTIATE_TYPED_TEST_CASE_P(My, ModbusIntegrationTests, MyTypes);
+
+//typedef ::testing::Types<ModbusMasterIntegrationTestsFixture<ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>, ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory>>> MyTypes;
+//INSTANTIATE_TYPED_TEST_CASE_P(My, ModbusIntegrationTests_ReadRegs_Success, MyTypes);
