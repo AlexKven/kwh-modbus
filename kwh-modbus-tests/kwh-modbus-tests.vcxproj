@@ -33,7 +33,6 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
-    <ClInclude Include="ModbusMasterIntegrationTestsFixture.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="WindowsFunctions.h" />
     <ClInclude Include="WindowsSystemFunctions.h" />
