@@ -16,7 +16,8 @@
     <ClCompile Include="ModbusTests.cpp" />
     <ClCompile Include="ModbusMasterTests.cpp" />
     <ClCompile Include="ResilientTaskTests.cpp" />
-    <ClCompile Include="ResilientModbusIntegrationTests.cpp" />
+    <ClCompile Include="InboundResiliencyModbusIntegrationTests.cpp" />
+    <ClCompile Include="OutboundResiliencyModbusIntegrationTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

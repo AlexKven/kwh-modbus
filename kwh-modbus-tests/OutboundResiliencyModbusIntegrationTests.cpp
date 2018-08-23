@@ -23,7 +23,7 @@ unsigned long time_max = MILLIS_MAX
 
 using namespace fakeit;
 
-class ResilientModbusIntegrationTests : public ::testing::Test
+class OutboundResiliencyModbusIntegrationTests : public ::testing::Test
 {
 protected:
 	ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory> *slave = new ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory>();
@@ -46,9 +46,12 @@ public:
 		slaveSerial = new MockSerialStream(slaveIn, masterIn);
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
 
+		master->setSystem(system);
+		master->setMaxTimePerTryMicros(100000);
+
 		seedRandom(slaveSerial);
 		seedRandom(masterSerial);
-		masterSerial->setPerBitErrorProb(.05);
+		slaveSerial->setPerBitErrorProb(.02);
 
 		slave->config(slaveSerial, system, 1200);
 		master->config(masterSerial, system, 1200);
@@ -75,7 +78,7 @@ public:
 
 	static void slave_thread(void *param)
 	{
-		ResilientModbusIntegrationTests* fixture = (ResilientModbusIntegrationTests*)param;
+		OutboundResiliencyModbusIntegrationTests* fixture = (OutboundResiliencyModbusIntegrationTests*)param;
 		fixture->slaveSuccess = false;
 		TIMEOUT_START(5000);
 		while (fixture->master->getStatus() < 4)
@@ -88,7 +91,7 @@ public:
 
 	static void master_thread(void *param)
 	{
-		ResilientModbusIntegrationTests* fixture = (ResilientModbusIntegrationTests*)param;
+		OutboundResiliencyModbusIntegrationTests* fixture = (OutboundResiliencyModbusIntegrationTests*)param;
 		fixture->masterSuccess = false;
 		TIMEOUT_START(5000);
 
@@ -99,9 +102,9 @@ public:
 	}
 };
 
-WindowsSystemFunctions *ResilientModbusIntegrationTests::system;
+WindowsSystemFunctions *OutboundResiliencyModbusIntegrationTests::system;
 
-TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_ReadRegs_Success)
+TEST_F(OutboundResiliencyModbusIntegrationTests, OutboundResiliencyModbusIntegrationTests_ReadRegs_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -129,7 +132,7 @@ TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_ReadRegs
 	assertArrayEq<word, word>(regPtr, 703, 513);
 }
 
-TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_ReadRegs_Failure)
+TEST_F(OutboundResiliencyModbusIntegrationTests, OutboundResiliencyModbusIntegrationTests_ReadRegs_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -157,7 +160,7 @@ TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_ReadRegs
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_WriteReg_Success)
+TEST_F(OutboundResiliencyModbusIntegrationTests, OutboundResiliencyModbusIntegrationTests_WriteReg_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -182,7 +185,7 @@ TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_WriteReg
 	ASSERT_EQ(reg, 703);
 }
 
-TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_WriteReg_Failure)
+TEST_F(OutboundResiliencyModbusIntegrationTests, OutboundResiliencyModbusIntegrationTests_WriteReg_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -209,7 +212,7 @@ TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_WriteReg
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_WriteRegs_Success)
+TEST_F(OutboundResiliencyModbusIntegrationTests, OutboundResiliencyModbusIntegrationTests_WriteRegs_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -244,7 +247,7 @@ TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_WriteReg
 	ASSERT_EQ(reg5, 703);
 }
 
-TEST_F(ResilientModbusIntegrationTests, ResilientModbusIntegrationTests_WriteRegs_Failure)
+TEST_F(OutboundResiliencyModbusIntegrationTests, OutboundResiliencyModbusIntegrationTests_WriteRegs_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
