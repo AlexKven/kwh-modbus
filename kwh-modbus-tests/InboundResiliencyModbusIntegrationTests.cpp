@@ -71,7 +71,6 @@ public:
 		masterIn = new queue<byte>();
 		slaveSerial = new MockSerialStream(slaveIn, masterIn);
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
-
 		
 		master->config(masterSerial, system, 1200);
 		slave->config(slaveSerial, system, 1200);
@@ -112,10 +111,9 @@ public:
 	void slaveThread()
 	{
 		this->slaveSuccess = false;
-		TIMEOUT_START(5000);
+		TIMEOUT_START(50000);
 		if (this->errorType == 0)
 		{
-			this->master->send();
 			while (!this->slave->task())
 				TIMEOUT_CHECK;
 		}
@@ -133,7 +131,7 @@ public:
 	void masterThread()
 	{
 		this->masterSuccess = false;
-		TIMEOUT_START(5000);
+		TIMEOUT_START(50000);
 
 		if (this->errorType == 0)
 		{
