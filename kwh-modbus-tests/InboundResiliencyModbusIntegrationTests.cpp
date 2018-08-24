@@ -23,7 +23,30 @@ unsigned long time_max = MILLIS_MAX
 
 using namespace fakeit;
 
-class InboundResiliencyModbusIntegrationTests : public ::testing::Test
+enum ModbusTransmissionError
+{
+	None = 0,
+	InboundError = 1,
+	OutboundError = 2,
+	InboundDelays = 4,
+	OutboundDelays = 8
+};
+
+inline ModbusTransmissionError operator~ (ModbusTransmissionError a) { return (ModbusTransmissionError)~(int)a; }
+inline ModbusTransmissionError operator| (ModbusTransmissionError a, ModbusTransmissionError b) { return (ModbusTransmissionError)((int)a | (int)b); }
+inline ModbusTransmissionError operator& (ModbusTransmissionError a, ModbusTransmissionError b) { return (ModbusTransmissionError)((int)a & (int)b); }
+inline ModbusTransmissionError operator^ (ModbusTransmissionError a, ModbusTransmissionError b) { return (ModbusTransmissionError)((int)a ^ (int)b); }
+inline ModbusTransmissionError& operator|= (ModbusTransmissionError& a, ModbusTransmissionError b) { return (ModbusTransmissionError&)((int&)a |= (int)b); }
+inline ModbusTransmissionError& operator&= (ModbusTransmissionError& a, ModbusTransmissionError b) { return (ModbusTransmissionError&)((int&)a &= (int)b); }
+inline ModbusTransmissionError& operator^= (ModbusTransmissionError& a, ModbusTransmissionError b) { return (ModbusTransmissionError&)((int&)a ^= (int)b); }
+inline bool contains(ModbusTransmissionError a, ModbusTransmissionError b)
+{
+	return a | b == a;
+}
+
+class InboundResiliencyModbusIntegrationTests :
+	public ::testing::Test,
+	public ::testing::WithParamInterface<ModbusTransmissionError>
 {
 protected:
 	ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory> *slave = new ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory>();
@@ -34,24 +57,37 @@ protected:
 	MockSerialStream *masterSerial;
 	bool masterSuccess = false;
 	bool slaveSuccess = false;
+	ModbusTransmissionError errorType;
 
 	static WindowsSystemFunctions *system;
 
 public:
 	void SetUp()
 	{
+		errorType = GetParam();
+
 		system = new WindowsSystemFunctions();
 		slaveIn = new queue<byte>();
 		masterIn = new queue<byte>();
 		slaveSerial = new MockSerialStream(slaveIn, masterIn);
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
 
-		seedRandom(slaveSerial);
-		seedRandom(masterSerial);
-		masterSerial->setPerBitErrorProb(.05);
-
-		slave->config(slaveSerial, system, 1200);
+		
 		master->config(masterSerial, system, 1200);
+		slave->config(slaveSerial, system, 1200);
+
+		if (contains(errorType, InboundError))
+		{
+			seedRandom(masterSerial);
+			masterSerial->setPerBitErrorProb(.05);
+		}
+
+		if (contains(errorType, OutboundError))
+		{
+			seedRandom(slaveSerial);
+			masterSerial->setPerBitErrorProb(.02);
+			master->setMaxTimePerTryMicros(100000);
+		}
 	}
 
 	void seedRandom(MockSerialStream *stream)
@@ -73,35 +109,60 @@ public:
 		delete masterSerial;
 	}
 
+	void slaveThread()
+	{
+		this->slaveSuccess = false;
+		TIMEOUT_START(5000);
+		if (this->errorType == 0)
+		{
+			this->master->send();
+			while (!this->slave->task())
+				TIMEOUT_CHECK;
+		}
+		else
+		{
+			while (this->master->getStatus() < 4)
+			{
+				this->slave->task();
+				TIMEOUT_CHECK;
+			}
+		}
+		this->slaveSuccess = true;
+	}
+
+	void masterThread()
+	{
+		this->masterSuccess = false;
+		TIMEOUT_START(5000);
+
+		if (this->errorType == 0)
+		{
+			this->master->send();
+			while (!this->master->receive())
+				TIMEOUT_CHECK;
+		}
+		else
+		{
+			while (!this->master->work())
+				TIMEOUT_CHECK;
+		}
+		this->masterSuccess = true;
+	}
+
 	static void slave_thread(void *param)
 	{
-		InboundResiliencyModbusIntegrationTests* fixture = (InboundResiliencyModbusIntegrationTests*)param;
-		fixture->slaveSuccess = false;
-		TIMEOUT_START(5000);
-		while (fixture->master->getStatus() < 4)
-		{
-			fixture->slave->task();
-			TIMEOUT_CHECK;
-		}
-		fixture->slaveSuccess = true;
+		((InboundResiliencyModbusIntegrationTests*)param)->slaveThread();
 	}
 
 	static void master_thread(void *param)
 	{
-		InboundResiliencyModbusIntegrationTests* fixture = (InboundResiliencyModbusIntegrationTests*)param;
-		fixture->masterSuccess = false;
-		TIMEOUT_START(5000);
-
-		//fixture->master->send();
-		while (!fixture->master->work())
-			TIMEOUT_CHECK;
-		fixture->masterSuccess = true;
+		((InboundResiliencyModbusIntegrationTests*)param)->masterThread();
 	}
 };
 
 WindowsSystemFunctions *InboundResiliencyModbusIntegrationTests::system;
 
-TEST_F(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrationTests_ReadRegs_Success)
+TEST_P(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrationTests_ReadRegs_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -129,7 +190,7 @@ TEST_F(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrati
 	assertArrayEq<word, word>(regPtr, 703, 513);
 }
 
-TEST_F(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrationTests_ReadRegs_Failure)
+TEST_P(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrationTests_ReadRegs_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -157,7 +218,7 @@ TEST_F(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrati
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrationTests_WriteReg_Success)
+TEST_P(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrationTests_WriteReg_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -182,7 +243,7 @@ TEST_F(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrati
 	ASSERT_EQ(reg, 703);
 }
 
-TEST_F(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrationTests_WriteReg_Failure)
+TEST_P(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrationTests_WriteReg_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -209,7 +270,7 @@ TEST_F(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrati
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrationTests_WriteRegs_Success)
+TEST_P(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrationTests_WriteRegs_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -244,7 +305,7 @@ TEST_F(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrati
 	ASSERT_EQ(reg5, 703);
 }
 
-TEST_F(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrationTests_WriteRegs_Failure)
+TEST_P(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrationTests_WriteRegs_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -276,3 +337,5 @@ TEST_F(InboundResiliencyModbusIntegrationTests, InboundResiliencyModbusIntegrati
 	ASSERT_EQ(fcode, MB_FC_WRITE_REGS);
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
+
+INSTANTIATE_TEST_CASE_P(Inst, InboundResiliencyModbusIntegrationTests, ::testing::Values(None, InboundError, OutboundError, InboundError & OutboundError));
