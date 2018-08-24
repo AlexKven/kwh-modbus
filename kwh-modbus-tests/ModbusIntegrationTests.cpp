@@ -9,6 +9,7 @@
 #include "../kwh-modbus/mock/MockSerialStream.h"
 #include "../kwh-modbus/libraries/modbusSlave/ModbusSlave.hpp"
 #include "../kwh-modbus/libraries/modbusMaster/ModbusMaster.hpp"
+#include "../kwh-modbus/libraries/resilientModbus/ResilientModbus.hpp"
 #include "test_helpers.h"
 #include "WindowsFunctions.h"
 #include "WindowsSystemFunctions.h"
@@ -22,31 +23,81 @@ unsigned long time_max = MILLIS_MAX
 
 using namespace fakeit;
 
-class ModbusIntegrationTests : public ::testing::Test
+enum ModbusTransmissionError
+{
+	None = 0,
+	InboundError = 1,
+	OutboundError = 2,
+	InboundDelays = 4,
+	OutboundDelays = 8
+};
+
+inline ModbusTransmissionError operator~ (ModbusTransmissionError a) { return (ModbusTransmissionError)~(int)a; }
+inline ModbusTransmissionError operator| (ModbusTransmissionError a, ModbusTransmissionError b) { return (ModbusTransmissionError)((int)a | (int)b); }
+inline ModbusTransmissionError operator& (ModbusTransmissionError a, ModbusTransmissionError b) { return (ModbusTransmissionError)((int)a & (int)b); }
+inline ModbusTransmissionError operator^ (ModbusTransmissionError a, ModbusTransmissionError b) { return (ModbusTransmissionError)((int)a ^ (int)b); }
+inline ModbusTransmissionError& operator|= (ModbusTransmissionError& a, ModbusTransmissionError b) { return (ModbusTransmissionError&)((int&)a |= (int)b); }
+inline ModbusTransmissionError& operator&= (ModbusTransmissionError& a, ModbusTransmissionError b) { return (ModbusTransmissionError&)((int&)a &= (int)b); }
+inline ModbusTransmissionError& operator^= (ModbusTransmissionError& a, ModbusTransmissionError b) { return (ModbusTransmissionError&)((int&)a ^= (int)b); }
+inline bool contains(ModbusTransmissionError a, ModbusTransmissionError b)
+{
+	return a | b == a;
+}
+
+class ModbusIntegrationTests :
+	public ::testing::Test,
+	public ::testing::WithParamInterface<ModbusTransmissionError>
 {
 protected:
 	ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory> *slave = new ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory>();
-	ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory> *master = new ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>();
+	ResilientModbus<ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>, ISystemFunctions> *master = new ResilientModbus<ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>, ISystemFunctions>();
 	queue<byte> *slaveIn;
 	queue<byte> *masterIn;
 	MockSerialStream *slaveSerial;
 	MockSerialStream *masterSerial;
 	bool masterSuccess = false;
 	bool slaveSuccess = false;
+	ModbusTransmissionError errorType;
 
 	static WindowsSystemFunctions *system;
 
 public:
 	void SetUp()
 	{
+		errorType = GetParam();
+
 		system = new WindowsSystemFunctions();
 		slaveIn = new queue<byte>();
 		masterIn = new queue<byte>();
 		slaveSerial = new MockSerialStream(slaveIn, masterIn);
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
-
-		slave->config(slaveSerial, system, 1200);
+		
 		master->config(masterSerial, system, 1200);
+		slave->config(slaveSerial, system, 1200);
+
+		if (contains(errorType, InboundError))
+		{
+			seedRandom(masterSerial);
+			masterSerial->setPerBitErrorProb(.05);
+		}
+
+		if (contains(errorType, OutboundError))
+		{
+			seedRandom(slaveSerial);
+			masterSerial->setPerBitErrorProb(.02);
+			master->setMaxTimePerTryMicros(100000);
+		}
+	}
+
+	void seedRandom(MockSerialStream *stream)
+	{
+		WindowsFunctions win;
+		uint8_t seed[16];
+		bool success = win.Windows_CryptGenRandom(16, seed);
+		if (success)
+			stream->randomSeed(16, seed);
+		else
+			stream->randomSeed(time(NULL), time(NULL), time(NULL), time(NULL));
 	}
 
 	void TearDown()
@@ -57,32 +108,59 @@ public:
 		delete masterSerial;
 	}
 
+	void slaveThread()
+	{
+		this->slaveSuccess = false;
+		TIMEOUT_START(50000);
+		if (this->errorType == 0)
+		{
+			while (!this->slave->task())
+				TIMEOUT_CHECK;
+		}
+		else
+		{
+			while (this->master->getStatus() < 4)
+			{
+				this->slave->task();
+				TIMEOUT_CHECK;
+			}
+		}
+		this->slaveSuccess = true;
+	}
+
+	void masterThread()
+	{
+		this->masterSuccess = false;
+		TIMEOUT_START(50000);
+
+		if (this->errorType == 0)
+		{
+			this->master->send();
+			while (!this->master->receive())
+				TIMEOUT_CHECK;
+		}
+		else
+		{
+			while (!this->master->work())
+				TIMEOUT_CHECK;
+		}
+		this->masterSuccess = true;
+	}
+
 	static void slave_thread(void *param)
 	{
-		ModbusIntegrationTests* fixture = (ModbusIntegrationTests*)param;
-		fixture->slaveSuccess = false;
-		TIMEOUT_START(5000);
-		while (!fixture->slave->task())
-			TIMEOUT_CHECK;
-		fixture->slaveSuccess = true;
+		((ModbusIntegrationTests*)param)->slaveThread();
 	}
 
 	static void master_thread(void *param)
 	{
-		ModbusIntegrationTests* fixture = (ModbusIntegrationTests*)param;
-		fixture->masterSuccess = false;
-		TIMEOUT_START(5000);
-
-		fixture->master->send();
-		while (!fixture->master->receive())
-			TIMEOUT_CHECK;
-		fixture->masterSuccess = true;
+		((ModbusIntegrationTests*)param)->masterThread();
 	}
 };
 
 WindowsSystemFunctions *ModbusIntegrationTests::system;
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success)
+TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -110,7 +188,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success)
 	assertArrayEq<word, word>(regPtr, 703, 513);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
+TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -138,7 +216,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
+TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -163,7 +241,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
 	ASSERT_EQ(reg, 703);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure)
+TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -190,7 +268,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure)
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
+TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -225,7 +303,7 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
 	ASSERT_EQ(reg5, 703);
 }
 
-TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure)
+TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -245,8 +323,8 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure)
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
 
-	ASSERT_TRUE(slaveSuccess);
-	ASSERT_TRUE(masterSuccess);
+	ASSERT_TRUE(slaveSuccess) << "Total tries: " << master->_currentTries << endl;
+	ASSERT_TRUE(masterSuccess) << "Total tries: " << master->_currentTries << endl;
 
 	bool integrity = master->verifyResponseIntegrity();
 	byte fcode;
@@ -257,3 +335,6 @@ TEST_F(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure)
 	ASSERT_EQ(fcode, MB_FC_WRITE_REGS);
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
+
+INSTANTIATE_TEST_CASE_P(PerfectSignal, ModbusIntegrationTests, ::testing::Values(None));
+INSTANTIATE_TEST_CASE_P(TransmissionErrors, ModbusIntegrationTests, ::testing::Values(InboundError, OutboundError, InboundError & OutboundError));
