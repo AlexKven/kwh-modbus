@@ -63,6 +63,10 @@ uint8_t MockSerialStream::randomlyErroredByte()
 		randomBool(_perBitErrorProb) * 0x80;
 }
 
+void MockSerialStream::calculateDelays()
+{
+}
+
 bool MockSerialStream::randomBool(double trueProbability)
 {
 	if (trueProbability <= 0)
@@ -88,6 +92,14 @@ void MockSerialStream::randomSeed(unsigned int seed1, unsigned int seed2, unsign
 void MockSerialStream::randomSeed(int seedLength, uint8_t * seed)
 {
 	random.seed(seedLength, seed);
+}
+
+void MockSerialStream::setReadDelays(unsigned int meanMicros, unsigned int stdDevMicros)
+{
+}
+
+void MockSerialStream::getReadDelays(unsigned int & meanMicrosOut, unsigned int & stdDevMicrosOut)
+{
 }
 
 void MockSerialStream::begin(long _baud)

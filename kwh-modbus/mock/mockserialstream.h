@@ -32,9 +32,18 @@ public:
 	double getPerBitErrorProb();
 
 	~MockSerialStream();
+
+	bool randomBool(double trueProbability);
+	void randomSeed(unsigned int seed1, unsigned int seed2, unsigned int seed3, unsigned int seed4);
+	void randomSeed(int seedLength, uint8_t *seed);
+
+	void setReadDelays(unsigned int meanMicros, unsigned int stdDevMicros);
+	void getReadDelays(unsigned int &meanMicrosOut, unsigned int &stdDevMicrosOut);
+
 private_testable:
 	queue<uint8_t> *readQueue;
 	queue<uint8_t> *writeQueue;
+	queue<unsigned int> *delayQueue;
 	long baud = -1;
 	bool _isListening = true;
 	bool externalQueues = false;
@@ -46,7 +55,5 @@ private_testable:
 	static vector<unsigned int > *_randSeeds;
 	static int _curSeed;
 
-	bool randomBool(double trueProbability);
-	void randomSeed(unsigned int seed1, unsigned int seed2, unsigned int seed3, unsigned int seed4);
-	void randomSeed(int seedLength, uint8_t *seed);
+	void calculateDelays();
 };
