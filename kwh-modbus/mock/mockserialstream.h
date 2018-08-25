@@ -41,14 +41,14 @@ public:
 	void getReadDelays(unsigned int &meanMicrosOut, unsigned int &stdDevMicrosOut);
 
 private_testable:
-	queue<uint8_t> *readQueue;
-	queue<uint8_t> *writeQueue;
+	queue<uint8_t> *_readQueue;
+	queue<uint8_t> *_writeQueue;
 	queue<unsigned int> *delayQueue;
-	long baud = -1;
+	long _baud = -1;
 	bool _isListening = true;
-	bool externalQueues = false;
+	bool _externalQueues = false;
 	double  _perBitErrorProb = 0;
-	Random random;
+	Random _random;
 
 	uint8_t randomlyErroredByte();
 

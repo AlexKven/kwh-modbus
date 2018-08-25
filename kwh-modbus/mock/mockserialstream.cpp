@@ -6,30 +6,30 @@ int MockSerialStream::_curSeed = 0;
 
 MockSerialStream::MockSerialStream(std::queue<uint8_t>* _readQueue, std::queue<uint8_t>* _writeQueue)
 {
-	externalQueues = true;
-	this->readQueue = _readQueue;
-	this->writeQueue = _writeQueue;
+	_externalQueues = true;
+	this->_readQueue = _readQueue;
+	this->_writeQueue = _writeQueue;
 }
 
 MockSerialStream::MockSerialStream(queue<uint8_t>* _queue, bool writeOnly)
 {
-	externalQueues = true;
+	_externalQueues = true;
 	if (writeOnly)
 	{
-		this->readQueue = _queue;
-		this->writeQueue = nullptr;
+		this->_readQueue = _queue;
+		this->_writeQueue = nullptr;
 	}
 	else
 	{
-		this->readQueue = nullptr;
-		this->writeQueue = _queue;
+		this->_readQueue = nullptr;
+		this->_writeQueue = _queue;
 	}
 }
 
 MockSerialStream::MockSerialStream()
 {
-	readQueue = new queue<uint8_t>();
-	writeQueue = new queue<uint8_t>();
+	_readQueue = new queue<uint8_t>();
+	_writeQueue = new queue<uint8_t>();
 }
 
 void MockSerialStream::setPerBitErrorProb(double probability)
@@ -44,10 +44,10 @@ double MockSerialStream::getPerBitErrorProb()
 
 MockSerialStream::~MockSerialStream()
 {
-	if (!externalQueues)
+	if (!_externalQueues)
 	{
-		delete this->readQueue;
-		delete this->writeQueue;
+		delete this->_readQueue;
+		delete this->_writeQueue;
 	}
 }
 
@@ -80,18 +80,18 @@ bool MockSerialStream::randomBool(double trueProbability)
 		else
 			return false;
 	}
-	double compare = random.randomDouble();
+	double compare = _random.randomDouble();
 	return (trueProbability > compare);
 }
 
 void MockSerialStream::randomSeed(unsigned int seed1, unsigned int seed2, unsigned int seed3, unsigned int seed4)
 {
-	random.seed(seed1, seed2, seed3, seed4);
+	_random.seed(seed1, seed2, seed3, seed4);
 }
 
 void MockSerialStream::randomSeed(int seedLength, uint8_t * seed)
 {
-	random.seed(seedLength, seed);
+	_random.seed(seedLength, seed);
 }
 
 void MockSerialStream::setReadDelays(unsigned int meanMicros, unsigned int stdDevMicros)
@@ -104,12 +104,12 @@ void MockSerialStream::getReadDelays(unsigned int & meanMicrosOut, unsigned int 
 
 void MockSerialStream::begin(long _baud)
 {
-	baud = _baud;
+	_baud = _baud;
 }
 
 bool MockSerialStream::listen()
 {
-	if (_isListening || baud == -1)
+	if (_isListening || _baud == -1)
 		return false;
 	_isListening = true;
 	return true;
@@ -117,19 +117,19 @@ bool MockSerialStream::listen()
 
 void MockSerialStream::end()
 {
-	baud = -1;
+	_baud = -1;
 }
 
 bool MockSerialStream::isListening()
 {
-	if (baud == -1)
+	if (_baud == -1)
 		return false;
 	return _isListening;
 }
 
 bool MockSerialStream::stopListening()
 {
-	if (!_isListening || baud == -1)
+	if (!_isListening || _baud == -1)
 		return false;
 	_isListening = false;
 	return true;
@@ -145,14 +145,14 @@ int MockSerialStream::peek()
 	if (!(available() > 0))
 		return -1;
 	else
-		return readQueue->front();
+		return _readQueue->front();
 }
 
 size_t MockSerialStream::write(uint8_t bte)
 {
 	if (isListening())
 	{
-		writeQueue->push(bte);
+		_writeQueue->push(bte);
 		return 1;
 	}
 	return 0;
@@ -165,17 +165,17 @@ int MockSerialStream::read()
 	else
 	{
 		uint8_t error = randomlyErroredByte();
-		auto res = readQueue->front();
+		auto res = _readQueue->front();
 		res = res ^ error;
-		readQueue->pop();
+		_readQueue->pop();
 		return res;
 	}
 }
 
 int MockSerialStream::available()
 {
-	if (baud > 0)
-		return readQueue->size();
+	if (_baud > 0)
+		return _readQueue->size();
 	return 0;
 }
 
