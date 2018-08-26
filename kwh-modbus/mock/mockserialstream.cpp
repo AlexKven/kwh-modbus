@@ -1,5 +1,6 @@
 #include "MockSerialStream.h"
 #include <queue>
+#include "random"
 
 vector<unsigned int > *MockSerialStream::_randSeeds = nullptr;
 int MockSerialStream::_curSeed = 0;
@@ -24,12 +25,14 @@ MockSerialStream::MockSerialStream(queue<uint8_t>* _queue, bool writeOnly)
 		this->_readQueue = nullptr;
 		this->_writeQueue = _queue;
 	}
+	_delayQueue = new queue<unsigned int>();
 }
 
 MockSerialStream::MockSerialStream()
 {
 	_readQueue = new queue<uint8_t>();
 	_writeQueue = new queue<uint8_t>();
+	_delayQueue = new queue<unsigned int>();
 }
 
 void MockSerialStream::setPerBitErrorProb(double probability)
@@ -49,6 +52,7 @@ MockSerialStream::~MockSerialStream()
 		delete this->_readQueue;
 		delete this->_writeQueue;
 	}
+	delete this->_delayQueue;
 }
 
 uint8_t MockSerialStream::randomlyErroredByte()
@@ -65,6 +69,15 @@ uint8_t MockSerialStream::randomlyErroredByte()
 
 void MockSerialStream::calculateDelays()
 {
+	if (_readQueue->size() - _delayQueue->size() <= 0)
+		return;
+	std::normal_distribution<unsigned int> dist(_meanReadDelay, _stdDevReadDelay);
+	std::linear_congruential_engine<unsigned int, 16807UL, 0UL, 2147483647UL>
+		generator(_random.randomUInt32());
+	for (int i = _delayQueue->size(); i < _readQueue->size(); i++)
+	{
+		_delayQueue->push(dist(generator));
+	}
 }
 
 bool MockSerialStream::randomBool(double trueProbability)
@@ -146,6 +159,7 @@ int MockSerialStream::peek()
 		return -1;
 	else
 		return _readQueue->front();
+	
 }
 
 size_t MockSerialStream::write(uint8_t bte)
@@ -164,6 +178,16 @@ int MockSerialStream::read()
 		return -1;
 	else
 	{
+		if (_meanReadDelay > 0 || _stdDevReadDelay > 0)
+		{
+			calculateDelays();
+			if (_lastReadTime == 0)
+			{
+				_lastReadTime = system
+			}
+			auto delay = _delayQueue->front();
+
+		}
 		uint8_t error = randomlyErroredByte();
 		auto res = _readQueue->front();
 		res = res ^ error;

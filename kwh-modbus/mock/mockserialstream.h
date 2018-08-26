@@ -43,12 +43,16 @@ public:
 private_testable:
 	queue<uint8_t> *_readQueue;
 	queue<uint8_t> *_writeQueue;
-	queue<unsigned int> *delayQueue;
+	queue<unsigned int> *_delayQueue;
 	long _baud = -1;
 	bool _isListening = true;
 	bool _externalQueues = false;
 	double  _perBitErrorProb = 0;
 	Random _random;
+	unsigned int _meanReadDelay = 0;
+	unsigned int _stdDevReadDelay = 0;
+	unsigned long _lastReadTime = 0;
+
 
 	uint8_t randomlyErroredByte();
 
