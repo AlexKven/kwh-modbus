@@ -1,5 +1,6 @@
 #pragma once
 #include "../interfaces/ISerialStream.h"
+#include "../interfaces/ISystemFunctions.h"
 #include "../../kwh-modbus/noArduino/TestHelpers.h"
 #include <queue>
 #include <vector>
@@ -31,6 +32,9 @@ public:
 	void setPerBitErrorProb(double probability);
 	double getPerBitErrorProb();
 
+	void setSystem(ISystemFunctions *system);
+	ISystemFunctions* getSystem();
+
 	~MockSerialStream();
 
 	bool randomBool(double trueProbability);
@@ -52,7 +56,7 @@ private_testable:
 	unsigned int _meanReadDelay = 0;
 	unsigned int _stdDevReadDelay = 0;
 	unsigned long _lastReadTime = 0;
-
+	ISystemFunctions *_system = nullptr;
 
 	uint8_t randomlyErroredByte();
 

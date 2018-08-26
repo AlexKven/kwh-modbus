@@ -5,27 +5,28 @@
 vector<unsigned int > *MockSerialStream::_randSeeds = nullptr;
 int MockSerialStream::_curSeed = 0;
 
-MockSerialStream::MockSerialStream(std::queue<uint8_t>* _readQueue, std::queue<uint8_t>* _writeQueue)
+MockSerialStream::MockSerialStream(std::queue<uint8_t>* readQueue, std::queue<uint8_t>* writeQueue)
 {
 	_externalQueues = true;
-	this->_readQueue = _readQueue;
-	this->_writeQueue = _writeQueue;
+	this->_readQueue = readQueue;
+	this->_writeQueue = writeQueue;
+	_delayQueue = new queue<unsigned int>();
 }
 
-MockSerialStream::MockSerialStream(queue<uint8_t>* _queue, bool writeOnly)
+MockSerialStream::MockSerialStream(queue<uint8_t>* queue, bool writeOnly)
 {
 	_externalQueues = true;
 	if (writeOnly)
 	{
-		this->_readQueue = _queue;
+		this->_readQueue = queue;
 		this->_writeQueue = nullptr;
 	}
 	else
 	{
 		this->_readQueue = nullptr;
-		this->_writeQueue = _queue;
+		this->_writeQueue = queue;
 	}
-	_delayQueue = new queue<unsigned int>();
+	_delayQueue = new std::queue<unsigned int>();
 }
 
 MockSerialStream::MockSerialStream()
@@ -43,6 +44,16 @@ void MockSerialStream::setPerBitErrorProb(double probability)
 double MockSerialStream::getPerBitErrorProb()
 {
 	return _perBitErrorProb;
+}
+
+void MockSerialStream::setSystem(ISystemFunctions *system)
+{
+	_system = system;
+}
+
+ISystemFunctions * MockSerialStream::getSystem()
+{
+	return _system;
 }
 
 MockSerialStream::~MockSerialStream()
@@ -71,12 +82,16 @@ void MockSerialStream::calculateDelays()
 {
 	if (_readQueue->size() - _delayQueue->size() <= 0)
 		return;
-	std::normal_distribution<unsigned int> dist(_meanReadDelay, _stdDevReadDelay);
+	std::normal_distribution<double> dist(0, 
+		(double)_stdDevReadDelay / (double)_meanReadDelay);
 	std::linear_congruential_engine<unsigned int, 16807UL, 0UL, 2147483647UL>
 		generator(_random.randomUInt32());
 	for (int i = _delayQueue->size(); i < _readQueue->size(); i++)
 	{
-		_delayQueue->push(dist(generator));
+		double multiplier = (1.0 + dist(generator));
+		if (multiplier < 0)
+			multiplier = 0;
+		_delayQueue->push(_meanReadDelay * multiplier);
 	}
 }
 
@@ -109,15 +124,19 @@ void MockSerialStream::randomSeed(int seedLength, uint8_t * seed)
 
 void MockSerialStream::setReadDelays(unsigned int meanMicros, unsigned int stdDevMicros)
 {
+	_meanReadDelay = meanMicros;
+	_stdDevReadDelay = stdDevMicros;
 }
 
-void MockSerialStream::getReadDelays(unsigned int & meanMicrosOut, unsigned int & stdDevMicrosOut)
+void MockSerialStream::getReadDelays(unsigned int &meanMicrosOut, unsigned int &stdDevMicrosOut)
 {
+	meanMicrosOut = _meanReadDelay;
+	stdDevMicrosOut =_stdDevReadDelay;
 }
 
-void MockSerialStream::begin(long _baud)
+void MockSerialStream::begin(long baud)
 {
-	_baud = _baud;
+	_baud = baud;
 }
 
 bool MockSerialStream::listen()
@@ -180,12 +199,25 @@ int MockSerialStream::read()
 	{
 		if (_meanReadDelay > 0 || _stdDevReadDelay > 0)
 		{
+			auto _curReadTime = _system->micros();
 			calculateDelays();
+			auto delay = _delayQueue->front();
 			if (_lastReadTime == 0)
 			{
-				_lastReadTime = system
+				_lastReadTime = _system->micros();
 			}
-			auto delay = _delayQueue->front();
+			else
+			{
+				if (_curReadTime - _lastReadTime < delay)
+				{
+					return -1;
+				}
+				else
+				{
+					_lastReadTime = _curReadTime;
+					_delayQueue->pop();
+				}
+			}
 
 		}
 		uint8_t error = randomlyErroredByte();

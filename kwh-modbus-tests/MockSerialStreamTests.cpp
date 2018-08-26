@@ -5,6 +5,7 @@
 #include "test_helpers.h"
 #include <queue>
 #include "WindowsFunctions.h"
+#include "WindowsSystemFunctions.h"
 
 using namespace fakeit;
 
@@ -248,7 +249,7 @@ TEST_F(MockSerialStreamTests, MockSerialStream_RandomlyErroredByte)
 	WindowsFunctions win;
 
 	//srand(win.RelativeMicroseconds());
-	
+
 	for (int i = 0; i < totalCount; i++)
 	{
 		if (stream.randomlyErroredByte() != 0)
@@ -256,4 +257,23 @@ TEST_F(MockSerialStreamTests, MockSerialStream_RandomlyErroredByte)
 	}
 
 	ASSERT_NEAR(errCount, 500, 50);
+}
+
+TEST_F(MockSerialStreamTests, MockSerialStream_DelayDistribution)
+{
+	MockSerialStream stream = MockSerialStream(readQueue, writeQueue);
+	WindowsSystemFunctions wsf();
+	seedRandom(stream);
+	stream.setPerBitErrorProb(0.083); // Roughly 50% of bytes should be correct
+	stream.setReadDelays(50, 20);
+	int totalCount = 1000;
+
+	//srand(win.RelativeMicroseconds());
+
+	for (int i = 0; i < totalCount; i++)
+	{
+		readQueue->push(0);
+	}
+
+	stream.calculateDelays();
 }
