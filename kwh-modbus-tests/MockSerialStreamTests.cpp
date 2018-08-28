@@ -289,3 +289,54 @@ TEST_F(MockSerialStreamTests, MockSerialStream_DelayDistribution)
 	ASSERT_NEAR(mean, 100, 5);
 	ASSERT_NEAR(stdDev, 40, 5);
 }
+
+TEST_F(MockSerialStreamTests, MockSerialStream_DelayQueue)
+{
+	MockSerialStream stream = MockSerialStream(readQueue, writeQueue);
+	stream.begin(1200);
+	WindowsSystemFunctions wsf;
+	stream.setSystem(&wsf);
+	seedRandom(stream);
+	int totalCount = 6;
+
+	for (int i = 0; i < totalCount; i++)
+	{
+		readQueue->push(i);
+	}
+
+	stream._delayQueue->push(25000);
+	stream._delayQueue->push(30000);
+	stream._delayQueue->push(20000);
+	stream._delayQueue->push(50000);
+	stream._delayQueue->push(100000);
+
+	ASSERT_EQ(stream.read(), 0);
+	ASSERT_EQ(stream.read(), -1);
+	wsf.delay(15);
+	ASSERT_EQ(stream.read(), -1);
+	wsf.delay(15);
+	ASSERT_EQ(stream.read(), 1);
+	ASSERT_EQ(stream.read(), -1);
+	wsf.delay(15);
+	ASSERT_EQ(stream.read(), -1);
+	wsf.delay(15);
+	ASSERT_EQ(stream.read(), 2);
+	ASSERT_EQ(stream.read(), -1);
+	wsf.delay(20);
+	ASSERT_EQ(stream.read(), 3);
+	ASSERT_EQ(stream.read(), -1);
+	wsf.delay(25);
+	ASSERT_EQ(stream.read(), -1);
+	wsf.delay(25);
+	ASSERT_EQ(stream.read(), 4);
+	ASSERT_EQ(stream.read(), -1);
+	wsf.delay(25);
+	ASSERT_EQ(stream.read(), -1);
+	wsf.delay(25);
+	ASSERT_EQ(stream.read(), -1);
+	wsf.delay(25);
+	ASSERT_EQ(stream.read(), -1);
+	wsf.delay(25);
+	ASSERT_EQ(stream.read(), 5);
+	ASSERT_EQ(stream.read(), -1);
+}

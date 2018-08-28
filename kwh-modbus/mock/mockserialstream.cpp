@@ -82,6 +82,12 @@ void MockSerialStream::calculateDelays()
 {
 	if (_readQueue->size() - _delayQueue->size() <= 0)
 		return;
+	if (_stdDevReadDelay == 0)
+	{
+		for (int i = _delayQueue->size(); i < _readQueue->size(); i++)
+			_delayQueue->push(_meanReadDelay);
+		return;
+	}
 	std::normal_distribution<double> dist(0, 
 		(double)_stdDevReadDelay / (double)_meanReadDelay);
 	std::linear_congruential_engine<unsigned int, 16807UL, 0UL, 2147483647UL>
@@ -197,14 +203,16 @@ int MockSerialStream::read()
 		return -1;
 	else
 	{
-		if (_meanReadDelay > 0 || _stdDevReadDelay > 0)
+		if (_meanReadDelay > 0 &&
+			_stdDevReadDelay > 0 ||
+			_delayQueue->size() > 0)
 		{
-			auto _curReadTime = _system->micros();
 			calculateDelays();
+			auto _curReadTime = _system->micros();
 			auto delay = _delayQueue->front();
 			if (_lastReadTime == 0)
 			{
-				_lastReadTime = _system->micros();
+				_lastReadTime = _curReadTime;
 			}
 			else
 			{
