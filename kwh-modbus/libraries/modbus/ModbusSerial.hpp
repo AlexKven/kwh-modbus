@@ -227,7 +227,7 @@ protected_testable:
 	}
 
 public:
-	bool config(TSerial* port, TSystemFunctions* system, long baud, int txPin = -1)
+	virtual bool config(TSerial* port, TSystemFunctions* system, long baud, int txPin = -1)
 	{
 		this->_port = port;
 		this->_system = system;

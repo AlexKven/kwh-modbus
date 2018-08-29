@@ -41,7 +41,7 @@ inline ModbusTransmissionError& operator&= (ModbusTransmissionError& a, ModbusTr
 inline ModbusTransmissionError& operator^= (ModbusTransmissionError& a, ModbusTransmissionError b) { return (ModbusTransmissionError&)((int&)a ^= (int)b); }
 inline bool contains(ModbusTransmissionError a, ModbusTransmissionError b)
 {
-	return a | b == a;
+	return (a | b) == a;
 }
 
 class ModbusIntegrationTests :
@@ -73,18 +73,19 @@ public:
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
 		
 		master->config(masterSerial, system, 1200);
+		master->setSystem(system); //Gotta set this for now. Kinda quirky.
 		slave->config(slaveSerial, system, 1200);
+		seedRandom(masterSerial);
+		seedRandom(slaveSerial);
 
 		if (contains(errorType, InboundError))
 		{
-			seedRandom(masterSerial);
-			masterSerial->setPerBitErrorProb(.05);
+			masterSerial->setPerBitErrorProb(.03);
 		}
 
 		if (contains(errorType, OutboundError))
 		{
-			seedRandom(slaveSerial);
-			masterSerial->setPerBitErrorProb(.02);
+			slaveSerial->setPerBitErrorProb(0.02);
 			master->setMaxTimePerTryMicros(100000);
 		}
 	}
@@ -111,7 +112,7 @@ public:
 	void slaveThread()
 	{
 		this->slaveSuccess = false;
-		TIMEOUT_START(50000);
+		TIMEOUT_START(3000);
 		if (this->errorType == 0)
 		{
 			while (!this->slave->task())
@@ -131,7 +132,7 @@ public:
 	void masterThread()
 	{
 		this->masterSuccess = false;
-		TIMEOUT_START(50000);
+		TIMEOUT_START(3000);
 
 		if (this->errorType == 0)
 		{
@@ -336,5 +337,7 @@ TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure)
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
-INSTANTIATE_TEST_CASE_P(PerfectSignal, ModbusIntegrationTests, ::testing::Values(None));
-INSTANTIATE_TEST_CASE_P(TransmissionErrors, ModbusIntegrationTests, ::testing::Values(InboundError, OutboundError, InboundError & OutboundError));
+INSTANTIATE_TEST_CASE_P(NoErrors, ModbusIntegrationTests, ::testing::Values(None));
+INSTANTIATE_TEST_CASE_P(InboundError, ModbusIntegrationTests, ::testing::Values(InboundError));
+INSTANTIATE_TEST_CASE_P(OutboundError, ModbusIntegrationTests, ::testing::Values(OutboundError));
+INSTANTIATE_TEST_CASE_P(InAndOutboundError, ModbusIntegrationTests, ::testing::Values(InboundError & OutboundError));
