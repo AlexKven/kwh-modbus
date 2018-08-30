@@ -9,7 +9,7 @@
 #include "../kwh-modbus/mock/MockSerialStream.h"
 #include "../kwh-modbus/libraries/modbusSlave/ModbusSlave.hpp"
 #include "../kwh-modbus/libraries/modbusMaster/ModbusMaster.hpp"
-#include "../kwh-modbus/libraries/resilientModbus/ResilientModbus.hpp"
+#include "../kwh-modbus/libraries/resilientModbus/ResilientModbusMaster.hpp"
 #include "test_helpers.h"
 #include "WindowsFunctions.h"
 #include "WindowsSystemFunctions.h"
@@ -50,7 +50,7 @@ class ModbusIntegrationTests :
 {
 protected:
 	ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory> *slave = new ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory>();
-	ResilientModbus<ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>, ISystemFunctions> *master = new ResilientModbus<ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>, ISystemFunctions>();
+	ResilientModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory> *master = new ResilientModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>();
 	queue<byte> *slaveIn;
 	queue<byte> *masterIn;
 	MockSerialStream *slaveSerial;
@@ -73,7 +73,6 @@ public:
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
 		
 		master->config(masterSerial, system, 1200);
-		master->setSystem(system); //Gotta set this for now. Kinda quirky.
 		slave->config(slaveSerial, system, 1200);
 		seedRandom(masterSerial);
 		seedRandom(slaveSerial);

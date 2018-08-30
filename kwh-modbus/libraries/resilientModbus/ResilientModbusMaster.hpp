@@ -1,8 +1,8 @@
-#include "../modbusSlave/ModbusSlave.hpp"
+#include "../modbusMaster/ModbusMaster.hpp"
 #include "../resilientTask/ResilientTask.hpp"
 
-template<typename TBase, typename S>
-class ResilientModbus : public ResilientTask<S>, public TBase
+template<typename TSerial, typename TSystemFunctions, typename TBase>
+class ResilientModbusMaster : public ResilientTask<TSystemFunctions>, public ModbusMaster<TSerial, TSystemFunctions, TBase>
 {
 private_testable:
 	word _rFrameMaxLength = 0;
@@ -82,13 +82,19 @@ protected_testable:
 	}
 
 public:
-	ResilientModbus()
+	ResilientModbusMaster()
 	{
 
 	}
 
-	ResilientModbus(word maxFrameLength)
+	ResilientModbusMaster(word maxFrameLength)
 	{
 		_rFrameMaxLength = maxFrameLength;
+	}
+
+	virtual bool config(TSerial* port, TSystemFunctions* system, long baud, int txPin = -1)
+	{
+		setSystem(system);
+		return ModbusMaster<TSerial, TSystemFunctions, TBase>::config(port, system, baud, txPin);
 	}
 };

@@ -85,7 +85,7 @@
     <ClInclude Include="libraries\modbus\ModbusArray.h" />
     <ClInclude Include="libraries\modbus\ModbusSerial.hpp" />
     <ClInclude Include="libraries\random\Random.h" />
-    <ClInclude Include="libraries\resilientModbus\ResilientModbus.hpp" />
+    <ClInclude Include="libraries\resilientModbus\ResilientModbusMaster.hpp" />
     <ClInclude Include="libraries\resilientTask\ResilientTask.hpp" />
     <ClInclude Include="mock\MockSerialStream.h" />
     <ClInclude Include="noArduino\SystemFunctions.h" />

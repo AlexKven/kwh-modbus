@@ -76,7 +76,7 @@
     <ClInclude Include="libraries\resilientTask\ResilientTask.hpp">
       <Filter>libraries\resilientTask</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\resilientModbus\ResilientModbus.hpp">
+    <ClInclude Include="libraries\resilientModbus\ResilientModbusMaster.hpp">
       <Filter>libraries\resilientModbus</Filter>
     </ClInclude>
   </ItemGroup>
