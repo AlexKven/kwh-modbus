@@ -209,8 +209,9 @@ int MockSerialStream::read()
 			auto _curReadTime = _system->micros();
 			long timediff = _excessTime + _curReadTime - _lastReadTime;
 			_lastReadTime = _curReadTime;
-			_excessTime = timediff;
+			timediff -= _delayQueue->front();
 			_delayQueue->pop_front();
+			_excessTime = timediff;
 		}
 		uint8_t error = randomlyErroredByte();
 		auto res = _readQueue->front();

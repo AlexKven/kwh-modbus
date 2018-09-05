@@ -8,6 +8,8 @@
 #include "WindowsSystemFunctions.h"
 #include <math.h>
 
+#define APP_LINE << "Line #" << __LINE__
+
 using namespace fakeit;
 
 class MockSerialStreamTests : public ::testing::Test
@@ -290,7 +292,7 @@ TEST_F(MockSerialStreamTests, MockSerialStream_DelayDistribution)
 	ASSERT_NEAR(stdDev, 40, 5);
 }
 
-TEST_F(MockSerialStreamTests, MockSerialStream_DelayQueue)
+TEST_F(MockSerialStreamTests, MockSerialStream_DelayQueue_ReadOneByOne)
 {
 	MockSerialStream stream = MockSerialStream(readQueue, writeQueue);
 	stream.begin(1200);
@@ -304,69 +306,137 @@ TEST_F(MockSerialStreamTests, MockSerialStream_DelayQueue)
 		readQueue->push(i);
 	}
 
-	stream._delayQueue->push_back(25000);
-	stream._delayQueue->push_back(30000);
-	stream._delayQueue->push_back(20000);
 	stream._delayQueue->push_back(50000);
-	stream._delayQueue->push_back(100000);
+	stream._delayQueue->push_back(60000);
+	stream._delayQueue->push_back(70000);
+	stream._delayQueue->push_back(80000);
 
-	ASSERT_EQ(stream.available(), 0)	<< "Assert 0";
-	ASSERT_EQ(stream.read(), -1)		<< "Assert 1";
+	// First two attemps when first delay not yet passed
+	ASSERT_EQ(stream.available(), 0)APP_LINE;
+	ASSERT_EQ(stream.read(), -1)APP_LINE;
 	wsf.delay(30);
-	ASSERT_EQ(stream.available(), 1)	<< "Assert 2";
-	ASSERT_EQ(stream.read(), 0)			<< "Assert 3";
-	ASSERT_EQ(stream.available(), 0)	<< "Assert 4";
-	ASSERT_EQ(stream.read(), -1)		<< "Assert 5";
-	wsf.delay(15);
-	ASSERT_EQ(stream.available(), 0)	<< "Assert 6";
-	ASSERT_EQ(stream.read(), -1)		<< "Assert 7";
-	wsf.delay(15);
-	ASSERT_EQ(stream.available(), 1)	<< "Assert 8";
-	ASSERT_EQ(stream.read(), 1)			<< "Assert 9";
-	ASSERT_EQ(stream.available(), 0)	<< "Assert 10";
-	ASSERT_EQ(stream.read(), -1)		<< "Assert 11";
-	wsf.delay(15);
-	ASSERT_EQ(stream.available(), 0)	<< "Assert 12";
-	ASSERT_EQ(stream.read(), -1)		<< "Assert 13";
-	wsf.delay(15);
-	ASSERT_EQ(stream.available(), 1)	<< "Assert 14";
-	ASSERT_EQ(stream.read(), 2)			<< "Assert 15";
-	ASSERT_EQ(stream.available(), 0)	<< "Assert 16";
-	ASSERT_EQ(stream.read(), -1)		<< "Assert 17";
-	wsf.delay(25);
-	ASSERT_EQ(stream.available(), 0)	<< "Assert 18";
-	ASSERT_EQ(stream.read(), -1)		<< "Assert 19";
-	wsf.delay(25);
-	ASSERT_EQ(stream.available(), 1)	<< "Assert 20";
-	ASSERT_EQ(stream.read(), 3)			<< "Assert 21";
-	ASSERT_EQ(stream.available(), 0)	<< "Assert 22";
-	ASSERT_EQ(stream.read(), -1)		<< "Assert 23";
-	wsf.delay(25);
-	ASSERT_EQ(stream.available(), 0)	<< "Assert 24";
-	ASSERT_EQ(stream.read(), -1)		<< "Assert 25";
-	wsf.delay(25);
-	ASSERT_EQ(stream.available(), 0)	<< "Assert 26";
-	ASSERT_EQ(stream.read(), -1)		<< "Assert 27";
-	wsf.delay(25);
-	ASSERT_EQ(stream.available(), 0)	<< "Assert 28";
-	ASSERT_EQ(stream.read(), -1)		<< "Assert 29";
-	wsf.delay(25);
-	ASSERT_EQ(stream.available(), 2)	<< "Assert 30";
-	ASSERT_EQ(stream.read(), 4)			<< "Assert 31";
-	ASSERT_EQ(stream.available(), 1)	<< "Assert 32";
-	ASSERT_EQ(stream.read(), 5)			<< "Assert 33";
-	//wsf.delay(25);
-	//ASSERT_EQ(stream.available(), 0)	<< "Assert 34";
-	//ASSERT_EQ(stream.read(), -1)		<< "Assert 35";
-	//wsf.delay(25);
-	//ASSERT_EQ(stream.available(), 0)	<< "Assert 36";
-	//ASSERT_EQ(stream.read(), -1)		<< "Assert 37";
-	//wsf.delay(25);
-	//ASSERT_EQ(stream.available(), 0)	<< "Assert 38";
-	//ASSERT_EQ(stream.read(), -1)		<< "Assert 39";
-	//wsf.delay(25);
-	//ASSERT_EQ(stream.available(), 1)	<< "Assert 40";
-	//ASSERT_EQ(stream.read(), 5)			<< "Assert 41";
-	//ASSERT_EQ(stream.available(), 0)	<< "Assert 42";
-	//ASSERT_EQ(stream.read(), -1)		<< "Assert 43";
+	ASSERT_EQ(stream.available(), 0)APP_LINE;
+	ASSERT_EQ(stream.read(), -1)APP_LINE;
+	wsf.delay(30);
+
+	// Ready for first byte only
+	ASSERT_EQ(stream.available(), 1)APP_LINE;
+	ASSERT_EQ(stream.read(), 0)APP_LINE;
+	wsf.delay(30);
+
+	// Not yet ready for next byte
+	ASSERT_EQ(stream.available(), 0)APP_LINE;
+	ASSERT_EQ(stream.read(), -1)APP_LINE;
+	wsf.delay(30);
+
+	// Ready for next byte only
+	ASSERT_EQ(stream.available(), 1)APP_LINE;
+	ASSERT_EQ(stream.read(), 1)APP_LINE;
+	wsf.delay(70);
+
+	// Ready for next byte only
+	ASSERT_EQ(stream.available(), 1)APP_LINE;
+	ASSERT_EQ(stream.read(), 2)APP_LINE;
+	wsf.delay(80);
+
+	// Delays all passed, remaining bytes can all be read.
+	ASSERT_EQ(stream.available(), 3)APP_LINE;
+	ASSERT_EQ(stream.read(), 3)APP_LINE;
+	ASSERT_EQ(stream.available(), 2)APP_LINE;
+	ASSERT_EQ(stream.read(), 4)APP_LINE;
+	ASSERT_EQ(stream.available(), 1)APP_LINE;
+	ASSERT_EQ(stream.read(), 5)APP_LINE;
+}
+
+TEST_F(MockSerialStreamTests, MockSerialStream_DelayQueue_ReadChunks_A)
+{
+	MockSerialStream stream = MockSerialStream(readQueue, writeQueue);
+	stream.begin(1200);
+	WindowsSystemFunctions wsf;
+	stream.setSystem(&wsf);
+	seedRandom(stream);
+	int totalCount = 6;
+
+	for (int i = 0; i < totalCount; i++)
+	{
+		readQueue->push(i);
+	}
+
+	stream._delayQueue->push_back(50000);
+	stream._delayQueue->push_back(0);
+	stream._delayQueue->push_back(0);
+	stream._delayQueue->push_back(20000);
+	stream._delayQueue->push_back(20000);
+
+	// First two attemps when first delay not yet passed
+	ASSERT_EQ(stream.available(), 0)APP_LINE;
+	ASSERT_EQ(stream.read(), -1)APP_LINE;
+	wsf.delay(30);
+	ASSERT_EQ(stream.available(), 0)APP_LINE;
+	ASSERT_EQ(stream.read(), -1)APP_LINE;
+	wsf.delay(30);
+
+	// Ready for next three bytes
+	ASSERT_EQ(stream.available(), 3)APP_LINE;
+	ASSERT_EQ(stream.read(), 0)APP_LINE;
+	ASSERT_EQ(stream.read(), 1)APP_LINE;
+	ASSERT_EQ(stream.read(), 2)APP_LINE;
+	ASSERT_EQ(stream.available(), 0)APP_LINE;
+	wsf.delay(20);
+
+	// Ready for next byte only
+	ASSERT_EQ(stream.available(), 1)APP_LINE;
+	ASSERT_EQ(stream.read(), 3)APP_LINE;
+	wsf.delay(20);
+
+	// Delays all passed, remaining bytes can all be read.
+	ASSERT_EQ(stream.available(), 2)APP_LINE;
+	ASSERT_EQ(stream.read(), 4)APP_LINE;
+	ASSERT_EQ(stream.available(), 1)APP_LINE;
+	ASSERT_EQ(stream.read(), 5)APP_LINE;
+}
+
+TEST_F(MockSerialStreamTests, MockSerialStream_DelayQueue_ReadChunks_B)
+{
+	MockSerialStream stream = MockSerialStream(readQueue, writeQueue);
+	stream.begin(1200);
+	WindowsSystemFunctions wsf;
+	stream.setSystem(&wsf);
+	seedRandom(stream);
+	int totalCount = 6;
+
+	for (int i = 0; i < totalCount; i++)
+	{
+		readQueue->push(i);
+	}
+
+	stream._delayQueue->push_back(10000);
+	stream._delayQueue->push_back(20000);
+	stream._delayQueue->push_back(20000);
+	stream._delayQueue->push_back(20000);
+	stream._delayQueue->push_back(20000);
+
+	// First two attemps when first delay not yet passed
+	ASSERT_EQ(stream.available(), 0)APP_LINE;
+	ASSERT_EQ(stream.read(), -1)APP_LINE;
+	wsf.delay(60);
+
+	// Ready for next three bytes
+	ASSERT_EQ(stream.available(), 3)APP_LINE;
+	ASSERT_EQ(stream.read(), 0)APP_LINE;
+	ASSERT_EQ(stream.read(), 1)APP_LINE;
+	ASSERT_EQ(stream.read(), 2)APP_LINE;
+	ASSERT_EQ(stream.available(), 0)APP_LINE;
+	wsf.delay(20);
+
+	// Ready for next byte only
+	ASSERT_EQ(stream.available(), 1)APP_LINE;
+	ASSERT_EQ(stream.read(), 3)APP_LINE;
+	wsf.delay(20);
+
+	// Delays all passed, remaining bytes can all be read.
+	ASSERT_EQ(stream.available(), 2)APP_LINE;
+	ASSERT_EQ(stream.read(), 4)APP_LINE;
+	ASSERT_EQ(stream.available(), 1)APP_LINE;
+	ASSERT_EQ(stream.read(), 5)APP_LINE;
 }
