@@ -47,7 +47,7 @@ public:
 private_testable:
 	queue<uint8_t> *_readQueue;
 	queue<uint8_t> *_writeQueue;
-	queue<unsigned int> *_delayQueue;
+	deque<unsigned int> *_delayQueue;
 	long _baud = -1;
 	bool _isListening = true;
 	bool _externalQueues = false;

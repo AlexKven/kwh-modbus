@@ -71,7 +71,9 @@ public:
 		masterIn = new queue<byte>();
 		slaveSerial = new MockSerialStream(slaveIn, masterIn);
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
-		
+		slaveSerial->setSystem(system);
+		masterSerial->setSystem(system);
+
 		master->config(masterSerial, system, 1200);
 		slave->config(slaveSerial, system, 1200);
 		seedRandom(masterSerial);
@@ -86,6 +88,16 @@ public:
 		{
 			slaveSerial->setPerBitErrorProb(0.02);
 			master->setMaxTimePerTryMicros(100000);
+		}
+
+		if (contains(errorType, InboundDelays))
+		{
+			masterSerial->setReadDelays(7000, 2000);
+		}
+
+		if (contains(errorType, OutboundDelays))
+		{
+			slaveSerial->setReadDelays(7000, 2000);
 		}
 	}
 
@@ -339,4 +351,6 @@ TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure)
 INSTANTIATE_TEST_CASE_P(NoErrors, ModbusIntegrationTests, ::testing::Values(None));
 INSTANTIATE_TEST_CASE_P(InboundError, ModbusIntegrationTests, ::testing::Values(InboundError));
 INSTANTIATE_TEST_CASE_P(OutboundError, ModbusIntegrationTests, ::testing::Values(OutboundError));
+INSTANTIATE_TEST_CASE_P(InboundDelays, ModbusIntegrationTests, ::testing::Values(InboundDelays));
+INSTANTIATE_TEST_CASE_P(OutboundDelays, ModbusIntegrationTests, ::testing::Values(OutboundDelays));
 INSTANTIATE_TEST_CASE_P(InAndOutboundError, ModbusIntegrationTests, ::testing::Values(InboundError & OutboundError));

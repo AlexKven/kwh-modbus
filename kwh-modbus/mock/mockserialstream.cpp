@@ -1,6 +1,7 @@
 #include "MockSerialStream.h"
 #include <queue>
 #include "random"
+#include <math.h>
 
 vector<unsigned int > *MockSerialStream::_randSeeds = nullptr;
 int MockSerialStream::_curSeed = 0;
@@ -10,7 +11,7 @@ MockSerialStream::MockSerialStream(std::queue<uint8_t>* readQueue, std::queue<ui
 	_externalQueues = true;
 	this->_readQueue = readQueue;
 	this->_writeQueue = writeQueue;
-	_delayQueue = new queue<unsigned int>();
+	_delayQueue = new deque<unsigned int>();
 }
 
 MockSerialStream::MockSerialStream(queue<uint8_t>* queue, bool writeOnly)
@@ -26,14 +27,14 @@ MockSerialStream::MockSerialStream(queue<uint8_t>* queue, bool writeOnly)
 		this->_readQueue = nullptr;
 		this->_writeQueue = queue;
 	}
-	_delayQueue = new std::queue<unsigned int>();
+	_delayQueue = new std::deque<unsigned int>();
 }
 
 MockSerialStream::MockSerialStream()
 {
 	_readQueue = new queue<uint8_t>();
 	_writeQueue = new queue<uint8_t>();
-	_delayQueue = new queue<unsigned int>();
+	_delayQueue = new deque<unsigned int>();
 }
 
 void MockSerialStream::setPerBitErrorProb(double probability)
@@ -85,7 +86,7 @@ void MockSerialStream::calculateDelays()
 	if (_stdDevReadDelay == 0)
 	{
 		for (int i = _delayQueue->size(); i < _readQueue->size(); i++)
-			_delayQueue->push(_meanReadDelay);
+			_delayQueue->push_back(_meanReadDelay);
 		return;
 	}
 	std::normal_distribution<double> dist(0, 
@@ -97,7 +98,7 @@ void MockSerialStream::calculateDelays()
 		double multiplier = (1.0 + dist(generator));
 		if (multiplier < 0)
 			multiplier = 0;
-		_delayQueue->push(_meanReadDelay * multiplier);
+		_delayQueue->push_back(_meanReadDelay * multiplier);
 	}
 }
 
@@ -207,7 +208,6 @@ int MockSerialStream::read()
 			_stdDevReadDelay > 0 ||
 			_delayQueue->size() > 0)
 		{
-			calculateDelays();
 			auto _curReadTime = _system->micros();
 			auto delay = _delayQueue->front();
 			if (_lastReadTime == 0)
@@ -223,10 +223,9 @@ int MockSerialStream::read()
 				else
 				{
 					_lastReadTime = _curReadTime;
-					_delayQueue->pop();
+					_delayQueue->pop_front();
 				}
 			}
-
 		}
 		uint8_t error = randomlyErroredByte();
 		auto res = _readQueue->front();
@@ -239,7 +238,31 @@ int MockSerialStream::read()
 int MockSerialStream::available()
 {
 	if (_baud > 0)
+	{
+		if ((_meanReadDelay > 0 &&
+			_stdDevReadDelay > 0) ||
+			_delayQueue->size() > 0)
+		{
+			calculateDelays();
+			auto _curTime = _system->micros();
+			if (_lastReadTime == 0)
+			{
+				_lastReadTime = _curTime;
+			}
+			long timePassed = _curTime - _lastReadTime;
+			int numAvail = 0;
+			for (numAvail = 0; 
+				timePassed >= 0 && _delayQueue->size() > numAvail;
+				numAvail++)
+			{
+				timePassed -= _delayQueue->at(numAvail);
+			}
+			if (timePassed < 0 && numAvail > 0)
+				numAvail--;
+			return min(numAvail, (int)_readQueue->size());
+		}
 		return _readQueue->size();
+	}
 	return 0;
 }
 
