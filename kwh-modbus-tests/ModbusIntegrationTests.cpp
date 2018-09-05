@@ -81,12 +81,12 @@ public:
 
 		if (contains(errorType, InboundError))
 		{
-			masterSerial->setPerBitErrorProb(.025);
+			masterSerial->setPerBitErrorProb(.020);
 		}
 
 		if (contains(errorType, OutboundError))
 		{
-			slaveSerial->setPerBitErrorProb(0.015);
+			slaveSerial->setPerBitErrorProb(0.012);
 			master->setMaxTimePerTryMicros(100000);
 		}
 
