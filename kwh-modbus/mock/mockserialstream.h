@@ -56,6 +56,7 @@ private_testable:
 	unsigned int _meanReadDelay = 0;
 	unsigned int _stdDevReadDelay = 0;
 	unsigned long _lastReadTime = 0;
+	unsigned long _excessTime = 0;
 	ISystemFunctions *_system = nullptr;
 
 	uint8_t randomlyErroredByte();

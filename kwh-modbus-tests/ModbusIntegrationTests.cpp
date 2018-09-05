@@ -81,12 +81,12 @@ public:
 
 		if (contains(errorType, InboundError))
 		{
-			masterSerial->setPerBitErrorProb(.03);
+			masterSerial->setPerBitErrorProb(.025);
 		}
 
 		if (contains(errorType, OutboundError))
 		{
-			slaveSerial->setPerBitErrorProb(0.02);
+			slaveSerial->setPerBitErrorProb(0.015);
 			master->setMaxTimePerTryMicros(100000);
 		}
 
@@ -353,4 +353,6 @@ INSTANTIATE_TEST_CASE_P(InboundError, ModbusIntegrationTests, ::testing::Values(
 INSTANTIATE_TEST_CASE_P(OutboundError, ModbusIntegrationTests, ::testing::Values(OutboundError));
 INSTANTIATE_TEST_CASE_P(InboundDelays, ModbusIntegrationTests, ::testing::Values(InboundDelays));
 INSTANTIATE_TEST_CASE_P(OutboundDelays, ModbusIntegrationTests, ::testing::Values(OutboundDelays));
-INSTANTIATE_TEST_CASE_P(InAndOutboundError, ModbusIntegrationTests, ::testing::Values(InboundError & OutboundError));
+INSTANTIATE_TEST_CASE_P(AllErrors, ModbusIntegrationTests, ::testing::Values(InboundError & OutboundError));
+INSTANTIATE_TEST_CASE_P(AllDelays, ModbusIntegrationTests, ::testing::Values(InboundDelays & OutboundDelays));
+INSTANTIATE_TEST_CASE_P(AllDelaysAndErrors, ModbusIntegrationTests, ::testing::Values(InboundError & OutboundError & InboundDelays & OutboundDelays));

@@ -204,28 +204,13 @@ int MockSerialStream::read()
 		return -1;
 	else
 	{
-		if (_meanReadDelay > 0 &&
-			_stdDevReadDelay > 0 ||
-			_delayQueue->size() > 0)
+		if (_delayQueue->size() > 0)
 		{
 			auto _curReadTime = _system->micros();
-			auto delay = _delayQueue->front();
-			if (_lastReadTime == 0)
-			{
-				_lastReadTime = _curReadTime;
-			}
-			else
-			{
-				if (_curReadTime - _lastReadTime < delay)
-				{
-					return -1;
-				}
-				else
-				{
-					_lastReadTime = _curReadTime;
-					_delayQueue->pop_front();
-				}
-			}
+			long timediff = _excessTime + _curReadTime - _lastReadTime;
+			_lastReadTime = _curReadTime;
+			_excessTime = timediff;
+			_delayQueue->pop_front();
 		}
 		uint8_t error = randomlyErroredByte();
 		auto res = _readQueue->front();
@@ -249,7 +234,7 @@ int MockSerialStream::available()
 			{
 				_lastReadTime = _curTime;
 			}
-			long timePassed = _curTime - _lastReadTime;
+			long timePassed = _excessTime + _curTime - _lastReadTime;
 			int numAvail = 0;
 			for (numAvail = 0; 
 				timePassed >= 0 && _delayQueue->size() > numAvail;
