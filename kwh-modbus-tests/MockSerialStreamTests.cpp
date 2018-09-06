@@ -237,7 +237,7 @@ TEST_F(MockSerialStreamTests, MockSerialStream_RandomBool)
 	ASSERT_NEAR(trueCount25, 25000, 350);
 	ASSERT_NEAR(trueCount50, 50000, 500);
 	ASSERT_NEAR(trueCount75, 75000, 350);
-	ASSERT_NEAR(trueCount90, 90000, 175);
+	ASSERT_NEAR(trueCount90, 90000, 200);
 	ASSERT_NEAR(trueCount99, 99000, 125);
 	ASSERT_NEAR(trueCount999, 99900, 75);
 }
@@ -413,13 +413,13 @@ TEST_F(MockSerialStreamTests, MockSerialStream_DelayQueue_ReadChunks_B)
 	stream._delayQueue->push_back(10000);
 	stream._delayQueue->push_back(20000);
 	stream._delayQueue->push_back(20000);
-	stream._delayQueue->push_back(20000);
+	stream._delayQueue->push_back(30000);
 	stream._delayQueue->push_back(20000);
 
 	// First two attemps when first delay not yet passed
 	ASSERT_EQ(stream.available(), 0)APP_LINE;
 	ASSERT_EQ(stream.read(), -1)APP_LINE;
-	wsf.delay(60);
+	wsf.delay(65);
 
 	// Ready for next three bytes
 	ASSERT_EQ(stream.available(), 3)APP_LINE;
@@ -427,7 +427,7 @@ TEST_F(MockSerialStreamTests, MockSerialStream_DelayQueue_ReadChunks_B)
 	ASSERT_EQ(stream.read(), 1)APP_LINE;
 	ASSERT_EQ(stream.read(), 2)APP_LINE;
 	ASSERT_EQ(stream.available(), 0)APP_LINE;
-	wsf.delay(20);
+	wsf.delay(30);
 
 	// Ready for next byte only
 	ASSERT_EQ(stream.available(), 1)APP_LINE;
