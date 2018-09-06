@@ -79,6 +79,9 @@
     <ClInclude Include="libraries\resilientModbus\ResilientModbusMaster.hpp">
       <Filter>libraries\resilientModbus</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\communicator\SystemParameters.h">
+      <Filter>libraries\communicator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -119,6 +122,9 @@
     </Filter>
     <Filter Include="libraries\resilientModbus">
       <UniqueIdentifier>{21a065f3-f725-4ba1-a814-e849226023c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\communicator">
+      <UniqueIdentifier>{e7d96ce1-17fd-478b-afcc-9c36519c960d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

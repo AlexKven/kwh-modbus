@@ -79,6 +79,7 @@
     <ClInclude Include="interfaces\ISystemFunctions.h" />
     <ClInclude Include="libraries\arduinoClasses\ArduinoSerial.h" />
     <ClInclude Include="libraries\arduinoClasses\ArduinoSystem.h" />
+    <ClInclude Include="libraries\communicator\SystemParameters.h" />
     <ClInclude Include="libraries\modbusMaster\ModbusMaster.hpp" />
     <ClInclude Include="libraries\modbusSlave\ModbusSlave.hpp" />
     <ClInclude Include="libraries\modbus\Modbus.h" />
