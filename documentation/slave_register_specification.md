@@ -7,5 +7,5 @@ An inactive slave will have the following registers:
 
 | Register #	|Value			|Notes			|
 |---------------|---------------|---------------|
-| 0				|# of devices	|Currently unbound|
-| 1				|length of device name	|Currently unbound|
+| 0 |KWH Modbus major version number ||
+| 0.5 |KWH Modbus minor version number ||
