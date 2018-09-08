@@ -16,16 +16,7 @@ Slaves will have the first register always be the current state of the slave. Be
 | 5 | Master is reading command from a device ||
 | 6 | Master is sending command to a device ||
 | 7 | Master is reading message from a device ||
-
-# Inactive Slaves #
-An inactive slave will have the following registers:
-
-| Register #	| Value			| Range			| Notes			|
-|---------------|---------------|---------------|---------------|
-| 1 | KWH Modbus major version number | 0-255 ||
-| 1.5 |KWH Modbus minor version number | 0-255 ||
-| 2 | Number of devices | 1-65535 | Realistically 1-10ish |
-| 3 | Length of device names | 1-65535 | Reastically 4-12ish|
+| 8 | Master is reading message from slave ||
 
 # Slave States #
 
@@ -41,6 +32,7 @@ Below is table of current slave states that any slave may be:
 | 3 | Length of device names | 1-65535 | Reastically 4-12ish|
 | 4 | Number of commands pending from devices ||
 | 5 | Number of messages pending from devices ||
+| 6 | Number of messages pending from slave ||
 
 ### 1: Slave Received Request from Master ###
 
@@ -48,9 +40,21 @@ Below is table of current slave states that any slave may be:
 |---------------|---------------|---------------|---------------|
 | 1 | Request type | See table below | | 
 | 2 | Device Number | 1-65535 | Limited by number of devices on the slave |
-| 3 | 
+| 3-max | Data | Different for each request type | The makeup of the data varies by request type |
 
+Here is a listing of each request type:
 
-| Request Type	| Description	| Notes			|
-|---------------|---------------|---------------|
-| 0 | Read device info | 
+* 0: Make slave idle/abort request
+	* Sets slave back to idle state, in the case of a botched request or any other instance in which a master may want to ensure the slave is idle.
+* 1: Assign/reassign slave
+	* This request is unique in that register 2 is not a device number, since this only deals with the slave.
+	* Register 2 is the new slave ID that is to be assigned.
+	* Frequently used to assign an inactive slave at address 0 to a proper address.
+* 2: Read device info
+	* This is for reading information about a device, like the name and type.
+	* The response to this will have a state of 2.
+	* The data in this response will have the following format:
+		* 0: Device type
+		* 1: Number of commands waiting
+		* 2: Number of messages waiting
+		* 3 to 2.5+(L/2): Characters of the device name, where L is the length of the name as defined by the slave
