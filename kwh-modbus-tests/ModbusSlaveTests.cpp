@@ -415,12 +415,44 @@ TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Success)
 	readQueue.push(crc >> 8);
 	readQueue.push(crc & 0xFF);
 
+	bool broadcast;
+
 	modbus->setSlaveId(19);
 	modbus->resetFrame(8);
 	modbus->readToFrame();
-	bool success = modbus->readInputFrame();
+	bool success = modbus->readInputFrame(broadcast);
 
 	ASSERT_TRUE(success);
+	ASSERT_FALSE(broadcast);
+}
+
+TEST_F(ModbusSlaveTests, ModbusSlave_Broadcast_Success)
+{
+	USE_FAKE_SYSTEM;
+	USE_MOCK_SERIAL;
+	modbus->config(&mockSerial, &fakeSystem.get(), 9600);
+	setup_FourRegisters();
+	readQueue.push(0);
+	readQueue.push(MB_FC_WRITE_REG);
+	readQueue.push(0);
+	readQueue.push(5);
+	readQueue.push(2);
+	readQueue.push(192);
+	byte crcArray[5] = { MB_FC_WRITE_REG , 0, 5, 2, 192 };
+	word crc = modbus->calcCrc(0, crcArray, 5);
+	readQueue.push(crc >> 8);
+	readQueue.push(crc & 0xFF);
+
+	bool broadcast;
+
+	modbus->setSlaveId(19);
+	modbus->resetFrame(8);
+	modbus->readToFrame();
+	bool success = modbus->readInputFrame(broadcast);
+
+	ASSERT_TRUE(success);
+	ASSERT_TRUE(broadcast);
+	ASSERT_EQ(modbus->Hreg(5), 704);
 }
 
 TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_WrongSlave)
@@ -440,12 +472,15 @@ TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_WrongSlave)
 	readQueue.push(crc >> 8);
 	readQueue.push(crc & 0xFF);
 
+	bool broadcast;
+
 	modbus->setSlaveId(19);
 	modbus->resetFrame(8);
 	modbus->readToFrame();
-	bool success = modbus->readInputFrame();
+	bool success = modbus->readInputFrame(broadcast);
 
 	ASSERT_FALSE(success);
+	ASSERT_FALSE(broadcast);
 }
 
 TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_BadCRC)
@@ -465,12 +500,15 @@ TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_BadCRC)
 	readQueue.push(crc >> 8);
 	readQueue.push(crc & 0xFF);
 
+	bool broadcast;
+
 	modbus->setSlaveId(19);
 	modbus->resetFrame(8);
 	modbus->readToFrame();
-	bool success = modbus->readInputFrame();
+	bool success = modbus->readInputFrame(broadcast);
 
 	ASSERT_FALSE(success);
+	ASSERT_FALSE(broadcast);
 }
 
 TEST_F(ModbusSlaveTests, ModbusSlave_sendPDU)
@@ -608,8 +646,11 @@ TEST_F(ModbusSlaveTests, ModbusSlave_task_Success)
 	readQueue.push(crc >> 8);
 	readQueue.push(crc & 0xFF);
 
+	bool processed;
+	bool broadcast;
+
 	modbus->setSlaveId(19);
-	bool success = modbus->task();
+	bool success = modbus->task(processed, broadcast);
 
 	crcArray = new byte[9];
 	setArray<byte, word, word, word, word>(crcArray, MB_FC_READ_REGS, 111, 703, 902, 429);
@@ -640,6 +681,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_task_Success)
 	ASSERT_EQ(writeQueue.front(), crc & 0xFF);
 
 	ASSERT_TRUE(success);
+	ASSERT_TRUE(processed);
+	ASSERT_FALSE(broadcast);
 }
 
 TEST_F(ModbusSlaveTests, ModbusSlave_task_FailEmpty)
@@ -653,10 +696,15 @@ TEST_F(ModbusSlaveTests, ModbusSlave_task_FailEmpty)
 	modbus->config(&mockSerial, &fakeSystem.get(), 9600);
 	setup_FourRegisters();
 
+	bool processed;
+	bool broadcast;
+
 	modbus->setSlaveId(19);
-	bool success = modbus->task();
+	bool success = modbus->task(processed, broadcast);
 
 	ASSERT_FALSE(success);
+	ASSERT_FALSE(processed);
+	ASSERT_FALSE(broadcast);
 }
 
 TEST_F(ModbusSlaveTests, ModbusSlave_task_Success_WrongRecipient)
@@ -680,12 +728,17 @@ TEST_F(ModbusSlaveTests, ModbusSlave_task_Success_WrongRecipient)
 	readQueue.push(crc >> 8);
 	readQueue.push(crc & 0xFF);
 
+	bool processed;
+	bool broadcast;
+
 	modbus->setSlaveId(17);
-	bool success = modbus->task();
+	bool success = modbus->task(processed, broadcast);
 
 	crcArray = new byte[9];
 	setArray<byte, word, word, word, word>(crcArray, MB_FC_READ_REGS, 111, 703, 902, 429);
 	crc = modbus->calcCrc(19, crcArray, 9);
 
 	ASSERT_TRUE(success);
+	ASSERT_FALSE(processed);
+	ASSERT_FALSE(broadcast);
 }

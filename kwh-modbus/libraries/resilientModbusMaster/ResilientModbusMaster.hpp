@@ -8,6 +8,7 @@ private_testable:
 	word _rFrameMaxLength = 0;
 	word _rFrameLength = 0;
 	byte *_rFrame = nullptr;
+	bool broadcast = false;
 
 	bool copyFrame()
 	{
@@ -36,6 +37,12 @@ private_testable:
 		{
 			_rFrame[i] = frame[i];
 		}
+		if (length > 0)
+		{
+			broadcast = (frame[0] == 0);
+		}
+		else
+			broadcast = false;
 		return true;
 	}
 
@@ -57,11 +64,16 @@ protected_testable:
 		if (!this->copyFrame())
 			return TaskFailure;
 		this->send();
-		return TaskInProgress;
+		if (broadcast)
+			return TaskComplete;
+		else
+			return TaskInProgress;
 	}
 
 	TaskStatus check()
 	{
+		if (broadcast)
+			return TaskComplete;
 		if (!this->receive())
 			return TaskInProgress;
 		else
@@ -78,7 +90,10 @@ protected_testable:
 		if (!this->revertFrame())
 			return TaskFailure;
 		this->send();
-		return TaskInProgress;
+		if (broadcast)
+			return TaskComplete;
+		else
+			return TaskInProgress;
 	}
 
 public:

@@ -129,8 +129,11 @@ public:
 	}
 
 	// Tested
-	bool task()
+	bool task(bool &processed_out, bool &broadcast_out)
 	{
+		broadcast_out = false;
+		processed_out = false;
+
 		word length = awaitIncomingSerial();
 		if (length == 0)
 			return false;
@@ -139,13 +142,24 @@ public:
 			return false;
 		readToFrame();
 		
-		if (this->readInputFrame())
+		if (this->readInputFrame(broadcast_out))
 		{
-			if (this->_reply == MB_REPLY_NORMAL)
+			if (broadcast_out)
+			{
+				// You cannot reply to a broadcast
+				processed_out = true;
+			}
+			else if (this->_reply == MB_REPLY_NORMAL)
+			{
 				this->sendPDU();
+				processed_out = true;
+			}
 			else
 				if (this->_reply == MB_REPLY_ECHO)
+				{
 					this->echo();
+					processed_out = true;
+				}
 		}
 
 		this->resetFrame(0);
@@ -153,7 +167,7 @@ public:
 	}
 
 	// Tested
-	bool readInputFrame()
+	bool readInputFrame(bool &broadcast_out)
 	{
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
@@ -162,12 +176,15 @@ public:
 		//Last two bytes = crc
 		unsigned int crc = ((frame[length - 2] << 8) | frame[length - 1]);
 
-		//Slave Check
-		if (address != 0xFF && address != this->getSlaveId()) {
+		//Ensure slave ID is correct, or broadcast
+		broadcast_out = false;
+		if (address == 0)
+		{
+			broadcast_out = true;
+		}
+		else if (address != this->getSlaveId()) {
 			return false;
 		}
-
-		auto ccrc = calcCrc(frame[0], frame + 1, length - 3);
 
 		//CRC Check
 		if (crc != this->calcCrc(frame[0], frame + 1, length - 3)) {

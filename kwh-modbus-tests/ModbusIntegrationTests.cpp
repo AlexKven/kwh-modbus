@@ -9,7 +9,7 @@
 #include "../kwh-modbus/mock/MockSerialStream.h"
 #include "../kwh-modbus/libraries/modbusSlave/ModbusSlave.hpp"
 #include "../kwh-modbus/libraries/modbusMaster/ModbusMaster.hpp"
-#include "../kwh-modbus/libraries/resilientModbus/ResilientModbusMaster.hpp"
+#include "../kwh-modbus/libraries/resilientModbusMaster/ResilientModbusMaster.hpp"
 #include "test_helpers.h"
 #include "WindowsFunctions.h"
 #include "WindowsSystemFunctions.h"
@@ -123,17 +123,19 @@ public:
 	void slaveThread()
 	{
 		this->slaveSuccess = false;
+		bool processed;
+		bool broadcast;
 		TIMEOUT_START(3000);
 		if (this->errorType == 0)
 		{
-			while (!this->slave->task())
+			while (!this->slave->task(processed, broadcast))
 				TIMEOUT_CHECK;
 		}
 		else
 		{
 			while (this->master->getStatus() < 4)
 			{
-				this->slave->task();
+				this->slave->task(processed, broadcast);
 				TIMEOUT_CHECK;
 			}
 		}
