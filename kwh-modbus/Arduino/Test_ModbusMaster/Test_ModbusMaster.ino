@@ -32,57 +32,68 @@ public:
 
   unsigned long micros()
   {
-    ::micros();
+    return ::micros();
   }
 
   unsigned long millis()
   {
-    ::millis();
+    return ::millis();
   }
 };
 
 word *registers = new word[15];
 ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray> master;
+ArduinoFunctions funcions;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   Serial.println("Starting...");
 
-  master.config(&Serial1, new ArduinoFunctions(), 19200, 4);
+  master.config(&Serial1, &funcions, 19200, 4);
   master.init(registers, 0, 15, 30);
+  master.setMaxTimePerTryMicros(100000);
+  master.setMaxTries(15);
   Serial.println("Master initialized");
+  Serial.print("Initial Memory: ");
+  Serial.println(getMemAllocation());
 }
 
 int i = 0;
 bool done = true;
 
+int getMemAllocation()
+{
+  int *dummy = new int();
+  delete dummy;
+  return (int)dummy;
+}
+
 void loop() {
 //  // put your main code here, to run repeatedly:
   if (done)
   {
-    master.reset();
-    master.setRequest_WriteRegister(3, 3, i++);
-    Serial.println("Master done");
-    done = false;
+    if (Serial.available())
+    {
+      while (Serial.available())
+      {
+        Serial.read();
+      }
+      Serial1.flush();
+      master.reset();
+      master.setRequest_WriteRegister(3, 3, i++);
+      Serial.println("Master reset");
+      done = false;
+    }
   }
   else
   {
     done = master.work();
+    Serial.print("Status: ");
+    Serial.println(master.getStatus());
   }
 //
-//  if (Serial.available())
-//  {
-//    while (Serial.available())
-//    {
-//      digitalWrite(4, HIGH);
-//      delay(30);
-//      Serial1.write(Serial.read());
-//      delay(30);
-//      digitalWrite(4, LOW);
-//      delay(30);
-//    }
-//  }
+
 //  if (Serial1.available())
 //  {
 //    while (Serial1.available())
