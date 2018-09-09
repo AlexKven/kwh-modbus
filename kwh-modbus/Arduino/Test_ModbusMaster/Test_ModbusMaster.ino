@@ -4,6 +4,7 @@
 #include "ModbusSerial.hpp"
 #include "ModbusMaster.hpp"
 #include "HardwareSerial.h"
+#include "ResilientModbusMaster.hpp"
 
 
 class ArduinoFunctions
@@ -28,10 +29,20 @@ public:
   {
     ::pinMode(pin, mode);
   }
+
+  unsigned long micros()
+  {
+    ::micros();
+  }
+
+  unsigned long millis()
+  {
+    ::millis();
+  }
 };
 
 word *registers = new word[15];
-ModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray> master;
+ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray> master;
 
 void setup() {
   // put your setup code here, to run once:
@@ -50,14 +61,14 @@ void loop() {
 //  // put your main code here, to run repeatedly:
   if (done)
   {
+    master.reset();
     master.setRequest_WriteRegister(3, 3, i++);
-    master.send();
     Serial.println("Master done");
     done = false;
   }
   else
   {
-    done = master.receive();
+    done = master.work();
   }
 //
 //  if (Serial.available())

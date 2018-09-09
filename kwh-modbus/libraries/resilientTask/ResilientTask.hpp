@@ -1,6 +1,8 @@
-#include "../../noArduino/TestHelpers.h"
 #ifdef NO_ARDUINO
+#include "../../noArduino/TestHelpers.h"
 #include "../../noArduino/ArduinoMacros.h"
+#else
+#include "../arduinoMacros/arduinoMacros.h"
 #endif
 
 enum TaskStatus : byte

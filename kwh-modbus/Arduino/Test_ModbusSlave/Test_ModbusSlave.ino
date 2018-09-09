@@ -54,7 +54,11 @@ void setup() {
 void loop() {
 //  // put your main code here, to run repeatedly:
 //  Serial.println(Serial1.available());
-  slave.task();
+
+  bool processed;
+  bool broadcast;
+
+  slave.task(processed, broadcast);
 
   for (int i = 0; i < 15; i++)
   {

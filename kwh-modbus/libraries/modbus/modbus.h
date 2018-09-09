@@ -6,12 +6,11 @@
 #ifndef MODBUS_H
 #define MODBUS_H
 
-#include "../../noArduino/TestHelpers.h"
-
 #ifdef NO_ARDUINO
+#include "../../noArduino/TestHelpers.h"
 #include "../../noArduino/ArduinoMacros.h"
 #else
-#include "Arduino.h"
+#include "../arduinoMacros/arduinoMacros.h"
 #endif
 //
 //#define MAX_REGS     32
