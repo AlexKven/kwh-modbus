@@ -3,7 +3,7 @@ Each Modbus slave shall have a specific arrangement of register values visible t
 
 An active slave can have any slave ID greater than 1. Slave id 1 is reserved for new slaves, and is periodically polled for new slaves that are connected. Upon being connected, a new slaved will be assigned a new slave ID by the master, and will assume that new ID. No slave can have an ID of 0 because ID 0 is reserved for sending broadcasts to all slaves.
 
-#Slave States#
+# Slave States #
 Slaves will have the first register always be the current state of the slave. Below are tables of register values for each slave state.
 
 | Register #0 Value	| Description	| Notes	|
@@ -17,10 +17,6 @@ Slaves will have the first register always be the current state of the slave. Be
 | 6 | Master is sending command to a device ||
 | 7 | Master is reading message from a device ||
 | 8 | Master is reading message from slave ||
-
-# Slave States #
-
-Below is table of current slave states that any slave may be:
 
 ### 0: Slave is Idle ###
 
@@ -53,8 +49,21 @@ Here is a listing of each request type:
 * 2: Read device info
 	* This is for reading information about a device, like the name and type.
 	* The response to this will have a state of 2.
-	* The data in this response will have the following format:
+	* The data in this respons will have the following format:
 		* 0: Device type
-		* 1: Number of commands waiting
-		* 2: Number of messages waiting
-		* 3 to 2.5+(L/2): Characters of the device name, where L is the length of the name as defined by the slave
+		* 1: Data type (first 8 bits)
+		* 1.5: Data length in bytes (last 8 bits)
+		* 2: Number of commands waiting
+		* 3: Number of messages waiting
+		* 4 to 3.5+(L/2): Characters of the device name, where L is the length of the name as defined by the slave
+* 3: Read device data
+	* This is for reading actual data from a device, such as a power reading value at a particular time.
+	* The response to this will have a state of 2.
+	* The data in this response will have the following format:
+		* 0 to 1: The time for the start of the request
+		* 2: The number of data points being requested
+		* 3 to N: TBD
+* 4: Write data
+	* This is for writing data from *any* device, including itself (if supported).
+	* The response to this will have a state of 3.
+	* The data in this 
