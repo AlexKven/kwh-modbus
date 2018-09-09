@@ -82,6 +82,9 @@
     <ClInclude Include="libraries\resilientModbusMaster\ResilientModbusMaster.hpp">
       <Filter>libraries\resilientModbusMaster</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\slave\slave.hpp">
+      <Filter>libraries\slave</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -125,6 +128,9 @@
     </Filter>
     <Filter Include="libraries\resilientModbusMaster">
       <UniqueIdentifier>{21a065f3-f725-4ba1-a814-e849226023c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\slave">
+      <UniqueIdentifier>{6cf68dfa-336b-4426-9220-35c849c71d2b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
