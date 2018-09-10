@@ -53,7 +53,7 @@ void setup() {
 
 void loop() {
 //  // put your main code here, to run repeatedly:
-//  Serial.println(Serial1.available());
+//  Serial.println(Serial1.available());12
 
   bool processed;
   bool broadcast;

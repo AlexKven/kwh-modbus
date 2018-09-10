@@ -47,6 +47,7 @@
     <ClCompile Include="ModbusTests.cpp" />
     <ClCompile Include="ModbusIntegrationTests.cpp" />
     <ClCompile Include="ResilientTaskTests.cpp" />
+    <ClCompile Include="SlaveTests.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

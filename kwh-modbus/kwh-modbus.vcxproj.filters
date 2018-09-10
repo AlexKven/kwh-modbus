@@ -26,6 +26,9 @@
     <ClCompile Include="libraries\random\Random.cpp">
       <Filter>libraries\random</Filter>
     </ClCompile>
+    <ClCompile Include="libraries\device\Device.cpp">
+      <Filter>libraries\device</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\modbus\Modbus.h">
@@ -82,7 +85,10 @@
     <ClInclude Include="libraries\resilientModbusMaster\ResilientModbusMaster.hpp">
       <Filter>libraries\resilientModbusMaster</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\slave\slave.hpp">
+    <ClInclude Include="libraries\device\Device.h">
+      <Filter>libraries\device</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\slave\Slave.hpp">
       <Filter>libraries\slave</Filter>
     </ClInclude>
   </ItemGroup>
@@ -131,6 +137,9 @@
     </Filter>
     <Filter Include="libraries\slave">
       <UniqueIdentifier>{6cf68dfa-336b-4426-9220-35c849c71d2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\device">
+      <UniqueIdentifier>{3960a640-6ccb-4635-bb05-9f350ca8ca16}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

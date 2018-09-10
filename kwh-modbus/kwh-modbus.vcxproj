@@ -66,6 +66,7 @@
   <ItemGroup>
     <ClCompile Include="libraries\arduinoClasses\ArduinoSerial.cpp" />
     <ClCompile Include="libraries\arduinoClasses\ArduinoSystem.cpp" />
+    <ClCompile Include="libraries\device\Device.cpp" />
     <ClCompile Include="libraries\modbus\Modbus.cpp" />
     <ClCompile Include="libraries\modbus\ModbusArray.cpp" />
     <ClCompile Include="libraries\random\Random.cpp" />
@@ -80,6 +81,7 @@
     <ClInclude Include="libraries\arduinoClasses\ArduinoSerial.h" />
     <ClInclude Include="libraries\arduinoClasses\ArduinoSystem.h" />
     <ClInclude Include="libraries\communicator\SystemParameters.h" />
+    <ClInclude Include="libraries\device\Device.h" />
     <ClInclude Include="libraries\modbusMaster\ModbusMaster.hpp" />
     <ClInclude Include="libraries\modbusSlave\ModbusSlave.hpp" />
     <ClInclude Include="libraries\modbus\Modbus.h" />
@@ -88,7 +90,7 @@
     <ClInclude Include="libraries\random\Random.h" />
     <ClInclude Include="libraries\resilientModbusMaster\ResilientModbusMaster.hpp" />
     <ClInclude Include="libraries\resilientTask\ResilientTask.hpp" />
-    <ClInclude Include="libraries\slave\slave.hpp" />
+    <ClInclude Include="libraries\slave\Slave.hpp" />
     <ClInclude Include="mock\MockSerialStream.h" />
     <ClInclude Include="noArduino\SystemFunctions.h" />
     <ClInclude Include="noArduino\ArduinoMacros.h" />
