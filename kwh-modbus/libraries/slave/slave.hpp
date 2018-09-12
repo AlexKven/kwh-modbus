@@ -6,7 +6,7 @@
 #endif
 
 #include "../device/Device.h"
-#define ENSURE(statement) if !(statement) return false
+#define ENSURE(statement) if (!(statement)) return false
 
 enum SlaveState
 {
@@ -54,16 +54,17 @@ private_testable:
 	Device *_devices;
 	SlaveState _state;
 
-	M *_modbus;
 	S *_system;
+	M *_modbus;
 
 	bool setOutgoingState()
 	{
+		ENSURE(_modbus->validRange(0, 10));
 		ENSURE(_modbus->Hreg(0, _state));
 		switch (_state)
 		{
 		case sIdle:
-			ENSURE(_modbus->Hreg(1, _majorVersion << 8 & _minorVersion));
+			ENSURE(_modbus->Hreg(1, _majorVersion << 8 | _minorVersion));
 			ENSURE(_modbus->Hreg(2, _deviceCount));
 			ENSURE(_modbus->Hreg(3, _deviceNameLength));
 			// Keep these 0 until I implement this
@@ -75,13 +76,6 @@ private_testable:
 			// Why would we do this?
 			break;
 		case sDisplayDevInfo:
-			ENSURE(_modbus->Hreg(1, _majorVersion << 8 & _minorVersion));
-			ENSURE(_modbus->Hreg(2, _deviceCount));
-			ENSURE(_modbus->Hreg(3, _deviceNameLength));
-			// Keep these 0 until I implement this
-			ENSURE(_modbus->Hreg(4, 0));
-			ENSURE(_modbus->Hreg(5, 0));
-			ENSURE(_modbus->Hreg(6, 0));
 			break;
 		}
 		return true;
@@ -89,18 +83,25 @@ private_testable:
 
 	bool processIncomingState()
 	{
-		if (_modbus->Hreg(0) != 1)
-			return false;
+		ENSURE(_modbus->validRange(0, 10));
+		ENSURE(_modbus->Hreg(0) == sReceivedRequest);
 		switch (_modbus->Hreg(1))
 		{
 		case 0:
-			_state = 0;
+			_state = sIdle;
 			setOutgoingState();
 		case 1:
-			_state = 0;
-			setOutgoingState();
+			_state = sIdle;
 			_modbus->setSlaveId((byte)_modbus->Hreg(2));
+			setOutgoingState();
 		}
+		return true;
+	}
+
+	void config(S *system, M *modbus)
+	{
+		_system = system;
+		_modbus = modbus;
 	}
 public:
 	Slave() { }
