@@ -21,28 +21,6 @@ enum SlaveState
 	sDisplaySlaveMessage = 8
 };
 
-class DeviceName
-{
-private:
-	byte *chars;
-	// Keep track of length outside this class!
-public:
-	DeviceName(word length)
-	{
-		chars = new byte[length];
-	}
-
-	byte *getChars()
-	{
-		return chars;
-	}
-
-	~DeviceName()
-	{
-		delete[] chars;
-	}
-};
-
 template<class M, class S>
 class Slave
 {
@@ -51,7 +29,8 @@ private_testable:
 	const byte _minorVersion = 0;
 	word _deviceNameLength;
 	word _deviceCount;
-	Device *_devices;
+	byte **_deviceNames = nullptr;
+	Device **_devices = nullptr;
 	SlaveState _state;
 
 	S *_system;
@@ -98,13 +77,59 @@ private_testable:
 		return true;
 	}
 
+public:
 	void config(S *system, M *modbus)
 	{
 		_system = system;
 		_modbus = modbus;
 	}
-public:
+
+	void init(word deviceCount, word deviceNameLength, Device **devices, byte **deviceNames)
+	{
+		clearDevices();
+		_deviceCount = deviceCount;
+		_deviceNameLength = deviceNameLength;
+		_deviceNames = new byte*[_deviceNameLength];
+		_devices = new Device*[_deviceCount];
+		for (int i = 0; i < _deviceCount; i++)
+		{
+			_deviceNames[i] = new byte[_deviceNameLength];
+			for (int j = 0; j < _deviceNameLength; j++)
+			{
+				_deviceNames[i][j] = deviceNames[i][j];
+			}
+			_devices[i] = devices[i];
+		}
+	}
+
+	void clearDevices()
+	{
+		if (_deviceNames != nullptr)
+			delete[] _deviceNames;
+		if (_devices != nullptr)
+			delete[] _devices;
+		_deviceCount = 0;
+	}
+
 	Slave() { }
 
+	~Slave()
+	{
+		clearDevices();
+	}
 
+	word getDeviceCount()
+	{
+		return _deviceCount;
+	}
+
+	word getDeviceNameLength()
+	{
+		return _deviceNameLength;
+	}
+
+	byte getSlaveId()
+	{
+		return _modbus->getSlaveId();
+	}
 };

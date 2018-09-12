@@ -102,7 +102,7 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId)
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(slave->_state, sIdle);
-	ASSERT_EQ(slave->_modbus->getSlaveId(), 41);
+	ASSERT_EQ(slave->getSlaveId(), 41);
 }
 
 TEST_F(SlaveTests, SlaveTests_processIncomingState_Nothing)
@@ -137,4 +137,40 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId_Failure)
 	ASSERT_FALSE(success);
 	ASSERT_EQ(slave->_state, sIdle);
 	ASSERT_EQ(slave->_modbus->getSlaveId(), 14);
+}
+
+TEST_F(SlaveTests, SlaveTests_init)
+{
+	slave->_state = sIdle;
+	slave->_modbus->setSlaveId(17);
+
+	Device dev01;
+	Device dev02;
+	Device dev03;
+
+	Device **devices = new Device*[3];
+	byte **names = new byte*[3];
+	devices[0] = &dev01;
+	devices[1] = &dev02;
+	devices[2] = &dev03;
+	names[0] = (byte*)"dev01";
+	names[1] = (byte*)"dev02";
+	names[2] = (byte*)"dev03";
+
+	slave->init(3, 5, devices, names);
+
+	delete[] devices;
+	delete[] names;
+
+	ASSERT_EQ(slave->getDeviceCount(), 3);
+	ASSERT_EQ(slave->getDeviceNameLength(), 5);
+	assertArrayEq(slave->_devices,
+		&dev01,
+		&dev02,
+		&dev03);
+	for (int i = 0; i < 3; i++)
+	{
+		assertArrayEq(slave->_deviceNames[i],
+			'd', 'e', 'v', '0', (byte)('0' + i + 1));
+	}
 }
