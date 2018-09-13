@@ -9,3 +9,4 @@
 #include "../kwh-modbus/libraries/random/Random.cpp"
 #include "../kwh-modbus/noArduino/ModbusMemory.cpp"
 #include "../kwh-modbus/mock/MockSerialStream.cpp"
+#include "../kwh-modbus/libraries/device/Device.cpp"

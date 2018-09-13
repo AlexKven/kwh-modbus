@@ -7,5 +7,6 @@
 
 class Device
 {
-
+public:
+	word getType();
 };

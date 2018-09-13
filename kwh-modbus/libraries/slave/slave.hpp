@@ -8,7 +8,7 @@
 #include "../device/Device.h"
 #define ENSURE(statement) if (!(statement)) return false
 
-enum SlaveState
+enum SlaveState : word
 {
 	sIdle = 0,
 	sReceivedRequest = 1,
@@ -55,6 +55,24 @@ private_testable:
 			// Why would we do this?
 			break;
 		case sDisplayDevInfo:
+			word deviceNum = _modbus->Hreg(2);
+			ENSURE(_modbus->Hreg(1, deviceNum));
+			ENSURE(_modbus->Hreg(2, _devices[deviceNum]->getType()));
+			byte* name = _deviceNames[deviceNum];
+			word index = 0;
+			for (int i = 0; i < _deviceNameLength; i += 2)
+			{
+				word reg = name[i] << 8;
+				if (i < _deviceNameLength - 1)
+				{
+					reg = reg | name[i + 1];
+				}
+				ENSURE(_modbus->Hreg(3 + index, reg));
+				index++;
+			}
+			// Commands & Messages not yet implemented
+			ENSURE(_modbus->Hreg(3 + index, 1));
+			ENSURE(_modbus->Hreg(4 + index, 2));
 			break;
 		}
 		return true;
@@ -105,9 +123,15 @@ public:
 	void clearDevices()
 	{
 		if (_deviceNames != nullptr)
+		{
 			delete[] _deviceNames;
+			_deviceNames = nullptr;
+		}
 		if (_devices != nullptr)
+		{
 			delete[] _devices;
+			_devices = nullptr;
+		}
 		_deviceCount = 0;
 	}
 

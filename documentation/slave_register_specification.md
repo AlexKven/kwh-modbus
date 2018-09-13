@@ -34,9 +34,21 @@ Slaves will have the first register always be the current state of the slave. Be
 
 | Register #	| Value			| Range			| Notes			|
 |---------------|---------------|---------------|---------------|
-| 1 | Request type | See table below | | 
+| 1 | Request type | See table below | |
 | 2 | Device Number | 1-65535 | Limited by number of devices on the slave |
-| 3-max | Data | Different for each request type | The makeup of the data varies by request type |
+| 3 to max | Data | Different for each request type | The makeup of the data varies by request type |
+
+### 2: Master is Reading Device Info
+
+| Register #         | Value                  | Range                              | Notes                                                        |
+| ------------------ | ---------------------- | ---------------------------------- | ------------------------------------------------------------ |
+| 1                  | Device Number          | 1-65535                            |                                                              |
+| 2                  | Device Type            | TBD                                |                                                              |
+| 3 to 2 .5+(L/2)    | Device Name            | L bytes, each half a register long | L is length of name. Entire name is next whole number of registers |
+| 3+(L/2) to 4+(L/2) | \# of Commands Pending | 0-65535                            | Use next whole number for L/2                                |
+| 4+(L/2) to 5+(L/2) |                        |                                    |                                                              |
+
+### 
 
 Here is a listing of each request type:
 

@@ -68,6 +68,48 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_Idle_Failure)
 	ASSERT_FALSE(success);
 }
 
+TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
+{
+	slave->_state = sDisplayDevInfo;
+
+	Device dev01;
+	Device dev02;
+	Device dev03;
+
+	Device **devices = new Device*[3];
+	byte **names = new byte*[3];
+	devices[0] = &dev01;
+	devices[1] = &dev02;
+	devices[2] = &dev03;
+	names[0] = (byte*)"dev01";
+	names[1] = (byte*)"dev02";
+	names[2] = (byte*)"dev03";
+
+	slave->init(3, 5, devices, names);
+
+	// Select device #1
+	registerArray[2] = 1;
+
+	delete[] devices;
+	delete[] names;
+
+	bool success = slave->setOutgoingState();
+
+	ASSERT_TRUE(success);
+	assertArrayEq(registerArray,
+		sDisplayDevInfo,
+		(word)1,
+		(word)1,
+		(byte)'e',
+		(byte)'d',
+		(byte)'0',
+		(byte)'v',
+		(byte)0,
+		(byte)'2',
+		(word)1,
+		(word)2);
+}
+
 TEST_F(SlaveTests, SlaveTests_processIncomingState_Idle)
 {
 	slave->_state = sIdle;
@@ -173,4 +215,34 @@ TEST_F(SlaveTests, SlaveTests_init)
 		assertArrayEq(slave->_deviceNames[i],
 			'd', 'e', 'v', '0', (byte)('0' + i + 1));
 	}
+}
+
+TEST_F(SlaveTests, SlaveTests_clearDevices)
+{
+	slave->_state = sIdle;
+	slave->_modbus->setSlaveId(17);
+
+	Device dev01;
+	Device dev02;
+	Device dev03;
+
+	Device **devices = new Device*[3];
+	byte **names = new byte*[3];
+	devices[0] = &dev01;
+	devices[1] = &dev02;
+	devices[2] = &dev03;
+	names[0] = (byte*)"dev01";
+	names[1] = (byte*)"dev02";
+	names[2] = (byte*)"dev03";
+
+	slave->init(3, 5, devices, names);
+	slave->clearDevices();
+
+	delete[] devices;
+	delete[] names;
+
+	ASSERT_EQ(slave->getDeviceCount(), 0);
+	ASSERT_EQ(slave->getDeviceNameLength(), 5); // Clearing doesn't change name length
+	ASSERT_EQ(slave->_devices, nullptr);
+	ASSERT_EQ(slave->_deviceNames, nullptr);
 }
