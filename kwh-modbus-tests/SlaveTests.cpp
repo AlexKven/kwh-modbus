@@ -12,6 +12,9 @@ using namespace fakeit;
 typedef ModbusSlave<MockSerialStream, WindowsSystemFunctions, ModbusArray> T_MODBUS;
 typedef Slave<ModbusSlave<MockSerialStream, WindowsSystemFunctions, ModbusArray>, WindowsSystemFunctions> T_SLAVE;
 
+#define MOCK_SLAVE Mock<T_SLAVE> mock(*slave); \
+T_SLAVE & mSlave = mock.get()
+
 class SlaveTests : public ::testing::Test
 {
 protected:
@@ -121,73 +124,77 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
 
 TEST_F(SlaveTests, SlaveTests_processIncomingState_Idle)
 {
-	slave->_state = sIdle;
-	slave->_deviceCount = 4;
-	slave->_deviceNameLength = 703;
-	slave->_modbus->setSlaveId(14);
+	MOCK_SLAVE;
+	When(Method(mock, setOutgoingState)).Return(true);
+
+	mSlave._state = sIdle;
 
 	registerArray[0] = sReceivedRequest;
 	registerArray[1] = 0;
 
-	bool success = slave->processIncomingState();
+	bool success = mSlave.processIncomingState();
 
 	ASSERT_TRUE(success);
-	ASSERT_EQ(registerArray[0], sIdle);
-	ASSERT_EQ(registerArray[1], 1 << 8);
-	ASSERT_EQ(registerArray[2], 4);
-	ASSERT_EQ(registerArray[3], 703);
+	ASSERT_EQ(mSlave._state, sIdle);
+	Verify(Method(mock, setOutgoingState)).Once();
 }
 
 TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId)
 {
-	slave->_state = sIdle;
-	slave->_deviceCount = 4;
-	slave->_deviceNameLength = 703;
-	slave->_modbus->setSlaveId(14);
+	MOCK_SLAVE;
+	When(Method(mock, setOutgoingState)).Return(true);
+	
+	mSlave._state = sIdle;
+	mSlave._deviceCount = 4;
+	mSlave._deviceNameLength = 703;
+	mSlave._modbus->setSlaveId(14);
 
 	registerArray[0] = sReceivedRequest;
 	registerArray[1] = 1;
 	registerArray[2] = 41;
 
-	bool success = slave->processIncomingState();
+	bool success = mSlave.processIncomingState();
 
 	ASSERT_TRUE(success);
-	ASSERT_EQ(slave->_state, sIdle);
-	ASSERT_EQ(slave->getSlaveId(), 41);
+	ASSERT_EQ(mSlave._state, sIdle);
+	ASSERT_EQ(mSlave.getSlaveId(), 41);
+	Verify(Method(mock, setOutgoingState)).Once();
 }
 
 TEST_F(SlaveTests, SlaveTests_processIncomingState_Nothing)
 {
-	slave->_state = sIdle;
-	slave->_deviceCount = 4;
-	slave->_deviceNameLength = 703;
-	slave->_modbus->setSlaveId(14);
+	MOCK_SLAVE;
+	When(Method(mock, setOutgoingState)).Return(true);
+
+	mSlave._state = sIdle;
 
 	registerArray[0] = 0;
 
-	bool success = slave->processIncomingState();
+	bool success = mSlave.processIncomingState();
 
 	ASSERT_FALSE(success);
+	Verify(Method(mock, setOutgoingState)).Never();
 }
 
 TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId_Failure)
 {
+	MOCK_SLAVE;
+	When(Method(mock, setOutgoingState)).Return(true);
 	SetupOutOfRangeRegisterArray();
 
-	slave->_state = sIdle;
-	slave->_deviceCount = 4;
-	slave->_deviceNameLength = 703;
-	slave->_modbus->setSlaveId(14);
+	mSlave._state = sIdle;
+	mSlave._modbus->setSlaveId(14);
 
 	registerArray[0] = sReceivedRequest;
 	registerArray[1] = 1;
 	registerArray[2] = 41;
 
-	bool success = slave->processIncomingState();
+	bool success = mSlave.processIncomingState();
 
 	ASSERT_FALSE(success);
-	ASSERT_EQ(slave->_state, sIdle);
-	ASSERT_EQ(slave->_modbus->getSlaveId(), 14);
+	ASSERT_EQ(mSlave._state, sIdle);
+	ASSERT_EQ(mSlave._modbus->getSlaveId(), 14);
+	Verify(Method(mock, setOutgoingState)).Never();
 }
 
 TEST_F(SlaveTests, SlaveTests_init)

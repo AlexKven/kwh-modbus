@@ -36,7 +36,7 @@ private_testable:
 	S *_system;
 	M *_modbus;
 
-	bool setOutgoingState()
+	virtual bool setOutgoingState()
 	{
 		ENSURE(_modbus->validRange(0, 10));
 		ENSURE(_modbus->Hreg(0, _state));
@@ -78,7 +78,7 @@ private_testable:
 		return true;
 	}
 
-	bool processIncomingState()
+	virtual bool processIncomingState()
 	{
 		ENSURE(_modbus->validRange(0, 10));
 		ENSURE(_modbus->Hreg(0) == sReceivedRequest);
@@ -87,10 +87,16 @@ private_testable:
 		case 0:
 			_state = sIdle;
 			setOutgoingState();
+			break;
 		case 1:
 			_state = sIdle;
 			_modbus->setSlaveId((byte)_modbus->Hreg(2));
 			setOutgoingState();
+			break;
+		case 2:
+			_state = sDisplayDevInfo;
+			setOutgoingState();
+			break;
 		}
 		return true;
 	}
