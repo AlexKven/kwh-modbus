@@ -71,8 +71,8 @@ private_testable:
 				index++;
 			}
 			// Commands & Messages not yet implemented
-			ENSURE(_modbus->Hreg(3 + index, 1));
-			ENSURE(_modbus->Hreg(4 + index, 2));
+			ENSURE(_modbus->Hreg(3 + index, 0)); // Commands waiting
+			ENSURE(_modbus->Hreg(4 + index, 0)); // Messages waiting
 			break;
 		}
 		return true;

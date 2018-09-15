@@ -20,6 +20,7 @@ protected:
 	WindowsSystemFunctions *system = new WindowsSystemFunctions();
 	T_MODBUS *modbus = new T_MODBUS();
 	T_SLAVE *slave = new T_SLAVE();
+	Mock<Device> *mockDevices = nullptr;
 
 	void SetupOutOfRangeRegisterArray()
 	{
@@ -27,6 +28,18 @@ protected:
 		modbus = new T_MODBUS();
 		modbus->init(registerArray, 20, 12, 20);
 		slave->config(system, modbus);
+	}
+
+	void SetupDevices(Device **devices, word count)
+	{
+		if (mockDevices != nullptr)
+			delete[] mockDevices;
+		mockDevices = new Mock<Device>[count];
+		for (word i = 0; i < count; i++)
+		{
+			When(Method(mockDevices[i], getType)).AlwaysReturn(7);
+			devices[i] = &mockDevices[i].get();
+		}
 	}
 public:
 	void SetUp()
@@ -40,6 +53,8 @@ public:
 	{
 		delete modbus;
 		delete[] registerArray;
+		if (mockDevices != nullptr)
+			delete[] mockDevices;
 	}
 };
 
@@ -72,15 +87,9 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
 {
 	slave->_state = sDisplayDevInfo;
 
-	Device dev01;
-	Device dev02;
-	Device dev03;
-
 	Device **devices = new Device*[3];
+	SetupDevices(devices, 3);
 	byte **names = new byte*[3];
-	devices[0] = &dev01;
-	devices[1] = &dev02;
-	devices[2] = &dev03;
 	names[0] = (byte*)"dev01";
 	names[1] = (byte*)"dev02";
 	names[2] = (byte*)"dev03";
@@ -99,15 +108,15 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
 	assertArrayEq(registerArray,
 		sDisplayDevInfo,
 		(word)1,
-		(word)1,
+		(word)7,
 		(byte)'e',
 		(byte)'d',
 		(byte)'0',
 		(byte)'v',
 		(byte)0,
 		(byte)'2',
-		(word)1,
-		(word)2);
+		(word)0,
+		(word)0);
 }
 
 TEST_F(SlaveTests, SlaveTests_processIncomingState_Idle)
@@ -186,30 +195,24 @@ TEST_F(SlaveTests, SlaveTests_init)
 	slave->_state = sIdle;
 	slave->_modbus->setSlaveId(17);
 
-	Device dev01;
-	Device dev02;
-	Device dev03;
-
 	Device **devices = new Device*[3];
+	SetupDevices(devices, 3);
 	byte **names = new byte*[3];
-	devices[0] = &dev01;
-	devices[1] = &dev02;
-	devices[2] = &dev03;
 	names[0] = (byte*)"dev01";
 	names[1] = (byte*)"dev02";
 	names[2] = (byte*)"dev03";
 
 	slave->init(3, 5, devices, names);
 
-	delete[] devices;
 	delete[] names;
 
 	ASSERT_EQ(slave->getDeviceCount(), 3);
 	ASSERT_EQ(slave->getDeviceNameLength(), 5);
 	assertArrayEq(slave->_devices,
-		&dev01,
-		&dev02,
-		&dev03);
+		devices[0],
+		devices[1],
+		devices[2]);
+	delete[] devices;
 	for (int i = 0; i < 3; i++)
 	{
 		assertArrayEq(slave->_deviceNames[i],
@@ -222,15 +225,9 @@ TEST_F(SlaveTests, SlaveTests_clearDevices)
 	slave->_state = sIdle;
 	slave->_modbus->setSlaveId(17);
 
-	Device dev01;
-	Device dev02;
-	Device dev03;
-
 	Device **devices = new Device*[3];
+	SetupDevices(devices, 3);
 	byte **names = new byte*[3];
-	devices[0] = &dev01;
-	devices[1] = &dev02;
-	devices[2] = &dev03;
 	names[0] = (byte*)"dev01";
 	names[1] = (byte*)"dev02";
 	names[2] = (byte*)"dev03";

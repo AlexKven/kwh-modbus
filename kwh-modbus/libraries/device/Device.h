@@ -8,5 +8,5 @@
 class Device
 {
 public:
-	word getType();
+	virtual word getType() = 0;
 };
