@@ -9,12 +9,12 @@ private_testable:
 
 public:
 	// Tested with sendPDU
-	void send()
+	virtual void send()
 	{
 		sendPDU();
 	}
 
-	bool receive()
+	virtual bool receive()
 	{
 		word length = awaitIncomingSerial();
 		if (length == 0)
@@ -26,7 +26,7 @@ public:
 	}
 
 	// Tested
-	void sendPDU()
+	virtual void sendPDU()
 	{
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
@@ -40,7 +40,7 @@ public:
 	}
 
 	// Tested
-	bool setRequest_ReadRegisters(byte recipientId, word regStart, word regCount)
+	virtual bool setRequest_ReadRegisters(byte recipientId, word regStart, word regCount)
 	{
 		if (!this->resetFrame(6))
 			return false;
@@ -57,7 +57,7 @@ public:
 	}
 
 	// Tested
-	bool setRequest_WriteRegister(byte recipientId, word regIndex, word regValue)
+	virtual bool setRequest_WriteRegister(byte recipientId, word regIndex, word regValue)
 	{
 		if (!this->resetFrame(6))
 			return false;
@@ -74,7 +74,7 @@ public:
 	}
 
 	// Tested
-	bool setRequest_WriteRegisters(byte recipientId, word regStart, word regCount, word *regValues)
+	virtual bool setRequest_WriteRegisters(byte recipientId, word regStart, word regCount, word *regValues)
 	{
 		if (!this->resetFrameRegs(regCount, 7))
 			return false;
@@ -96,7 +96,7 @@ public:
 	}
 
 	// Tested
-	bool verifyResponseIntegrity()
+	virtual bool verifyResponseIntegrity()
 	{
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
@@ -114,7 +114,7 @@ public:
 	}
 
 	// Tested
-	bool isReadRegsResponse(word &countOut, word* &regsOut)
+	virtual bool isReadRegsResponse(word &countOut, word* &regsOut)
 	{
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
@@ -128,7 +128,7 @@ public:
 	}
 
 	// Tested
-	bool isExceptionResponse(byte &fcode, byte &excode)
+	virtual bool isExceptionResponse(byte &fcode, byte &excode)
 	{
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
@@ -146,7 +146,7 @@ public:
 	}
 
 	// Tested
-	bool isWriteRegResponse()
+	virtual bool isWriteRegResponse()
 	{
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
@@ -158,7 +158,7 @@ public:
 	}
 
 	// Tested
-	bool isWriteRegsResponse()
+	virtual bool isWriteRegsResponse()
 	{
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();

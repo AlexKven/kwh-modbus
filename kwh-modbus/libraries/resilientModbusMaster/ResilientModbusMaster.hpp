@@ -59,7 +59,7 @@ private_testable:
 	}
 
 protected_testable:
-	TaskStatus begin()
+	virtual TaskStatus begin()
 	{
 		if (!this->copyFrame())
 			return TaskFailure;
@@ -70,7 +70,7 @@ protected_testable:
 			return TaskInProgress;
 	}
 
-	TaskStatus check()
+	virtual TaskStatus check()
 	{
 		if (broadcast)
 			return TaskComplete;
@@ -85,7 +85,7 @@ protected_testable:
 		}
 	}
 
-	TaskStatus retry()
+	virtual TaskStatus retry()
 	{
 		if (!this->revertFrame())
 			return TaskFailure;
