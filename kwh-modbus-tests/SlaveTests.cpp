@@ -132,8 +132,10 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_Idle)
 	registerArray[0] = sReceivedRequest;
 	registerArray[1] = 0;
 
-	bool success = mSlave.processIncomingState();
+	bool processed;
+	bool success = mSlave.processIncomingState(processed);
 
+	ASSERT_TRUE(processed);
 	ASSERT_TRUE(success);
 	ASSERT_EQ(mSlave._state, sIdle);
 	Verify(Method(mock, setOutgoingState)).Once();
@@ -152,9 +154,11 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId)
 	registerArray[0] = sReceivedRequest;
 	registerArray[1] = 1;
 	registerArray[2] = 41;
+	
+	bool processed;
+	bool success = mSlave.processIncomingState(processed);
 
-	bool success = mSlave.processIncomingState();
-
+	ASSERT_TRUE(processed);
 	ASSERT_TRUE(success);
 	ASSERT_EQ(mSlave._state, sIdle);
 	ASSERT_EQ(mSlave.getSlaveId(), 41);
@@ -170,9 +174,11 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_Nothing)
 
 	registerArray[0] = 0;
 
-	bool success = mSlave.processIncomingState();
+	bool processed;
+	bool success = mSlave.processIncomingState(processed);
 
-	ASSERT_FALSE(success);
+	ASSERT_FALSE(processed);
+	ASSERT_TRUE(success);
 	Verify(Method(mock, setOutgoingState)).Never();
 }
 
@@ -189,8 +195,10 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId_Failure)
 	registerArray[1] = 1;
 	registerArray[2] = 41;
 
-	bool success = mSlave.processIncomingState();
+	bool processed;
+	bool success = mSlave.processIncomingState(processed);
 
+	ASSERT_FALSE(processed);
 	ASSERT_FALSE(success);
 	ASSERT_EQ(mSlave._state, sIdle);
 	ASSERT_EQ(mSlave._modbus->getSlaveId(), 14);

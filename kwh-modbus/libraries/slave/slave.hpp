@@ -78,25 +78,29 @@ private_testable:
 		return true;
 	}
 
-	virtual bool processIncomingState()
+	virtual bool processIncomingState(bool &requestProcessed)
 	{
+		requestProcessed = false;
 		ENSURE(_modbus->validRange(0, 10));
-		ENSURE(_modbus->Hreg(0) == sReceivedRequest);
-		switch (_modbus->Hreg(1))
+		if (_modbus->Hreg(0) == sReceivedRequest)
 		{
-		case 0:
-			_state = sIdle;
-			setOutgoingState();
-			break;
-		case 1:
-			_state = sIdle;
-			_modbus->setSlaveId((byte)_modbus->Hreg(2));
-			setOutgoingState();
-			break;
-		case 2:
-			_state = sDisplayDevInfo;
-			setOutgoingState();
-			break;
+			requestProcessed = true;
+			switch (_modbus->Hreg(1))
+			{
+			case 0:
+				_state = sIdle;
+				setOutgoingState();
+				break;
+			case 1:
+				_state = sIdle;
+				_modbus->setSlaveId((byte)_modbus->Hreg(2));
+				setOutgoingState();
+				break;
+			case 2:
+				_state = sDisplayDevInfo;
+				setOutgoingState();
+				break;
+			}
 		}
 		return true;
 	}
