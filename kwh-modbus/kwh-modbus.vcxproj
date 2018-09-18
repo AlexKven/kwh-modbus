@@ -81,6 +81,7 @@
     <ClInclude Include="libraries\arduinoClasses\ArduinoSerial.h" />
     <ClInclude Include="libraries\arduinoClasses\ArduinoSystem.h" />
     <ClInclude Include="libraries\communicator\SystemParameters.h" />
+    <ClInclude Include="libraries\deviceDirectory\DeviceDirectory.hpp" />
     <ClInclude Include="libraries\device\Device.h" />
     <ClInclude Include="libraries\master\Master.hpp" />
     <ClInclude Include="libraries\modbusMaster\ModbusMaster.hpp" />

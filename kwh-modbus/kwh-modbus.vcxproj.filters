@@ -94,6 +94,9 @@
     <ClInclude Include="libraries\master\Master.hpp">
       <Filter>libraries\master</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\deviceDirectory\DeviceDirectory.hpp">
+      <Filter>libraries\deviceDirectory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -149,6 +152,9 @@
     </Filter>
     <Filter Include="libraries\masterSlave">
       <UniqueIdentifier>{b415e0ad-6739-4659-bad6-ad14b514befe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\deviceDirectory">
+      <UniqueIdentifier>{3d0f5a63-d783-4c2b-ae53-576ce23aaf32}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
