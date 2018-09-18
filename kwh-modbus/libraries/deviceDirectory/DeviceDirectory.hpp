@@ -11,9 +11,9 @@ class DeviceDirectory
 private_testable:
 	word _maxDevices;
 	word _deviceNameLength;
-	byte* _slaveIds;
-	word* _deviceTypes;
-	byte* _deviceNames;
+	byte* _slaveIds = nullptr;
+	word* _deviceTypes = nullptr;
+	byte* _deviceNames = nullptr;
 	T* _persistentStore;
 
 	byte* getDeviceName(word deviceIndex)
@@ -48,7 +48,7 @@ public:
 		_deviceNames = new byte[_deviceNameLength * _maxDevices];
 	}
 
-	void init(int maxMemory, word deviceNameLength, &word maxDevicesOut, T *persistentStore = nullptr)
+	void init(int maxMemory, word deviceNameLength, word &maxDevicesOut, T *persistentStore = nullptr)
 	{
 		maxDevicesOut = maxMemory / (sizeof(byte) + sizeof(word) + deviceNameLength * sizeof(byte));
 		Init(deviceNameLengh, maxDevicesOut, persistentStore);
@@ -252,4 +252,14 @@ public:
 		numDeleted++;
 	}
 	*/
+
+	~DeviceDirectory()
+	{
+		if (_slaveIds != nullptr)
+			delete _slaveIds;
+		if (_deviceTypes != nullptr)
+			delete _deviceTypes;
+		if (_deviceNames != nullptr)
+			delete _deviceNames;
+	}
 };
