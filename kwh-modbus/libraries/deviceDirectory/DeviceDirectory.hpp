@@ -38,7 +38,7 @@ private_testable:
 	}
 
 public:
-	void init(word deviceNameLength, word maxDevices, T *persistentStore = nullptr)
+	virtual void init(word deviceNameLength, word maxDevices, T *persistentStore = nullptr)
 	{
 		_deviceNameLength = deviceNameLength;
 		_maxDevices = maxDevices;
@@ -48,10 +48,10 @@ public:
 		_deviceNames = new byte[_deviceNameLength * _maxDevices];
 	}
 
-	void init(int maxMemory, word deviceNameLength, word &maxDevicesOut, T *persistentStore = nullptr)
+	virtual void init(int maxMemory, word deviceNameLength, word &maxDevicesOut, T *persistentStore = nullptr)
 	{
 		maxDevicesOut = maxMemory / (sizeof(byte) + sizeof(word) + deviceNameLength * sizeof(byte));
-		Init(deviceNameLengh, maxDevicesOut, persistentStore);
+		init(deviceNameLength, maxDevicesOut, persistentStore);
 	}
 
 	//Device Directory row: [Name (8), DeviceType (1), SlaveID (1)]

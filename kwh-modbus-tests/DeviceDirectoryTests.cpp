@@ -86,3 +86,67 @@ TEST_F(DeviceDirectoryTests, compareName)
 	// cause a segfault.
 	deviceDirectory->_deviceNames = nullptr;
 }
+
+TEST_F(DeviceDirectoryTests, init_default)
+{
+	deviceDirectory->init(11, 5);
+	for (int i = 0; i < 55; i++)
+	{
+		deviceDirectory->_deviceNames[i] = i;
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		deviceDirectory->_deviceTypes[i] = i;
+		deviceDirectory->_slaveIds[i] = i;
+	}
+
+	ASSERT_EQ(deviceDirectory->_maxDevices, 5);
+	ASSERT_EQ(deviceDirectory->_deviceNameLength, 11);
+
+	ASSERT_EQ(deviceDirectory->_deviceNames[0], 0);
+	ASSERT_EQ(deviceDirectory->_deviceNames[54], 54);
+	ASSERT_EQ(deviceDirectory->_deviceTypes[0], 0);
+	ASSERT_EQ(deviceDirectory->_deviceTypes[4], 4);
+	ASSERT_EQ(deviceDirectory->_slaveIds[0], 0);
+	ASSERT_EQ(deviceDirectory->_slaveIds[4], 4);
+	ASSERT_EQ(deviceDirectory->_persistentStore, nullptr);
+}
+
+TEST_F(DeviceDirectoryTests, init_persistentStore)
+{
+	byte *persistentStore = new byte();
+
+	deviceDirectory->init(11, 5, &persistentStore);
+	for (int i = 0; i < 55; i++)
+	{
+		deviceDirectory->_deviceNames[i] = i;
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		deviceDirectory->_deviceTypes[i] = i;
+		deviceDirectory->_slaveIds[i] = i;
+	}
+
+	ASSERT_EQ(deviceDirectory->_maxDevices, 5);
+	ASSERT_EQ(deviceDirectory->_deviceNameLength, 11);
+
+	ASSERT_EQ(deviceDirectory->_deviceNames[0], 0);
+	ASSERT_EQ(deviceDirectory->_deviceNames[54], 54);
+	ASSERT_EQ(deviceDirectory->_deviceTypes[0], 0);
+	ASSERT_EQ(deviceDirectory->_deviceTypes[4], 4);
+	ASSERT_EQ(deviceDirectory->_slaveIds[0], 0);
+	ASSERT_EQ(deviceDirectory->_slaveIds[4], 4);
+	ASSERT_EQ(deviceDirectory->_persistentStore, &persistentStore);
+}
+
+TEST_F(DeviceDirectoryTests, init_maxMemory)
+{
+	Mock<DeviceDirectory<byte*>> mock = Mock<DeviceDirectory<byte*>>(*deviceDirectory);
+	Fake(OverloadedMethod(mock, init, void(word, word, byte**)));
+
+	word numDevices;
+	deviceDirectory->init(500, 11, numDevices);
+
+	ASSERT_EQ(numDevices, 35);
+	Verify(OverloadedMethod(mock, init, void(word, word, byte**)).Using(11, 35, nullptr)).Once();
+}
