@@ -16,12 +16,12 @@ private_testable:
 	byte* _deviceNames = nullptr;
 	T* _persistentStore;
 
-	byte* getDeviceName(word deviceIndex)
+	virtual byte* getDeviceName(word deviceIndex)
 	{
 		return (_deviceNames + deviceIndex * _deviceNameLength);
 	}
 
-	byte getNameChar(word deviceIndex, word charIndex)
+	virtual byte getNameChar(word deviceIndex, word charIndex)
 	{
 		return getDeviceName(deviceIndex)[charIndex];
 	}
@@ -63,7 +63,7 @@ public:
 	//If empty, DeviceType = 0, and SlaveID = 0 unless there's
 	//device entries after that row, then DeviceType = 1
 
-	bool findDeviceForName(byte* devName, word &devTypeOut, byte &slaveIdOut, int &rowOut = 0)
+	virtual bool findDeviceForName(byte* devName, word &devTypeOut, byte &slaveIdOut, int &rowOut = 0)
 	{
 		devTypeOut = 0;
 		slaveIdOut = 0;
@@ -97,7 +97,7 @@ public:
 	//		EEPROM[index + EEPROM_OFFSET] = value;
 	//}
 
-	void insertIntoDeviceDirectoryRow(int row, byte* devName, byte devType, byte slaveId)
+	virtual void insertIntoRow(int row, byte* devName, byte devType, byte slaveId)
 	{
 		byte* name = getDeviceName(row);
 		for (int i = 0; i < _deviceNameLength; i++)
@@ -114,7 +114,7 @@ public:
 		findDeviceForName(devName, curType, curID, row);
 		if (row >= 0 && (curType != devType || curID != slaveId))
 		{
-			insertIntoDeviceDirectoryRow(row, devName8, devType, slaveId);
+			insertIntoRow(row, devName, devType, slaveId);
 			return true;
 		}
 		return false;
@@ -123,26 +123,25 @@ public:
 	void ClearDeviceDirectoryRow(int row)
 	{
 		_slaveIds[row] = 0;
+		bool devicesAbove = false;
 
 		if (row < _maxDevices - 1)
 		{
-			if (_slaveIds[row + 1] > 0 || _deviceTypes[row + 1] > 0)
-				_deviceTypes[row] = 1;
-			else
-				_deviceTypes[row] = 0;
+			devicesAbove = (_slaveIds[row + 1] > 0 || _deviceTypes[row + 1] > 0);
 		}
 
-		// This code is embarrassingly hard to read
-		//int ind = 10 * row;
-		//for (int i = 0; i < 9; i++)
-		//	SetDirectoryValue(ind + i, 0);
+		if (devicesAbove)
+			_deviceTypes[row] = 1;
+		else
+			_deviceTypes[row] = 0;
 
-		//if (row == MAX_DEVICES - 1 || DeviceDirectory[ind + 18] == 0)
-		//	SetDirectoryValue(ind + 9, 0);
-		//else
-		//	SetDirectoryValue(ind + 9, 1);
-		//if (row > 0 && DeviceDirectory[ind - 2] == 0)
-		//	SetDirectoryValue(ind - 1, 0);
+		while (!devicesAbove &&
+			--row > 0 &&
+			_slaveIds[row] == 0 &&
+			_deviceTypes[row] == 1)
+		{
+			_deviceTypes[row] = 0;
+		}
 	}
 
 	//void InitializeDeviceDirectory()
@@ -180,7 +179,7 @@ public:
 	//	byte* dummyName = new byte[8];
 	//	for (int i = 1; i <= 245; i++)
 	//	{
-	//		InsertIntoDeviceDirectoryRow(i - 1, dummyName, 1, i);
+	//		insertIntoRow(i - 1, dummyName, 1, i);
 	//	}
 	//}
 
@@ -189,6 +188,8 @@ public:
 		int row = 0;
 		while (_slaveIds[row] != 0)
 			row++;
+		if (row >= _maxDevices)
+			return -1;
 		return row;
 	}
 
@@ -216,7 +217,7 @@ public:
 	int AddToDeviceDirectory(byte* devName8, byte devType, byte slaveId)
 	{
 		int row = FindFreeRow();
-		InsertIntoDeviceDirectoryRow(row, devName8, devType, slaveId);
+		insertIntoRow(row, devName8, devType, slaveId);
 		return row;
 	}
 

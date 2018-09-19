@@ -226,8 +226,8 @@ TEST_F(DeviceDirectoryTests, findDeviceForName_found)
 	setupCompareName_ReturnTrueOn(mock, 3);
 	deviceDirectory->_maxDevices = 6;
 	deviceDirectory->_deviceNameLength = 5;
-	deviceDirectory->_deviceTypes = new word[6]{ 1, 4, 7, 10, 13, 16 };
-	deviceDirectory->_slaveIds = new byte[6]{ 0, 3, 6, 9, 12, 15 };
+	deviceDirectory->_deviceTypes = new word[6] { 1, 4, 7, 10, 13, 16 };
+	deviceDirectory->_slaveIds = new byte[6] { 0, 3, 6, 9, 12, 15 };
 
 	word devType;
 	byte slaveId;
@@ -242,4 +242,223 @@ TEST_F(DeviceDirectoryTests, findDeviceForName_found)
 	Verify(Method(mock, compareName).Using(1, Any<byte*>())).Once();
 	Verify(Method(mock, compareName).Using(3, Any<byte*>())).Once();
 	Verify(Method(mock, compareName).Using(5, Any<byte*>())).Never();
+}
+
+TEST_F(DeviceDirectoryTests, insertIntoRow)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	deviceDirectory->_maxDevices = 6;
+	deviceDirectory->_deviceNameLength = 5;
+	deviceDirectory->_deviceTypes = new word[6];
+	deviceDirectory->_slaveIds = new byte[6];
+
+	byte *name = new byte[5];
+	When(Method(mock, getDeviceName).Using((word)3)).Return(name);
+
+	deviceDirectory->insertIntoRow(3, (byte*)"Aleah", 29, 31);
+
+	ASSERT_EQ(deviceDirectory->_deviceTypes[3], 29);
+	ASSERT_EQ(deviceDirectory->_slaveIds[3], 31);
+	assertArrayEq<byte, byte, byte, byte, byte>(name,
+		'A', 'l', 'e', 'a', 'h');
+}
+
+TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_notFound)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+
+	deviceDirectory->_maxDevices = 6;
+	deviceDirectory->_deviceNameLength = 5;
+	deviceDirectory->_deviceTypes = new word[6];
+	deviceDirectory->_slaveIds = new byte[6];
+
+	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, int &row)
+	{
+		row = -1;
+		return false;
+	});
+	Fake(Method(mock, insertIntoRow));
+
+	bool success = deviceDirectory->updateItemInDeviceDirectory((byte*)"Aleah", 29, 31);
+
+	ASSERT_FALSE(success);
+	Verify(Method(mock, insertIntoRow)).Never();
+}
+
+TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_foundButSame)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+
+	deviceDirectory->_maxDevices = 6;
+	deviceDirectory->_deviceNameLength = 5;
+	deviceDirectory->_deviceTypes = new word[6];
+	deviceDirectory->_slaveIds = new byte[6];
+
+	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, int &row)
+	{
+		row = 5;
+		type = 29;
+		slave = 31;
+		return true;
+	});
+	Fake(Method(mock, insertIntoRow));
+
+	bool success = deviceDirectory->updateItemInDeviceDirectory((byte*)"Aleah", 29, 31);
+
+	ASSERT_FALSE(success);
+	Verify(Method(mock, insertIntoRow)).Never();
+}
+
+TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_foundAndChanged)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+
+	deviceDirectory->_maxDevices = 6;
+	deviceDirectory->_deviceNameLength = 5;
+	deviceDirectory->_deviceTypes = new word[6];
+	deviceDirectory->_slaveIds = new byte[6];
+
+	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, int &row)
+	{
+		row = 5;
+		type = 29;
+		slave = 37;
+		return true;
+	});
+	Fake(Method(mock, insertIntoRow));
+
+	bool success = deviceDirectory->updateItemInDeviceDirectory((byte*)"Aleah", 29, 31);
+
+	ASSERT_TRUE(success);
+	Verify(Method(mock, insertIntoRow).Using(5, Any<byte*>(), 29, 31)).Once();
+}
+
+TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_topDevice)
+{
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_slaveIds = new byte[7]{ 1, 2, 3, 4, 5, 0, 0 };
+	deviceDirectory->_deviceTypes = new word[7]{ 1, 2, 1, 4, 1, 0, 0 };
+
+	deviceDirectory->ClearDeviceDirectoryRow(4);
+
+	assertArrayEq<byte, byte, byte, byte, byte, byte, byte>
+		(deviceDirectory->_slaveIds,
+			1, 2, 3, 4, 0, 0, 0);
+	assertArrayEq<word, word, word, word, word, word, word>
+		(deviceDirectory->_deviceTypes,
+			1, 2, 1, 4, 0, 0, 0);
+}
+
+TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_penultimateDevice)
+{
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_slaveIds = new byte[7]{ 1, 2, 3, 4, 5, 0, 0 };
+	deviceDirectory->_deviceTypes = new word[7]{ 1, 2, 1, 4, 1, 0, 0 };
+
+	deviceDirectory->ClearDeviceDirectoryRow(3);
+
+	assertArrayEq<byte, byte, byte, byte, byte, byte, byte>
+		(deviceDirectory->_slaveIds,
+			1, 2, 3, 0, 5, 0, 0);
+	assertArrayEq<word, word, word, word, word, word, word>
+		(deviceDirectory->_deviceTypes,
+			1, 2, 1, 1, 1, 0, 0);
+}
+
+TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_penultimateDeviceEmptyBelow)
+{
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_slaveIds = new byte[7]{ 1, 0, 0, 4, 5, 0, 0 };
+	deviceDirectory->_deviceTypes = new word[7]{ 1, 1, 1, 4, 1, 0, 0 };
+
+	deviceDirectory->ClearDeviceDirectoryRow(3);
+
+	assertArrayEq<byte, byte, byte, byte, byte, byte, byte>
+		(deviceDirectory->_slaveIds,
+			1, 0, 0, 0, 5, 0, 0);
+	assertArrayEq<word, word, word, word, word, word, word>
+		(deviceDirectory->_deviceTypes,
+			1, 1, 1, 1, 1, 0, 0);
+}
+
+TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_topDeviceEmptyBelow)
+{
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_slaveIds = new byte[7]{ 1, 0, 0, 0, 5, 0, 0 };
+	deviceDirectory->_deviceTypes = new word[7]{ 1, 1, 1, 1, 1, 0, 0 };
+
+	deviceDirectory->ClearDeviceDirectoryRow(4);
+
+	assertArrayEq<byte, byte, byte, byte, byte, byte, byte>
+		(deviceDirectory->_slaveIds,
+			1, 0, 0, 0, 0, 0, 0);
+	assertArrayEq<word, word, word, word, word, word, word>
+		(deviceDirectory->_deviceTypes,
+			1, 0, 0, 0, 0, 0, 0);
+}
+
+TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_empty)
+{
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_slaveIds = new byte[7]{ 0, 0, 0, 0, 0, 0, 0 };
+	deviceDirectory->_deviceTypes = new word[7]{ 0, 0, 0, 0, 0, 0, 0 };
+
+	int result = deviceDirectory->findFreeRow();
+
+	ASSERT_EQ(result, 0);
+}
+
+TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_beginning)
+{
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_slaveIds = new byte[7]{ 0, 0, 0, 0, 3, 0, 0 };
+	deviceDirectory->_deviceTypes = new word[7]{ 1, 1, 1, 1, 3, 0, 0 };
+
+	int result = deviceDirectory->findFreeRow();
+
+	ASSERT_EQ(result, 0);
+}
+
+TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_middle)
+{
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_slaveIds = new byte[7]{ 2, 3, 4, 0, 0, 0, 0 };
+	deviceDirectory->_deviceTypes = new word[7]{ 1, 1, 1, 0, 0, 0, 0 };
+
+	int result = deviceDirectory->findFreeRow();
+
+	ASSERT_EQ(result, 3);
+}
+
+TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_middleWithOthersAfter)
+{
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_slaveIds = new byte[7]{ 2, 3, 4, 0, 0, 5, 0 };
+	deviceDirectory->_deviceTypes = new word[7]{ 1, 1, 1, 1, 1, 3, 0 };
+
+	int result = deviceDirectory->findFreeRow();
+
+	ASSERT_EQ(result, 3);
+}
+
+TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_last)
+{
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_slaveIds = new byte[7]{ 2, 3, 4, 5, 6, 7, 0 };
+	deviceDirectory->_deviceTypes = new word[7]{ 1, 1, 2, 3, 5, 8, 0 };
+
+	int result = deviceDirectory->findFreeRow();
+
+	ASSERT_EQ(result, 6);
+}
+
+TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_full)
+{
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_slaveIds = new byte[7]{ 2, 3, 4, 5, 6, 7, 8 };
+	deviceDirectory->_deviceTypes = new word[7]{ 1, 1, 2, 3, 5, 8, 13 };
+
+	int result = deviceDirectory->findFreeRow();
+
+	ASSERT_EQ(result, -1);
 }
