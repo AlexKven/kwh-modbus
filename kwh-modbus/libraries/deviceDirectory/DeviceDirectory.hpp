@@ -26,7 +26,7 @@ private_testable:
 		return getDeviceName(deviceIndex)[charIndex];
 	}
 
-	bool compareName(word deviceIndex, byte* name)
+	virtual bool compareName(word deviceIndex, byte* name)
 	{
 		byte* deviceName = getDeviceName(deviceIndex);
 		for (int i = 0; i < _deviceNameLength; i++)
@@ -46,6 +46,11 @@ public:
 		_slaveIds = new byte[_maxDevices];
 		_deviceTypes = new word[_maxDevices];
 		_deviceNames = new byte[_deviceNameLength * _maxDevices];
+		for (int i = 0; i < _maxDevices; i++)
+		{
+			_slaveIds[i] = 0;
+			_deviceTypes[i] = 0;
+		}
 	}
 
 	virtual void init(int maxMemory, word deviceNameLength, word &maxDevicesOut, T *persistentStore = nullptr)
@@ -58,7 +63,7 @@ public:
 	//If empty, DeviceType = 0, and SlaveID = 0 unless there's
 	//device entries after that row, then DeviceType = 1
 
-	bool findDeviceForName(byte* devName, byte &devTypeOut, byte &slaveIdOut, int &rowOut = 0)
+	bool findDeviceForName(byte* devName, word &devTypeOut, byte &slaveIdOut, int &rowOut = 0)
 	{
 		devTypeOut = 0;
 		slaveIdOut = 0;
@@ -256,10 +261,10 @@ public:
 	~DeviceDirectory()
 	{
 		if (_slaveIds != nullptr)
-			delete _slaveIds;
+			delete [] _slaveIds;
 		if (_deviceTypes != nullptr)
-			delete _deviceTypes;
+			delete [] _deviceTypes;
 		if (_deviceNames != nullptr)
-			delete _deviceNames;
+			delete [] _deviceNames;
 	}
 };

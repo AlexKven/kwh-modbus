@@ -3,6 +3,7 @@
 
 #include "../kwh-modbus/libraries/deviceDirectory/DeviceDirectory.hpp"
 #include "test_helpers.h"
+#define getMock() Mock<DeviceDirectory<byte*>>(*deviceDirectory)
 
 using namespace fakeit;
 
@@ -12,6 +13,14 @@ protected:
 	word * registerArray;
 	DeviceDirectory<byte*> *deviceDirectory = new DeviceDirectory<byte*>();
 
+	inline void setupCompareName_ReturnTrueOn(Mock<DeviceDirectory<byte*>> &mock, word index)
+	{
+		for (int i = 0; i < index; i++)
+		{
+			When(Method(mock, compareName).Using(i, Any<byte*>())).AlwaysReturn(false);
+		}
+		When(Method(mock, compareName).Using(index, Any<byte*>())).AlwaysReturn(true);
+	}
 public:
 	void SetUp()
 	{
@@ -121,11 +130,6 @@ TEST_F(DeviceDirectoryTests, init_persistentStore)
 	{
 		deviceDirectory->_deviceNames[i] = i;
 	}
-	for (int i = 0; i < 5; i++)
-	{
-		deviceDirectory->_deviceTypes[i] = i;
-		deviceDirectory->_slaveIds[i] = i;
-	}
 
 	ASSERT_EQ(deviceDirectory->_maxDevices, 5);
 	ASSERT_EQ(deviceDirectory->_deviceNameLength, 11);
@@ -133,15 +137,15 @@ TEST_F(DeviceDirectoryTests, init_persistentStore)
 	ASSERT_EQ(deviceDirectory->_deviceNames[0], 0);
 	ASSERT_EQ(deviceDirectory->_deviceNames[54], 54);
 	ASSERT_EQ(deviceDirectory->_deviceTypes[0], 0);
-	ASSERT_EQ(deviceDirectory->_deviceTypes[4], 4);
+	ASSERT_EQ(deviceDirectory->_deviceTypes[4], 0);
 	ASSERT_EQ(deviceDirectory->_slaveIds[0], 0);
-	ASSERT_EQ(deviceDirectory->_slaveIds[4], 4);
+	ASSERT_EQ(deviceDirectory->_slaveIds[4], 0);
 	ASSERT_EQ(deviceDirectory->_persistentStore, &persistentStore);
 }
 
 TEST_F(DeviceDirectoryTests, init_maxMemory)
 {
-	Mock<DeviceDirectory<byte*>> mock = Mock<DeviceDirectory<byte*>>(*deviceDirectory);
+	Mock<DeviceDirectory<byte*>> mock = getMock();
 	Fake(OverloadedMethod(mock, init, void(word, word, byte**)));
 
 	word numDevices;
@@ -149,4 +153,93 @@ TEST_F(DeviceDirectoryTests, init_maxMemory)
 
 	ASSERT_EQ(numDevices, 35);
 	Verify(OverloadedMethod(mock, init, void(word, word, byte**)).Using(11, 35, nullptr)).Once();
+}
+
+TEST_F(DeviceDirectoryTests, findDeviceForName_empty)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	setupCompareName_ReturnTrueOn(mock, 3);
+	deviceDirectory->_maxDevices = 6;
+	deviceDirectory->_deviceNameLength = 5;
+	deviceDirectory->_deviceTypes = new word(0);
+	deviceDirectory->_slaveIds = new byte(0);
+
+	word devType;
+	byte slaveId;
+	int row;
+	bool found = deviceDirectory->findDeviceForName((byte*)"fiver", devType, slaveId, row);
+
+	ASSERT_FALSE(found);
+	ASSERT_EQ(slaveId, 0);
+	ASSERT_EQ(devType, 0);
+	ASSERT_EQ(row, -1);
+	Verify(Method(mock, compareName).Using(Any<word>(), Any<byte*>())).Never();
+}
+
+TEST_F(DeviceDirectoryTests, findDeviceForName_emptyish)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	setupCompareName_ReturnTrueOn(mock, 3);
+	deviceDirectory->_maxDevices = 6;
+	deviceDirectory->_deviceNameLength = 5;
+	deviceDirectory->_deviceTypes = new word[2]{ 1, 0 };
+	deviceDirectory->_slaveIds = new byte[2]{ 0, 0 };
+
+	word devType;
+	byte slaveId;
+	int row;
+	bool found = deviceDirectory->findDeviceForName((byte*)"fiver", devType, slaveId, row);
+
+	ASSERT_FALSE(found);
+	ASSERT_EQ(slaveId, 0);
+	ASSERT_EQ(devType, 0);
+	ASSERT_EQ(row, -1);
+	Verify(Method(mock, compareName).Using(Any<word>(), Any<byte*>())).Never();
+}
+
+TEST_F(DeviceDirectoryTests, findDeviceForName_exhaustedList)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	setupCompareName_ReturnTrueOn(mock, 6);
+	deviceDirectory->_maxDevices = 6;
+	deviceDirectory->_deviceNameLength = 5;
+	deviceDirectory->_deviceTypes = new word[6]{ 1, 4, 7, 10, 13, 16 };
+	deviceDirectory->_slaveIds = new byte[6]{ 0, 3, 6, 9, 12, 15 };
+
+	word devType;
+	byte slaveId;
+	int row;
+	bool found = deviceDirectory->findDeviceForName((byte*)"fiver", devType, slaveId, row);
+
+	ASSERT_FALSE(found);
+	ASSERT_EQ(slaveId, 0);
+	ASSERT_EQ(devType, 0);
+	ASSERT_EQ(row, -1);
+	Verify(Method(mock, compareName).Using(0, Any<byte*>())).Never();
+	Verify(Method(mock, compareName).Using(1, Any<byte*>())).Once();
+	Verify(Method(mock, compareName).Using(5, Any<byte*>())).Once();
+}
+
+TEST_F(DeviceDirectoryTests, findDeviceForName_found)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	setupCompareName_ReturnTrueOn(mock, 3);
+	deviceDirectory->_maxDevices = 6;
+	deviceDirectory->_deviceNameLength = 5;
+	deviceDirectory->_deviceTypes = new word[6]{ 1, 4, 7, 10, 13, 16 };
+	deviceDirectory->_slaveIds = new byte[6]{ 0, 3, 6, 9, 12, 15 };
+
+	word devType;
+	byte slaveId;
+	int row;
+	bool found = deviceDirectory->findDeviceForName((byte*)"fiver", devType, slaveId, row);
+
+	ASSERT_TRUE(found);
+	ASSERT_EQ(slaveId, 9);
+	ASSERT_EQ(devType, 10);
+	ASSERT_EQ(row, 3);
+	Verify(Method(mock, compareName).Using(0, Any<byte*>())).Never();
+	Verify(Method(mock, compareName).Using(1, Any<byte*>())).Once();
+	Verify(Method(mock, compareName).Using(3, Any<byte*>())).Once();
+	Verify(Method(mock, compareName).Using(5, Any<byte*>())).Never();
 }
