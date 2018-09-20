@@ -333,13 +333,13 @@ TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_foundAndChanged)
 	Verify(Method(mock, insertIntoRow).Using(5, Any<byte*>(), 29, 31)).Once();
 }
 
-TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_topDevice)
+TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_topDevice)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 1, 2, 3, 4, 5, 0, 0 };
 	deviceDirectory->_deviceTypes = new word[7]{ 1, 2, 1, 4, 1, 0, 0 };
 
-	deviceDirectory->ClearDeviceDirectoryRow(4);
+	deviceDirectory->clearDeviceDirectoryRow(4);
 
 	assertArrayEq<byte, byte, byte, byte, byte, byte, byte>
 		(deviceDirectory->_slaveIds,
@@ -349,13 +349,13 @@ TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_topDevice)
 			1, 2, 1, 4, 0, 0, 0);
 }
 
-TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_penultimateDevice)
+TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_penultimateDevice)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 1, 2, 3, 4, 5, 0, 0 };
 	deviceDirectory->_deviceTypes = new word[7]{ 1, 2, 1, 4, 1, 0, 0 };
 
-	deviceDirectory->ClearDeviceDirectoryRow(3);
+	deviceDirectory->clearDeviceDirectoryRow(3);
 
 	assertArrayEq<byte, byte, byte, byte, byte, byte, byte>
 		(deviceDirectory->_slaveIds,
@@ -365,13 +365,13 @@ TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_penultimateDevice)
 			1, 2, 1, 1, 1, 0, 0);
 }
 
-TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_penultimateDeviceEmptyBelow)
+TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_penultimateDeviceEmptyBelow)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 1, 0, 0, 4, 5, 0, 0 };
 	deviceDirectory->_deviceTypes = new word[7]{ 1, 1, 1, 4, 1, 0, 0 };
 
-	deviceDirectory->ClearDeviceDirectoryRow(3);
+	deviceDirectory->clearDeviceDirectoryRow(3);
 
 	assertArrayEq<byte, byte, byte, byte, byte, byte, byte>
 		(deviceDirectory->_slaveIds,
@@ -381,13 +381,13 @@ TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_penultimateDeviceEmptyBelow
 			1, 1, 1, 1, 1, 0, 0);
 }
 
-TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_topDeviceEmptyBelow)
+TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_topDeviceEmptyBelow)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 1, 0, 0, 0, 5, 0, 0 };
 	deviceDirectory->_deviceTypes = new word[7]{ 1, 1, 1, 1, 1, 0, 0 };
 
-	deviceDirectory->ClearDeviceDirectoryRow(4);
+	deviceDirectory->clearDeviceDirectoryRow(4);
 
 	assertArrayEq<byte, byte, byte, byte, byte, byte, byte>
 		(deviceDirectory->_slaveIds,
@@ -397,7 +397,7 @@ TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_topDeviceEmptyBelow)
 			1, 0, 0, 0, 0, 0, 0);
 }
 
-TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_empty)
+TEST_F(DeviceDirectoryTests, findFreeRow_empty)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 0, 0, 0, 0, 0, 0, 0 };
@@ -408,7 +408,7 @@ TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_empty)
 	ASSERT_EQ(result, 0);
 }
 
-TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_beginning)
+TEST_F(DeviceDirectoryTests, findFreeRow_beginning)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 0, 0, 0, 0, 3, 0, 0 };
@@ -419,7 +419,7 @@ TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_beginning)
 	ASSERT_EQ(result, 0);
 }
 
-TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_middle)
+TEST_F(DeviceDirectoryTests, findFreeRow_middle)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 2, 3, 4, 0, 0, 0, 0 };
@@ -430,7 +430,7 @@ TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_middle)
 	ASSERT_EQ(result, 3);
 }
 
-TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_middleWithOthersAfter)
+TEST_F(DeviceDirectoryTests, findFreeRow_middleWithOthersAfter)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 2, 3, 4, 0, 0, 5, 0 };
@@ -441,7 +441,7 @@ TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_middleWithOthersAfter)
 	ASSERT_EQ(result, 3);
 }
 
-TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_last)
+TEST_F(DeviceDirectoryTests, findFreeRow_last)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 2, 3, 4, 5, 6, 7, 0 };
@@ -452,7 +452,7 @@ TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_last)
 	ASSERT_EQ(result, 6);
 }
 
-TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_full)
+TEST_F(DeviceDirectoryTests, findFreeRow_full)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 2, 3, 4, 5, 6, 7, 8 };
@@ -462,3 +462,123 @@ TEST_F(DeviceDirectoryTests, ClearDeviceDirectoryRow_full)
 
 	ASSERT_EQ(result, -1);
 }
+
+TEST_F(DeviceDirectoryTests, findFreeSlaveID_empty)
+{
+	deviceDirectory->_maxDevices = 10;
+	deviceDirectory->_slaveIds = new byte[10]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	deviceDirectory->_deviceTypes = new word[10]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+	byte freeSlaveId = deviceDirectory->findFreeSlaveID();
+
+	ASSERT_EQ(freeSlaveId, 1);
+}
+
+TEST_F(DeviceDirectoryTests, findFreeSlaveID_full)
+{
+	deviceDirectory->_maxDevices = 246;
+	deviceDirectory->_slaveIds = new byte[246];
+	for (int i = 0; i < 246; i++)
+	{
+		deviceDirectory->_slaveIds[i] = i + 1;
+	}
+
+	byte freeSlaveId = deviceDirectory->findFreeSlaveID();
+
+	ASSERT_EQ(freeSlaveId, 0);
+}
+
+TEST_F(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case1)
+{
+	deviceDirectory->_maxDevices = 10;
+	deviceDirectory->_slaveIds = new byte[10]{ 1, 1, 2, 3, 0, 0, 0, 0, 0, 0 };
+	deviceDirectory->_deviceTypes = new word[10]{ 1, 2, 3, 2, 0, 0, 0, 0, 0, 0 };
+
+	byte freeSlaveId = deviceDirectory->findFreeSlaveID();
+
+	ASSERT_EQ(freeSlaveId, 4);
+}
+
+TEST_F(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case2)
+{
+	deviceDirectory->_maxDevices = 10;
+	deviceDirectory->_slaveIds = new byte[10]{ 1, 0, 2, 3, 0, 0, 0, 0, 0, 0 };
+	deviceDirectory->_deviceTypes = new word[10]{ 1, 1, 3, 2, 0, 0, 0, 0, 0, 0 };
+
+	byte freeSlaveId = deviceDirectory->findFreeSlaveID();
+
+	ASSERT_EQ(freeSlaveId, 4);
+}
+
+TEST_F(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case3)
+{
+	deviceDirectory->_maxDevices = 10;
+	deviceDirectory->_slaveIds = new byte[10]{ 1, 1, 4, 3, 0, 0, 0, 0, 0, 0 };
+	deviceDirectory->_deviceTypes = new word[10]{ 1, 2, 3, 2, 0, 0, 0, 0, 0, 0 };
+
+	byte freeSlaveId = deviceDirectory->findFreeSlaveID();
+
+	ASSERT_EQ(freeSlaveId, 2);
+}
+
+TEST_F(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case4)
+{
+	deviceDirectory->_maxDevices = 10;
+	deviceDirectory->_slaveIds = new byte[10]{ 0, 1, 4, 3, 0, 0, 0, 0, 0, 0 };
+	deviceDirectory->_deviceTypes = new word[10]{ 1, 2, 3, 2, 0, 0, 0, 0, 0, 0 };
+
+	byte freeSlaveId = deviceDirectory->findFreeSlaveID();
+
+	ASSERT_EQ(freeSlaveId, 2);
+}
+
+TEST_F(DeviceDirectoryTests, addDevice_success)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	When(Method(mock, findFreeRow)).Return(6);
+	Fake(Method(mock, insertIntoRow));
+
+	byte* name = (byte*)"Aleah";
+	int row = deviceDirectory->addDevice(name, 5, 1);
+
+	ASSERT_EQ(row, 6);
+	Verify(Method(mock, insertIntoRow).Using(6, name, 5, 1)).Once();
+}
+
+TEST_F(DeviceDirectoryTests, addDevice_failure)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	When(Method(mock, findFreeRow)).Return(-1);
+	Fake(Method(mock, insertIntoRow));
+
+	byte* name = (byte*)"Aleah";
+	int row = deviceDirectory->addDevice(name, 5, 1);
+
+	ASSERT_EQ(row, -1);
+	Verify(Method(mock, insertIntoRow)).Never();
+}
+
+TEST_F(DeviceDirectoryTests, filterDevicesForSlave_empty)
+{
+	deviceDirectory->_maxDevices = 10;
+	deviceDirectory->_slaveIds = new byte[10]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	deviceDirectory->_deviceTypes = new word[10]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+	int numDeleted = deviceDirectory->filterDevicesForSlave(
+		new byte*[3]{ (byte*)"Aleah", (byte*)"Chloe", (byte*)"Asher" },
+		3, 4);
+
+	ASSERT_EQ(numDeleted, 0);
+}
+//
+//TEST_F(DeviceDirectoryTests, filterDevicesForSlave_empty)
+//{
+//	Mock<DeviceDirectory<byte*>> mock = getMock();
+//	deviceDirectory->_maxDevices = 10;
+//	deviceDirectory->_slaveIds = new byte[10]{ 1, 1, 2, 2, 2, 0, 0, 0, 0, 0 };
+//	deviceDirectory->_deviceTypes = new word[10]{ 2, 3, 2, 3, 4, 0, 0, 0, 0, 0 };
+//
+//	byte freeSlaveId = deviceDirectory->findFreeSlaveID();
+//
+//	ASSERT_EQ(freeSlaveId, 1);
+//}

@@ -106,7 +106,7 @@ public:
 		_slaveIds[row] = slaveId;
 	}
 
-	bool updateItemInDeviceDirectory(byte* devName, word devType, byte slaveId)
+	virtual bool updateItemInDeviceDirectory(byte* devName, word devType, byte slaveId)
 	{
 		word curType;
 		byte curID;
@@ -120,7 +120,7 @@ public:
 		return false;
 	}
 
-	void ClearDeviceDirectoryRow(int row)
+	virtual void clearDeviceDirectoryRow(int row)
 	{
 		_slaveIds[row] = 0;
 		bool devicesAbove = false;
@@ -173,17 +173,7 @@ public:
 	//	//TestSlaveIDExhaustion();
 	//}
 
-	////Warning: allocates memory!
-	//void TestSlaveIDExhaustion()
-	//{
-	//	byte* dummyName = new byte[8];
-	//	for (int i = 1; i <= 245; i++)
-	//	{
-	//		insertIntoRow(i - 1, dummyName, 1, i);
-	//	}
-	//}
-
-	int findFreeRow()
+	virtual int findFreeRow()
 	{
 		int row = 0;
 		while (_slaveIds[row] != 0)
@@ -193,7 +183,7 @@ public:
 		return row;
 	}
 
-	int findFreeSlaveID()
+	virtual byte findFreeSlaveID()
 	{
 		byte slaveId = 1;
 		for (int i = 0; i < _maxDevices; i++)
@@ -203,7 +193,7 @@ public:
 				if (_deviceTypes[i] == 0)
 					return slaveId;
 			}
-			if (slaveIds[i] == slaveId)
+			if (_slaveIds[i] == slaveId)
 			{
 				slaveId++;
 				i = 0;
@@ -213,51 +203,44 @@ public:
 		}
 		return slaveId;
 	}
-	/*
-	int AddToDeviceDirectory(byte* devName8, byte devType, byte slaveId)
+
+	virtual int addDevice(byte* devName, word devType, byte slaveId)
 	{
-		int row = FindFreeRow();
-		insertIntoRow(row, devName8, devType, slaveId);
+		int row = findFreeRow();
+		if (row == -1)
+			return -1;
+		insertIntoRow(row, devName, devType, slaveId);
 		return row;
 	}
 
-	int DeleteDevicesForSlaveNotInList(byte** devName8s, int devName8sCount, byte slaveId)
+	int filterDevicesForSlave(byte** devNames, int devNamesCount, byte slaveId)
 	{
 		int numDeleted = 0;
 		int ind;
-		for (int i = 0; i < MAX_DEVICES; i++)
+		for (int i = 0; i < _maxDevices; i++)
 		{
-			ind = 10 * i;
-			if (DeviceDirectory[ind + 8] == 0)
-			{
-				if (DeviceDirectory[ind + 9] == 0)
-					return numDeleted;
-			}
-			else if (DeviceDirectory[ind + 9] == slaveId)
+			if (_slaveIds[i] == 0 && _deviceTypes[i] == 0)
+				return numDeleted;
+			else if (_slaveIds[i] == slaveId)
 			{
 				bool found = false;
-				for (int k = 0; k < devName8sCount; k++)
+				for (int k = 0; k < devNamesCount; k++)
 				{
-					byte* curName = devName8s[k];
-					bool match = true;
-					for (int j = 0; j < 8; j++)
-					{
-						if (curName[j] != DeviceDirectory[ind + j])
-							match = false;
-					}
+					byte* curName = devNames[k];
+					bool match = compareName(i, curName);
 					if (match)
 						found = true;
 				}
 				if (!found)
 				{
-					ClearDeviceDirectoryRow(i);
+					clearDeviceDirectoryRow(i);
 					numDeleted++;
 				}
 			}
 		}
-		numDeleted++;
+		return numDeleted;
 	}
-	*/
+	
 
 	~DeviceDirectory()
 	{
