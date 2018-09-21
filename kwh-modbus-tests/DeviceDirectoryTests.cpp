@@ -400,13 +400,13 @@ TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_foundAndChanged)
 	Verify(Method(mock, insertIntoRow).Using(5, Any<byte*>(), 29, 31)).Once();
 }
 
-TEST_F(DeviceDirectoryTests, clearRow_topDevice)
+TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_topDevice)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 1, 2, 3, 4, 5, 0, 0 };
 	deviceDirectory->_deviceTypes = new word[7]{ 1, 2, 1, 4, 1, 0, 0 };
 
-	deviceDirectory->clearRow(4);
+	deviceDirectory->clearDeviceDirectoryRow(4);
 
 	assertArrayEq<byte, byte, byte, byte, byte, byte, byte>
 		(deviceDirectory->_slaveIds,
@@ -416,13 +416,13 @@ TEST_F(DeviceDirectoryTests, clearRow_topDevice)
 			1, 2, 1, 4, 0, 0, 0);
 }
 
-TEST_F(DeviceDirectoryTests, clearRow_penultimateDevice)
+TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_penultimateDevice)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 1, 2, 3, 4, 5, 0, 0 };
 	deviceDirectory->_deviceTypes = new word[7]{ 1, 2, 1, 4, 1, 0, 0 };
 
-	deviceDirectory->clearRow(3);
+	deviceDirectory->clearDeviceDirectoryRow(3);
 
 	assertArrayEq<byte, byte, byte, byte, byte, byte, byte>
 		(deviceDirectory->_slaveIds,
@@ -432,13 +432,13 @@ TEST_F(DeviceDirectoryTests, clearRow_penultimateDevice)
 			1, 2, 1, 1, 1, 0, 0);
 }
 
-TEST_F(DeviceDirectoryTests, clearRow_penultimateDeviceEmptyBelow)
+TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_penultimateDeviceEmptyBelow)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 1, 0, 0, 4, 5, 0, 0 };
 	deviceDirectory->_deviceTypes = new word[7]{ 1, 1, 1, 4, 1, 0, 0 };
 
-	deviceDirectory->clearRow(3);
+	deviceDirectory->clearDeviceDirectoryRow(3);
 
 	assertArrayEq<byte, byte, byte, byte, byte, byte, byte>
 		(deviceDirectory->_slaveIds,
@@ -448,13 +448,13 @@ TEST_F(DeviceDirectoryTests, clearRow_penultimateDeviceEmptyBelow)
 			1, 1, 1, 1, 1, 0, 0);
 }
 
-TEST_F(DeviceDirectoryTests, clearRow_topDeviceEmptyBelow)
+TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_topDeviceEmptyBelow)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_slaveIds = new byte[7]{ 1, 0, 0, 0, 5, 0, 0 };
 	deviceDirectory->_deviceTypes = new word[7]{ 1, 1, 1, 1, 1, 0, 0 };
 
-	deviceDirectory->clearRow(4);
+	deviceDirectory->clearDeviceDirectoryRow(4);
 
 	assertArrayEq<byte, byte, byte, byte, byte, byte, byte>
 		(deviceDirectory->_slaveIds,
@@ -637,74 +637,15 @@ TEST_F(DeviceDirectoryTests, filterDevicesForSlave_empty)
 
 	ASSERT_EQ(numDeleted, 0);
 }
-
-TEST_F(DeviceDirectoryTests, filterDevicesForSlave_unusedSlave)
-{
-	Mock<DeviceDirectory<byte*>> mock = getMock();
-	deviceDirectory->_maxDevices = 10;
-	deviceDirectory->_slaveIds = new byte[10]{ 1, 1, 2, 2, 2, 0, 0, 0, 0, 0 };
-	deviceDirectory->_deviceTypes = new word[10]{ 2, 3, 2, 3, 4, 0, 0, 0, 0, 0 };
-
-	int numDeleted = deviceDirectory->filterDevicesForSlave(
-		new byte*[3]{ (byte*)"Aleah", (byte*)"Chloe", (byte*)"Asher" },
-		3, 4);
-
-	ASSERT_EQ(numDeleted, 0);
-}
-
-TEST_F(DeviceDirectoryTests, filterDevicesForSlave_noChangesNeeded)
-{
-	Mock<DeviceDirectory<byte*>> mock = getMock();
-	When(Method(mock, compareName)).AlwaysReturn(true);
-	deviceDirectory->_maxDevices = 10;
-	deviceDirectory->_slaveIds = new byte[10]{ 1, 1, 2, 2, 2, 0, 0, 0, 0, 0 };
-	deviceDirectory->_deviceTypes = new word[10]{ 2, 3, 2, 3, 4, 0, 0, 0, 0, 0 };
-
-	byte *aleah = (byte*)"Aleah";
-	byte *chloe = (byte*)"Chloe";
-	byte *asher = (byte*)"Asher";
-	int numDeleted = deviceDirectory->filterDevicesForSlave(
-		new byte*[3]{ aleah, chloe, asher },
-		3, 2);
-
-	ASSERT_EQ(numDeleted, 0);
-	for (int i = 2; i < 5; i++)
-	{
-		Verify(Method(mock, compareName).Using(i, aleah)).Once();
-		Verify(Method(mock, compareName).Using(i, chloe)).Once();
-		Verify(Method(mock, compareName).Using(i, asher)).Once();
-	}
-}
-
-TEST_F(DeviceDirectoryTests, filterDevicesForSlave_removedSomeDevices)
-{
-	Mock<DeviceDirectory<byte*>> mock = getMock();
-	When(Method(mock, compareName).Using(2, Any<byte*>())).AlwaysReturn(true);
-	When(Method(mock, compareName).Using(3, Any<byte*>())).AlwaysReturn(true);
-	When(Method(mock, compareName).Using(4, Any<byte*>())).AlwaysReturn(false);
-	When(Method(mock, compareName).Using(5, Any<byte*>())).AlwaysReturn(true);
-	When(Method(mock, compareName).Using(6, Any<byte*>())).AlwaysReturn(false);
-	When(Method(mock, compareName).Using(7, Any<byte*>())).AlwaysReturn(true);
-	Fake(Method(mock, clearRow));
-	deviceDirectory->_maxDevices = 10;
-	deviceDirectory->_slaveIds = new byte[10]{ 1, 1, 2, 2, 2, 2, 2, 2, 3, 0 };
-	deviceDirectory->_deviceTypes = new word[10]{ 2, 3, 2, 3, 4, 5, 6, 7, 6, 0 };
-	
-	byte *aleah = (byte*)"Aleah";
-	byte *chloe = (byte*)"Chloe";
-	byte *asher = (byte*)"Asher";
-
-	int numDeleted = deviceDirectory->filterDevicesForSlave(
-		new byte*[3]{ aleah, chloe, asher },
-		3, 2);
-
-	ASSERT_EQ(numDeleted, 2);
-	for (int i = 2; i < 8; i++)
-	{
-		Verify(Method(mock, compareName).Using(i, aleah)).Once();
-		Verify(Method(mock, compareName).Using(i, chloe)).Once();
-		Verify(Method(mock, compareName).Using(i, asher)).Once();
-	}
-	Verify(Method(mock, clearRow).Using(4)).Once();
-	Verify(Method(mock, clearRow).Using(6)).Once();
-}
+//
+//TEST_F(DeviceDirectoryTests, filterDevicesForSlave_empty)
+//{
+//	Mock<DeviceDirectory<byte*>> mock = getMock();
+//	deviceDirectory->_maxDevices = 10;
+//	deviceDirectory->_slaveIds = new byte[10]{ 1, 1, 2, 2, 2, 0, 0, 0, 0, 0 };
+//	deviceDirectory->_deviceTypes = new word[10]{ 2, 3, 2, 3, 4, 0, 0, 0, 0, 0 };
+//
+//	byte freeSlaveId = deviceDirectory->findFreeSlaveID();
+//
+//	ASSERT_EQ(freeSlaveId, 1);
+//}

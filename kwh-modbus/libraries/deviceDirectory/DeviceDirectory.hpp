@@ -120,7 +120,7 @@ public:
 		return false;
 	}
 
-	virtual void clearRow(int row)
+	virtual void clearDeviceDirectoryRow(int row)
 	{
 		_slaveIds[row] = 0;
 		bool devicesAbove = false;
@@ -233,7 +233,7 @@ public:
 				}
 				if (!found)
 				{
-					clearRow(i);
+					clearDeviceDirectoryRow(i);
 					numDeleted++;
 				}
 			}
