@@ -37,6 +37,9 @@ void setup() {
   // put your setup code here, to run once:
   //Serial *ser = &Serial1;
 
+  int c = __COUNTER__;
+  int l = __LINE__;
+
   for (int i = 0; i < 15; i++)
   {
     registers[i] = 0;

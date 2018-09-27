@@ -3,65 +3,45 @@
 
 #include "../kwh-modbus/libraries/deviceDirectory/DeviceDirectory.hpp"
 #include "test_helpers.h"
+#include <tuple>
 #define getMock() Mock<DeviceDirectory<byte*>>(*deviceDirectory)
+
+#define C_START int COUNTER_OFFSET = __COUNTER__
+#define C_CURRENT __COUNTER__ - COUNTER_OFFSET
 
 using namespace fakeit;
 
-template<typename TRes, typename TplVars, typename... TArgs>
-class AsyncFunction
+template<class T>
+class AsyncTask
 {
+protected:
+	T *_result = nullptr;
+
 public:
-	TplVars _variables;
-	std::tuple<TArgs...> _arguments;
-	TRes(*_func)(AsyncFunction<TRes, TplVars, TArgs...>, TArgs...);
-};
+	virtual bool work() = 0;
 
-#define P_NAME(A, B) B
-#define P_NAME(A, B, ...) B, P_NAME(__VA_ARGS__)
-#define P_TYPE(A, B) A
-#define P_TYPE(A, B, ...) A, P_TYPE(__VA_ARGS__)
-#define P_SIG(A, B) A B
-#define P_SIG(A, B, ...) A B, P_SIG(__VA_ARGS__)
-
-#define ASYNC(TRet, FName, TAsync, ...) \
-TAsync& FName(P_SIG(__VA_ARGS__)) \
-{ \
-TAsync async_state; \
-return async_state; \
-} \
-TAsync& FName(TAsync &async_state P_NAME(__VA_ARGS__))
-
-//
-//template<typename R, typename...A>
-//struct S<R(A...)>
-//{
-//	typedef R(*F)(A...);
-//	F f;
-//	constexpr S(F _f) : f(_f) { }
-//	inline R operator()(A... a)
-//	{
-//		return f(a...);
-//	}
-//};
-
-void Test(P_SIG(byte, first, byte, second, byte, third))
-{
-	
-}
-
-//ASYNC(int, calculate, word, byte, first, byte, second, byte, third)
-//{
-//
-//}
-
-template<placeholder name N, typename T>
-class Stor
-{
-	T N()
+	bool completed()
 	{
-		return T();
+		return _result != nullptr;
+	}
+
+	T& result()
+	{
+		return *_result;
 	}
 };
+
+template<class TupleParam, class TupleVar, class TReturn>
+class AsyncTaskSpecific : public AsyncTask<TReturn>
+{
+private:
+	TupleParam _parameters;
+	TupleVar _variables;
+
+
+};
+
+
 
 class DeviceDirectoryTests : public ::testing::Test
 {
@@ -80,17 +60,6 @@ protected:
 public:
 	void SetUp()
 	{
-		int p1;
-		word p2;
-		static int i;
-		auto f = [=]() { return p1 + p2; };
-
-		Stor<three, word> st;
-		st.three();
-		
-		AsyncFunction<int, std::tuple<byte, word, long>, byte, word, byte, word> aFunc;
-		//aFunc._func(aFunc, 25, 25, 25, 25);
-		//aFunc._func(aFunc, 25, 25, 25, 25);
 	}
 
 	void TearDown()
