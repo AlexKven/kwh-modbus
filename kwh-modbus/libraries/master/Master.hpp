@@ -6,7 +6,20 @@
 #endif
 
 #include "../device/Device.h"
+#include <tuple>
+
 #define ENSURE(statement) if (!(statement)) return false
+
+
+#define STATE word;
+#define RESUME(state) goto line ## state;
+#define IN_STATE STATE await_state;
+#define AWAIT(statement) \
+line##__line__##: \
+await_state = __LINE__ \
+if (!statement) return false;
+
+
 
 enum SlaveState : word
 {
@@ -21,17 +34,30 @@ enum SlaveState : word
 	sDisplaySlaveMessage = 8
 };
 
-template<class M, class S>
+enum MasterState : byte
+{
+	mIdle = 0,
+	mReadingSlave = 1,
+	mAwaitingResponse = 2,
+	mSendingData = 3,
+	mAwaitingConfirmation = 4
+};
+
+template<class M, class S, class D>
 class Master
 {
 private_testable:
 	const byte _majorVersion = 1;
 	const byte _minorVersion = 0;
-	word _deviceNameLength;
-	word _maxDevices;
 
+	D *_deviceDirectory;
 	S *_system;
 	M *_modbus;
+
+	unsigned long _curTime = 0;
+	unsigned long _prevTime = 0;
+
+	MasterState _state;
 
 public:
 	void config(S *system, M *modbus)
@@ -40,26 +66,90 @@ public:
 		_modbus = modbus;
 	}
 
-	void init(word deviceNameLength, word maxDevices)
+	void init(D *deviceDirectory)
 	{
-		clearDevices();
-		_deviceNameLength = deviceNameLength;
-		_maxDevices = maxDevices;
+		_deviceDirectory = deviceDirectory;
 	}
 
-	void clearDevices()
+	void task()
 	{
+		_prevTime = _curTime;
+		_curTime = _system->micros();
+		if (_prevTime == 0)
+			return;
 	}
 
-	Slave() { }
-
-	~Slave()
+	byte newSlaveId;
+	bool onboardNewSlaveAsync()
 	{
-		clearDevices();
+		auto status = _modbus->getStatus()
+		switch (_state)
+		{
+		case mIdle:
+			if (status != TaskNotStarted)
+			{
+				_modbus->reset();
+			}
+			_modbus->setRequest_ReadRegisters(0, 0, 7);
+			_modbus->work();
+			status = _modbus->getStatus();
+			if (status >= TaskInProgress)
+			{
+				status = mReadingSlave;
+				return false;
+			}
+			break;
+		case: mReadingSlave:
+			if (status >= TaskComplete)
+			{
+				word[7] registers;
+				if (isReadRegsResponse(7, registers))
+				{
+					if (registers[0] == _majorVersion << 8 | _minorVersion)
+					{
+						// New slave is accepted
+						newSlaveId = _deviceDirectory->findFreeSlaveID();
+						
+					}
+				}
+			}
+			break;
+		}
+		auto status = _modbus->getStatus();
+		if (readPending)
+		{
+			if (status == TaskNotStarted)
+			{
+				return false;
+			}
+			if (status >= TaskInProgress && status <= TaskAttemptTimeOut)
+			{
+				_modbus->work();
+				return false;
+			}
+			if (status >= TaskComplete)
+			{
+				readPending = false;
+				return false;
+			}
+		}
+		else
+		{
+			if (status == TaskComplete)
+			{
+				word[7] registers;
+				if (isReadRegsResponse(7, registers))
+				{
+					if (registers[0] == _majorVersion << 8 | _minorVersion)
+					{
+
+					}
+				}
+			}
+		}
 	}
 
-	word getDeviceNameLength()
-	{
-		return _deviceNameLength;
-	}
+	Master() { }
+
+	~Master() { }
 };
