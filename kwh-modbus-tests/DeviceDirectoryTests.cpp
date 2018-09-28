@@ -14,24 +14,8 @@
 #define DEFINE_TASK(FNAME, T_RET, TUPLE_VAR, ...) \
 typedef AsyncTaskSpecific<T_RET, TUPLE_VAR, __VA_ARGS__> FNAME ## _Task
 
-#define ASYNC_FUNC(FNAME) \
-FNAME ## _Task FNAME(FNAME ## _Task &state)
-
-//#define ASYNC_VARS(A) std::tuple<&A> __async_vars__
-//#define ASYNC_VARS(A, B) std::tuple<&A, &B> __async_vars__
-//#define ASYNC_VARS(A, B, C) std::tuple<&A, &B, &C> __async_vars__
-//#define ASYNC_VARS(A, B, C, D) std::tuple<&A, &B, &C, &D> __async_vars__
-//#define ASYNC_VARS(A, B, C, D, E) std::tuple<&A, &B, &C, &D, &E> __async_vars__
-//#define ASYNC_VARS(A, B, C, D, E, F) std::tuple<&A, &B, &C, &D, &E, &F> __async_vars__
-//#define ASYNC_VARS(A, B, C, D, E, F, G) std::tuple<&A, &B, &C, &D, &E, &F, &G> __async_vars__
-//#define ASYNC_VARS(A, B, C, D, E, F, G, H) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H> __async_vars__
-//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I> __async_vars__
-//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I, J) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I, &J> __async_vars__
-//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I, J, K) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I, &J, &K> __async_vars__
-//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I, J, K, L) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I, &J, &K, &L> __async_vars__
-//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I, J, K, L, M) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I, &J, &K, &L, &M> __async_vars__
-//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I, J, K, L, M, N) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I, &J, &K, &L, &M, &N> __async_vars__
-//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I, &J, &K, &L, &M, &N, &O> __async_vars__
+#define ASYNC_FUNC(FNAME, ...) \
+static bool FNAME(FNAME ## _Task::StateParam &state, __VA_ARGS__)
 
 #define ASYNC_VAR(NUM, NAME) auto &NAME = std::get<NUM>;
 
@@ -50,14 +34,17 @@ class AsyncTask
 {
 protected:
 	T *_result = nullptr;
+	virtual bool work() = 0;
 
 public:
-	virtual bool work() = 0;
+	bool operator()()
+	{
+		return work();
+	}
 	
 	bool completed()
 	{
 		return _result != nullptr;
-		
 	}
 
 	T& result()
@@ -71,21 +58,46 @@ public:
 template<class TReturn, class TupleVar, class ...TParams>
 class AsyncTaskSpecific : public AsyncTask<TReturn>
 {
-private:
-	std::tuple<TParams...> _parameters;
-	TupleVar _variables;
-	int _curLine;
-
 public:
 	struct StateParam
 	{
 	public:
-		TupleVar &_variables;
+		StateParam(TupleVar *vars)
+		{
+			_variables = vars;
+		}
+		TupleVar *_variables;
 	};
+private:
+	std::tuple<TParams...> _parameters;
+	bool(*_func)(StateParam&, TParams...);
+	TupleVar _variables;
+	int _curLine;
 
+	template<int ...> struct seq {};
+
+	template<int N, int ...S> struct gens : gens<N - 1, N - 1, S...> {};
+
+	template<int ...S> struct gens<0, S...> { typedef seq<S...> type; };
+
+protected:
 	bool work()
 	{
-		return true;
+		return callFunc(typename gens<sizeof...(TParams)>::type());
+	}
+
+	template<int ...S>
+	bool callFunc(seq<S...>)
+	{
+		StateParam sp = StateParam(&_variables);
+		return _func(sp, std::get<S>(_parameters) ...);
+	}
+public:
+
+	AsyncTaskSpecific(bool(*ptr)(StateParam&, TParams...), TParams... params)
+	{
+		_func = ptr;
+		_parameters = std::make_tuple(params...);
 	}
 };
 
@@ -110,7 +122,6 @@ public:
 	void SetUp()
 	{
 		int two = asyncTest(5);
-		AsyncTaskSpecific<std::tuple<byte, word>, std::tuple<word, int*>, char*> t;
 	}
 
 	void TearDown()
@@ -128,11 +139,13 @@ public:
 	DEFINE_TASK(asyncFunc, char*, TUPLE(byte, word), word, int*);
 	ASYNC_FUNC(asyncFunc, word p1, int* p2)
 	{
-		return state;
+		return true;
 	}
 
 	int asyncTest(int __resume_line__)
 	{
+		asyncFunc_Task tsk(asyncFunc, 3, new int());
+		
 		START_ASYNC;
 		YIELD_ASYNC;
 		return 1;
