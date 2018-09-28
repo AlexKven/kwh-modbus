@@ -9,6 +9,40 @@
 #define C_START int COUNTER_OFFSET = __COUNTER__
 #define C_CURRENT __COUNTER__ - COUNTER_OFFSET
 
+#define _C ,
+#define TUPLE(...) std::tuple<__VA_ARGS__>
+#define DEFINE_TASK(FNAME, T_RET, TUPLE_VAR, ...) \
+typedef AsyncTaskSpecific<T_RET, TUPLE_VAR, __VA_ARGS__> FNAME ## _Task
+
+#define ASYNC_FUNC(FNAME) \
+FNAME ## _Task FNAME(FNAME ## _Task &state)
+
+//#define ASYNC_VARS(A) std::tuple<&A> __async_vars__
+//#define ASYNC_VARS(A, B) std::tuple<&A, &B> __async_vars__
+//#define ASYNC_VARS(A, B, C) std::tuple<&A, &B, &C> __async_vars__
+//#define ASYNC_VARS(A, B, C, D) std::tuple<&A, &B, &C, &D> __async_vars__
+//#define ASYNC_VARS(A, B, C, D, E) std::tuple<&A, &B, &C, &D, &E> __async_vars__
+//#define ASYNC_VARS(A, B, C, D, E, F) std::tuple<&A, &B, &C, &D, &E, &F> __async_vars__
+//#define ASYNC_VARS(A, B, C, D, E, F, G) std::tuple<&A, &B, &C, &D, &E, &F, &G> __async_vars__
+//#define ASYNC_VARS(A, B, C, D, E, F, G, H) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H> __async_vars__
+//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I> __async_vars__
+//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I, J) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I, &J> __async_vars__
+//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I, J, K) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I, &J, &K> __async_vars__
+//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I, J, K, L) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I, &J, &K, &L> __async_vars__
+//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I, J, K, L, M) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I, &J, &K, &L, &M> __async_vars__
+//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I, J, K, L, M, N) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I, &J, &K, &L, &M, &N> __async_vars__
+//#define ASYNC_VARS(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O) std::tuple<&A, &B, &C, &D, &E, &F, &G, &H, &I, &J, &K, &L, &M, &N, &O> __async_vars__
+
+#define ASYNC_VAR(NUM, NAME) auto &NAME = std::get<NUM>;
+
+#define START_ASYNC \
+switch (__resume_line__) \
+{
+
+#define YIELD_ASYNC case __LINE__:
+
+#define END_ASYNC }
+
 using namespace fakeit;
 
 template<class T>
@@ -19,28 +53,43 @@ protected:
 
 public:
 	virtual bool work() = 0;
-
+	
 	bool completed()
 	{
 		return _result != nullptr;
+		
 	}
 
 	T& result()
 	{
+		std::tuple<int, int> t;
+		auto &num = std::get<1>(t);
 		return *_result;
 	}
 };
 
-template<class TupleParam, class TupleVar, class TReturn>
+template<class TReturn, class TupleVar, class ...TParams>
 class AsyncTaskSpecific : public AsyncTask<TReturn>
 {
 private:
-	TupleParam _parameters;
+	std::tuple<TParams...> _parameters;
 	TupleVar _variables;
+	int _curLine;
 
+public:
+	struct StateParam
+	{
+	public:
+		TupleVar &_variables;
+	};
 
+	bool work()
+	{
+		return true;
+	}
 };
 
+typedef int blah;
 
 
 class DeviceDirectoryTests : public ::testing::Test
@@ -60,11 +109,38 @@ protected:
 public:
 	void SetUp()
 	{
+		int two = asyncTest(5);
+		AsyncTaskSpecific<std::tuple<byte, word>, std::tuple<word, int*>, char*> t;
 	}
 
 	void TearDown()
 	{
 		delete deviceDirectory;
+	}
+
+	bool test(int p1, int p2)
+	{
+		int v1 = 0;
+		int v2 = 1;
+		return false;
+	}
+
+	DEFINE_TASK(asyncFunc, char*, TUPLE(byte, word), word, int*);
+	ASYNC_FUNC(asyncFunc, word p1, int* p2)
+	{
+		return state;
+	}
+
+	int asyncTest(int __resume_line__)
+	{
+		START_ASYNC;
+		YIELD_ASYNC;
+		return 1;
+		YIELD_ASYNC;
+		return 2;
+		YIELD_ASYNC;
+		return 3;
+		END_ASYNC;
 	}
 };
 
