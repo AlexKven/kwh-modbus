@@ -6,11 +6,8 @@
 #include <tuple>
 #define getMock() Mock<DeviceDirectory<byte*>>(*deviceDirectory)
 
-#define C_START int COUNTER_OFFSET = __COUNTER__
-#define C_CURRENT __COUNTER__ - COUNTER_OFFSET
-
 #define _C ,
-#define TUPLE(...) std::tuple<__VA_ARGS__>
+#define VARS(...) std::tuple<__VA_ARGS__>
 #define DEFINE_TASK(FNAME, T_RET, TUPLE_VAR, ...) \
 typedef AsyncTaskSpecific<T_RET, TUPLE_VAR, __VA_ARGS__> FNAME ## _Task
 
@@ -20,12 +17,15 @@ static bool FNAME(FNAME ## _Task::StateParam &state, __VA_ARGS__)
 #define ASYNC_VAR(NUM, NAME) auto &NAME = std::get<NUM>;
 
 #define START_ASYNC \
-switch (__resume_line__) \
-{
+switch (*state._line) \
+{ \
+	case 0:
 
-#define YIELD_ASYNC case __LINE__:
+#define YIELD_ASYNC *state._line = __LINE__; \
+return false; \
+case __LINE__:
 
-#define END_ASYNC }
+#define END_ASYNC } return true
 
 using namespace fakeit;
 
@@ -62,17 +62,19 @@ public:
 	struct StateParam
 	{
 	public:
-		StateParam(TupleVar *vars)
+		StateParam(TupleVar *vars, int *line)
 		{
 			_variables = vars;
+			_line = line;
 		}
 		TupleVar *_variables;
+		int *_line;
 	};
 private:
 	std::tuple<TParams...> _parameters;
 	bool(*_func)(StateParam&, TParams...);
 	TupleVar _variables;
-	int _curLine;
+	int _curLine = 0;
 
 	template<int ...> struct seq {};
 
@@ -89,7 +91,7 @@ protected:
 	template<int ...S>
 	bool callFunc(seq<S...>)
 	{
-		StateParam sp = StateParam(&_variables);
+		StateParam sp = StateParam(&_variables, &_curLine);
 		return _func(sp, std::get<S>(_parameters) ...);
 	}
 public:
@@ -121,7 +123,11 @@ protected:
 public:
 	void SetUp()
 	{
-		int two = asyncTest(5);
+		asyncFunc_Task tsk(asyncFunc, 3, new int());
+		while (!tsk())
+		{
+
+		}
 	}
 
 	void TearDown()
@@ -136,24 +142,22 @@ public:
 		return false;
 	}
 
-	DEFINE_TASK(asyncFunc, char*, TUPLE(byte, word), word, int*);
+	DEFINE_TASK(asyncFunc, char*, VARS(byte, word), word, int*);
 	ASYNC_FUNC(asyncFunc, word p1, int* p2)
 	{
-		return true;
+		START_ASYNC;
+		YIELD_ASYNC;
+		p1 = 2;
+		YIELD_ASYNC;
+		p1++;
+		YIELD_ASYNC;
+		p1 = 5;
+		END_ASYNC;
 	}
 
 	int asyncTest(int __resume_line__)
 	{
-		asyncFunc_Task tsk(asyncFunc, 3, new int());
 		
-		START_ASYNC;
-		YIELD_ASYNC;
-		return 1;
-		YIELD_ASYNC;
-		return 2;
-		YIELD_ASYNC;
-		return 3;
-		END_ASYNC;
 	}
 };
 
