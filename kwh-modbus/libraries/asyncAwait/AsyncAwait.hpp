@@ -14,7 +14,7 @@ typedef AsyncTaskSpecific<T_RET, TUPLE_VAR, ##__VA_ARGS__> FNAME ## _Task
 #define ASYNC_FUNC(FNAME, ...) \
 static bool FNAME(FNAME ## _Task::StateParam &state, ##__VA_ARGS__)
 
-#define CREATE_TASK(FNAME, TNAME, ...) FNAME ## _Task TNAME(FNAME, ##__VA_ARGS__);
+#define CREATE_TASK(FNAME, ...) FNAME ## _Task(FNAME, ##__VA_ARGS__);
 
 #define AWAIT_RESULT(FNAME, TNAME) \
 *state._line = __LINE__ \
@@ -74,7 +74,7 @@ public:
 	
 	bool completed()
 	{
-		return _result != nullptr;
+		return _isCompleted;
 	}
 
 	T& result()
@@ -86,6 +86,36 @@ public:
 	{
 		while (!work());
 		return result();
+	}
+};
+
+template<>
+class AsyncTask<void> : public IAsyncTask
+{
+protected:
+	char _resultVal[1];
+	void *_result = (void*)&_resultVal;
+	bool _isCompleted = false;
+	virtual bool work() = 0;
+
+public:
+	bool operator()()
+	{
+		return work();
+	}
+
+	bool completed()
+	{
+		return _isCompleted;
+	}
+
+	void result()
+	{
+	}
+
+	void runSynchronously()
+	{
+		while (!work());
 	}
 };
 
