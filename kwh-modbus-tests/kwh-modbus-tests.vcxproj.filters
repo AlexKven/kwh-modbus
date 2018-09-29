@@ -17,6 +17,7 @@
     <ClCompile Include="ModbusIntegrationTests.cpp" />
     <ClCompile Include="SlaveTests.cpp" />
     <ClCompile Include="DeviceDirectoryTests.cpp" />
+    <ClCompile Include="AsyncAwaitTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

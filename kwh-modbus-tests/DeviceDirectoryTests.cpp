@@ -3,108 +3,9 @@
 
 #include "../kwh-modbus/libraries/deviceDirectory/DeviceDirectory.hpp"
 #include "test_helpers.h"
-#include <tuple>
 #define getMock() Mock<DeviceDirectory<byte*>>(*deviceDirectory)
 
-#define _C ,
-#define VARS(...) std::tuple<__VA_ARGS__>
-#define DEFINE_TASK(FNAME, T_RET, TUPLE_VAR, ...) \
-typedef AsyncTaskSpecific<T_RET, TUPLE_VAR, __VA_ARGS__> FNAME ## _Task
-
-#define ASYNC_FUNC(FNAME, ...) \
-static bool FNAME(FNAME ## _Task::StateParam &state, __VA_ARGS__)
-
-#define ASYNC_VAR(NUM, NAME) auto &NAME = std::get<NUM>;
-
-#define START_ASYNC \
-switch (*state._line) \
-{ \
-	case 0:
-
-#define YIELD_ASYNC *state._line = __LINE__; \
-return false; \
-case __LINE__:
-
-#define END_ASYNC } return true
-
 using namespace fakeit;
-
-template<class T>
-class AsyncTask
-{
-protected:
-	T *_result = nullptr;
-	virtual bool work() = 0;
-
-public:
-	bool operator()()
-	{
-		return work();
-	}
-	
-	bool completed()
-	{
-		return _result != nullptr;
-	}
-
-	T& result()
-	{
-		std::tuple<int, int> t;
-		auto &num = std::get<1>(t);
-		return *_result;
-	}
-};
-
-template<class TReturn, class TupleVar, class ...TParams>
-class AsyncTaskSpecific : public AsyncTask<TReturn>
-{
-public:
-	struct StateParam
-	{
-	public:
-		StateParam(TupleVar *vars, int *line)
-		{
-			_variables = vars;
-			_line = line;
-		}
-		TupleVar *_variables;
-		int *_line;
-	};
-private:
-	std::tuple<TParams...> _parameters;
-	bool(*_func)(StateParam&, TParams...);
-	TupleVar _variables;
-	int _curLine = 0;
-
-	template<int ...> struct seq {};
-
-	template<int N, int ...S> struct gens : gens<N - 1, N - 1, S...> {};
-
-	template<int ...S> struct gens<0, S...> { typedef seq<S...> type; };
-
-protected:
-	bool work()
-	{
-		return callFunc(typename gens<sizeof...(TParams)>::type());
-	}
-
-	template<int ...S>
-	bool callFunc(seq<S...>)
-	{
-		StateParam sp = StateParam(&_variables, &_curLine);
-		return _func(sp, std::get<S>(_parameters) ...);
-	}
-public:
-
-	AsyncTaskSpecific(bool(*ptr)(StateParam&, TParams...), TParams... params)
-	{
-		_func = ptr;
-		_parameters = std::make_tuple(params...);
-	}
-};
-
-typedef int blah;
-
 
 class DeviceDirectoryTests : public ::testing::Test
 {
@@ -123,36 +24,11 @@ protected:
 public:
 	void SetUp()
 	{
-		asyncFunc_Task tsk(asyncFunc, 3, new int());
-		while (!tsk())
-		{
-
-		}
 	}
 
 	void TearDown()
 	{
 		delete deviceDirectory;
-	}
-
-	bool test(int p1, int p2)
-	{
-		int v1 = 0;
-		int v2 = 1;
-		return false;
-	}
-
-	DEFINE_TASK(asyncFunc, char*, VARS(byte, word), word, int*);
-	ASYNC_FUNC(asyncFunc, word p1, int* p2)
-	{
-		START_ASYNC;
-		YIELD_ASYNC;
-		p1 = 2;
-		YIELD_ASYNC;
-		p1++;
-		YIELD_ASYNC;
-		p1 = 5;
-		END_ASYNC;
 	}
 
 	int asyncTest(int __resume_line__)
@@ -189,6 +65,7 @@ TEST_F(DeviceDirectoryTests, getNameChar)
 	{
 		deviceDirectory->_deviceNames[i] = i;
 	}
+
 
 	ASSERT_EQ(deviceDirectory->getNameChar(1, 2), 9);
 	ASSERT_EQ(deviceDirectory->getNameChar(1, 6), 13);

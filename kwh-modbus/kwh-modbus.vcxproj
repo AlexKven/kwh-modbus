@@ -80,6 +80,7 @@
     <ClInclude Include="interfaces\ISystemFunctions.h" />
     <ClInclude Include="libraries\arduinoClasses\ArduinoSerial.h" />
     <ClInclude Include="libraries\arduinoClasses\ArduinoSystem.h" />
+    <ClInclude Include="libraries\asyncAwait\AsyncAwait.hpp" />
     <ClInclude Include="libraries\communicator\SystemParameters.h" />
     <ClInclude Include="libraries\deviceDirectory\DeviceDirectory.hpp" />
     <ClInclude Include="libraries\device\Device.h" />

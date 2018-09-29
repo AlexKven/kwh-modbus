@@ -97,6 +97,9 @@
     <ClInclude Include="libraries\deviceDirectory\DeviceDirectory.hpp">
       <Filter>libraries\deviceDirectory</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\asyncAwait\AsyncAwait.hpp">
+      <Filter>libraries\asyncAwait</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -155,6 +158,9 @@
     </Filter>
     <Filter Include="libraries\deviceDirectory">
       <UniqueIdentifier>{3d0f5a63-d783-4c2b-ae53-576ce23aaf32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\asyncAwait">
+      <UniqueIdentifier>{dcbb5ec3-39ad-4f8d-9997-1d07810a33b6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
