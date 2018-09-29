@@ -70,9 +70,15 @@ public:
 		END_ASYNC;
 	}
 
-	int asyncTest(int __resume_line__)
+	DEFINE_TASK(altMultiply, int, VARS(multiply_Task), int, int);
+	ASYNC_FUNC(altMultiply, int x, int y)
 	{
-
+		ASYNC_VAR(0, multiplyTask);
+		START_ASYNC;
+		CREATE_ASSIGN_TASK(multiplyTask, multiply, x, y);
+		AWAIT(multiplyTask);
+		RESULT_ASYNC(int, multiplyTask.result());
+		END_ASYNC;
 	}
 };
 
@@ -131,6 +137,27 @@ TEST_F(AsyncAwaitTests, Multiply)
 }
 
 TEST_F(AsyncAwaitTests, Multiply_Sync)
+{
+	auto task = CREATE_TASK(multiply, 4, 7);
+	ASSERT_FALSE(task.completed());
+	ASSERT_EQ(task.runSynchronously(), 28);
+}
+
+TEST_F(AsyncAwaitTests, AltMultiply)
+{
+	auto task = CREATE_TASK(multiply, 4, 7);
+	ASSERT_FALSE(task.completed());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task.completed());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_TRUE(task());
+	ASSERT_TRUE(task.completed());
+	ASSERT_EQ(task.result(), 28);
+}
+
+TEST_F(AsyncAwaitTests, AltMultiply_Sync)
 {
 	auto task = CREATE_TASK(multiply, 4, 7);
 	ASSERT_FALSE(task.completed());
