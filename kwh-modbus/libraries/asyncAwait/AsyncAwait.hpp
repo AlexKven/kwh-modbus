@@ -16,27 +16,34 @@ static bool FNAME(FNAME ## _Task::StateParam &state, ##__VA_ARGS__)
 
 #define CREATE_TASK(FNAME, ...) FNAME ## _Task(FNAME, ##__VA_ARGS__);
 
-#define AWAIT_RESULT(FNAME, TNAME) \
-*state._line = __LINE__ \
-if (TNAME()) { \
+#define CREATE_ASSIGN_TASK(VNAME, FNAME, ...) VNAME = FNAME ## _Task(FNAME, ##__VA_ARGS__);
+
+#define AWAIT_RESULT(TASK) \
+*state._line = __LINE__; \
+case __LINE__: \
+if (TASK()) { \
 *state._result = TNAME.result(); \
 return true; \
 } \
 else \
-return false; \
-case __LINE__:
+return false
 
-#define AWAIT_RETURN(FNAME, TNAME) \
-*state._line = __LINE__ \
-return (TNAME()); \
-case __LINE__:
+#define AWAIT_RETURN(TASK) \
+*state._line = __LINE__; \
+case __LINE__: \
+return (TASK())
+
+#define AWAIT(TASK) \
+*state._line = __LINE__; \
+case __LINE__: \
+if (!TASK()) return false
 
 #define ASYNC_VAR(NUM, NAME) auto &NAME = std::get<NUM>(*state._variables);
 #define ASYNC_VAR_INIT(NUM, NAME, INIT) auto &NAME = std::get<NUM>(*state._variables); \
 if (*state._line == 0) NAME = INIT;
 
 #define RETURN_ASYNC return true;
-#define RESULT_ASYNC(RESULT) *state._result = RESULT; \
+#define RESULT_ASYNC(TYPE, RESULT) *state._result = (TYPE)RESULT; \
 return true;
 
 #define START_ASYNC \
@@ -62,7 +69,6 @@ class AsyncTask : public IAsyncTask
 {
 protected:
 	char _resultVal[sizeof(T)];
-	T *_result = (T*)&_resultVal;
 	bool _isCompleted = false;
 	virtual bool work() = 0;
 
@@ -77,12 +83,13 @@ public:
 		return _isCompleted;
 	}
 
-	T& result()
+	T result()
 	{
-		return (T&)_resultVal;
+		T res = *(T*)_resultVal;
+		return res;
 	}
 
-	T& runSynchronously()
+	T runSynchronously()
 	{
 		while (!work());
 		return result();
@@ -158,14 +165,38 @@ protected:
 	template<int ...S>
 	bool callFunc(seq<S...>)
 	{
-		StateParam sp = StateParam(&_variables, &_curLine, _result);
+		StateParam sp = StateParam(&_variables, &_curLine, (TReturn*)&_resultVal);
 		return _func(sp, std::get<S>(_parameters) ...);
 	}
-public:
 
+	template <std::size_t ...I, typename T1, typename T2>
+	void copy_tuple_impl(T1 const & from, T2 & to, std::index_sequence<I...>)
+	{
+		int dummy[] = { (std::get<I>(to) = std::get<I>(from), 0)... };
+		static_cast<void>(dummy);
+	}
+public:
 	AsyncTaskSpecific(bool(*ptr)(StateParam&, TParams...), TParams... params)
 	{
 		_func = ptr;
 		_parameters = std::make_tuple(params...);
+	}
+
+	AsyncTaskSpecific(AsyncTaskSpecific<TReturn, TupleVar, TParams...> &copy)
+	{
+		_func = copy._func;
+		copy_tuple_impl(copy._parameters, _parameters);
+		copy_tuple_impl(copy._variables, _variables);
+		_isCompleted = copy._isCompleted;
+		for (int i = 0; i < sizeof(TResult); i++)
+		{
+			_resultVal[i] = copy._resultVal[i];
+		}
+		_curLine = copy._curLine;
+	}
+
+	AsyncTaskSpecific()
+	{
+		_func = nullptr;
 	}
 };

@@ -49,7 +49,7 @@ public:
 			acc += y;
 			YIELD_ASYNC;
 		}
-		RESULT_ASYNC(acc);
+		RESULT_ASYNC(int, acc);
 		END_ASYNC;
 	}
 
@@ -60,13 +60,13 @@ public:
 		ASYNC_VAR_INIT(1, acc, 1);
 		ASYNC_VAR(2, multiplyTask);
 		START_ASYNC;
-		for (i = 0; i < x; i++)
+		for (i = 0; i < y; i++)
 		{
-			multiplyTask = CREATE_TASK(multiply, acc, y);
-			acc += y;
-			YIELD_ASYNC;
+			CREATE_ASSIGN_TASK(multiplyTask, multiply, acc, x);
+			AWAIT(multiplyTask);
+			acc = multiplyTask.result();
 		}
-		RESULT_ASYNC(acc);
+		RESULT_ASYNC(int, acc);
 		END_ASYNC;
 	}
 
@@ -151,4 +151,28 @@ TEST_F(AsyncAwaitTests, MultiplyZero_Sync)
 	auto task = CREATE_TASK(multiply, 0, 7);
 	ASSERT_FALSE(task.completed());
 	ASSERT_EQ(task.runSynchronously(), 0);
+}
+
+TEST_F(AsyncAwaitTests, Power)
+{
+	auto task = CREATE_TASK(power, 2, 3);
+	ASSERT_FALSE(task.completed());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task.completed());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_TRUE(task());
+	ASSERT_TRUE(task.completed());
+	ASSERT_EQ(task.result(), 8);
+}
+
+TEST_F(AsyncAwaitTests, Power_Sync)
+{
+	auto task = CREATE_TASK(power, 2, 3);
+	ASSERT_FALSE(task.completed());
+	ASSERT_EQ(task.runSynchronously(), 8);
 }
