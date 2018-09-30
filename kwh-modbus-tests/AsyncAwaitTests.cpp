@@ -80,6 +80,29 @@ public:
 		RESULT_ASYNC(int, multiplyTask.result());
 		END_ASYNC;
 	}
+
+	class Class;
+	DEFINE_CLASS_TASK(Class, multiply, int, VARS(int, int), int);
+
+	class Class
+	{
+	public:
+		int x = 5;
+
+		ASYNC_CLASS_FUNC(Class, multiply, int y)
+		{
+			ASYNC_VAR(0, i);
+			ASYNC_VAR_INIT(1, acc, 0);
+			START_ASYNC;
+			for (i = 0; i < x; i++)
+			{
+				acc += y;
+				YIELD_ASYNC;
+			}
+			RESULT_ASYNC(int, acc);
+			END_ASYNC;
+		}
+	};
 };
 
 TEST_F(AsyncAwaitTests, NoParams_FiveYields)
@@ -202,4 +225,35 @@ TEST_F(AsyncAwaitTests, Power_Sync)
 	auto task = CREATE_TASK(power, 2, 3);
 	ASSERT_FALSE(task.completed());
 	ASSERT_EQ(task.runSynchronously(), 8);
+}
+
+TEST_F(AsyncAwaitTests, ClassTask_Multiply)
+{
+	Class cls;
+	
+	auto task = CREATE_CLASS_TASK(Class, &cls, multiply, 7);
+	ASSERT_FALSE(task.completed());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task.completed());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_TRUE(task());
+	ASSERT_TRUE(task.completed());
+	ASSERT_EQ(task.result(), 35);
+}
+
+TEST_F(AsyncAwaitTests, ClassTask_Multiply_Sync)
+{
+	Class cls;
+
+	auto task = CREATE_CLASS_TASK(Class, &cls, multiply, 7);
+	cls.x = 6;
+	ASSERT_FALSE(task.completed());
+	ASSERT_EQ(task.runSynchronously(), 42);
+	cls.x = 7;
+	task = CREATE_CLASS_TASK(Class, &cls, multiply, 7);
+	ASSERT_FALSE(task.completed());
+	ASSERT_EQ(task.runSynchronously(), 49);
 }

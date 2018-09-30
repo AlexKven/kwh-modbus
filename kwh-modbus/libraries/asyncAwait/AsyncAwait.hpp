@@ -10,13 +10,22 @@
 #define VARS(...) std::tuple<__VA_ARGS__>
 #define DEFINE_TASK(FNAME, T_RET, TUPLE_VAR, ...) \
 typedef AsyncTaskSpecific<T_RET, TUPLE_VAR, ##__VA_ARGS__> FNAME ## _Task
+#define DEFINE_CLASS_TASK(CNAME, FNAME, T_RET, TUPLE_VAR, ...) \
+typedef AsyncClassTaskSpecific<CNAME, T_RET, TUPLE_VAR, ##__VA_ARGS__> FNAME ## _Task_ ## CNAME
 
 #define ASYNC_FUNC(FNAME, ...) \
 static bool FNAME(FNAME ## _Task::StateParam &state, ##__VA_ARGS__)
 
+#define ASYNC_CLASS_FUNC(CNAME, FNAME, ...) \
+bool FNAME(FNAME ## _Task_ ## CNAME::StateParam &state, ##__VA_ARGS__)
+
 #define CREATE_TASK(FNAME, ...) FNAME ## _Task(FNAME, ##__VA_ARGS__);
 
 #define CREATE_ASSIGN_TASK(VNAME, FNAME, ...) VNAME = FNAME ## _Task(FNAME, ##__VA_ARGS__);
+
+#define CREATE_CLASS_TASK(CNAME, CVALUE, FNAME, ...) FNAME ## _Task_ ## CNAME(&CNAME::FNAME, CVALUE, ##__VA_ARGS__);
+
+#define CREATE_ASSIGN_CLASS_TASK(VNAME, CNAME, CVALUE, FNAME, ...) VNAME = FNAME ## _Task_ ## CNAME(FNAME, CVALUE, ##__VA_ARGS__);
 
 #define AWAIT_RESULT(TASK) \
 *state._line = __LINE__; \
@@ -182,7 +191,7 @@ public:
 		_parameters = std::make_tuple(params...);
 	}
 
-	AsyncTaskSpecific(AsyncTaskSpecific<TReturn, TupleVar, TParams...> &copy)
+	AsyncTaskSpecific(AsyncTaskSpecific<void, TReturn, TupleVar, TParams...> &copy)
 	{
 		_func = copy._func;
 		copy_tuple_impl(copy._parameters, _parameters);
@@ -196,6 +205,84 @@ public:
 	}
 
 	AsyncTaskSpecific()
+	{
+		_func = nullptr;
+	}
+};
+
+template<class TCls, class TReturn, class TupleVar, class ...TParams>
+class AsyncClassTaskSpecific : public AsyncTask<TReturn>
+{
+public:
+	struct StateParam
+	{
+	public:
+		StateParam(TupleVar *vars, int *line, TReturn *result)
+		{
+			_variables = vars;
+			_line = line;
+			_result = result;
+		}
+		TupleVar *_variables;
+		int *_line;
+		TReturn *_result;
+	};
+private:
+	std::tuple<TParams...> _parameters;
+	bool (TCls::*_func)(StateParam&, TParams...);
+	TCls *_funcLocation;
+	TupleVar _variables;
+	int _curLine = 0;
+
+	template<int ...> struct seq {};
+
+	template<int N, int ...S> struct gens : gens<N - 1, N - 1, S...> {};
+
+	template<int ...S> struct gens<0, S...> { typedef seq<S...> type; };
+
+protected:
+	bool work()
+	{
+		_isCompleted = callFunc(typename gens<sizeof...(TParams)>::type());
+		return _isCompleted;
+	}
+
+	template<int ...S>
+	bool callFunc(seq<S...>)
+	{
+		StateParam sp = StateParam(&_variables, &_curLine, (TReturn*)&_resultVal);
+		return (_funcLocation->*_func)(sp, std::get<S>(_parameters) ...);
+	}
+
+	template <std::size_t ...I, typename T1, typename T2>
+	void copy_tuple_impl(T1 const & from, T2 & to, std::index_sequence<I...>)
+	{
+		int dummy[] = { (std::get<I>(to) = std::get<I>(from), 0)... };
+		static_cast<void>(dummy);
+	}
+public:
+	AsyncClassTaskSpecific(bool(TCls::*ptr)(StateParam&, TParams...), TCls *funcLocation, TParams... params)
+	{
+		_func = ptr;
+		_funcLocation = funcLocation;
+		_parameters = std::make_tuple(params...);
+	}
+
+	AsyncClassTaskSpecific(AsyncTaskSpecific<TCls, TReturn, TupleVar, TParams...> &copy)
+	{
+		_func = copy._func;
+		_funcLocation = copy._funcLocation;
+		copy_tuple_impl(copy._parameters, _parameters);
+		copy_tuple_impl(copy._variables, _variables);
+		_isCompleted = copy._isCompleted;
+		for (int i = 0; i < sizeof(TResult); i++)
+		{
+			_resultVal[i] = copy._resultVal[i];
+		}
+		_curLine = copy._curLine;
+	}
+
+	AsyncClassTaskSpecific()
 	{
 		_func = nullptr;
 	}
