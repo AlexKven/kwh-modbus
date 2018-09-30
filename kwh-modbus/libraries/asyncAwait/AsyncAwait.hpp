@@ -1,10 +1,109 @@
-#include <tuple>
 #ifdef NO_ARDUINO
 #include "../../noArduino/TestHelpers.h"
 #include "../../noArduino/ArduinoMacros.h"
 #else
 #include "../arduinoMacros/arduinoMacros.h"
 #endif
+
+//
+// Tuple implementation below from https://codereview.stackexchange.com/questions/44546/very-basic-tuple-implementation, question part
+//
+
+constexpr bool GreaterThanZero(int N)
+{
+	return N > 0;
+}
+
+template <int, typename...>
+struct Helper;
+
+template <int N, typename Head, typename... Tail>
+struct Helper<N, Head, Tail...>
+{
+	typedef typename Helper<N - 1, Tail...>::type type;
+};
+
+template <typename Head, typename... Tail>
+struct Helper<0, Head, Tail...>
+{
+	typedef Head& type;
+};
+
+template <int, typename...>
+class TupleImpl;
+
+template <>
+class TupleImpl<-1>
+{
+
+};
+
+template <typename Head>
+class TupleImpl<0, Head>
+{
+protected:
+	Head head;
+
+public:
+	template <int Depth>
+	Head& get()
+	{
+		static_assert(Depth == 0, "Requested member deeper than Tuple");
+		return head;
+	}
+
+	template <int Depth>
+	const Head& get() const
+	{
+		static_assert(Depth == 0, "Requested member deeper than Tuple");
+		return head;
+	}
+};
+
+template <int N, typename Head, typename... Tail>
+class TupleImpl<N, Head, Tail...>
+{
+protected:
+	Head head;
+	TupleImpl<N - 1, Tail...> tail;
+
+
+
+public:
+	template <int M>
+	typename std::enable_if<M == 0, Head&>::type get()
+	{
+		return head;
+	}
+
+	template <int M>
+	typename std::enable_if<GreaterThanZero(M), typename Helper<M, Head, Tail...>::type>::type get()
+	{
+		return tail.get<M - 1>();
+	}
+
+	template <int M>
+	typename std::enable_if<M == 0, const Head&>::type get() const
+	{
+		return head;
+	}
+
+	template <int M>
+	typename std::enable_if<GreaterThanZero(M), typename Helper<M, Head, Tail...>::type>::type get() const
+	{
+		return tail.get<M - 1>();
+	}
+};
+
+template <typename... Elements>
+class Tuple : public TupleImpl<sizeof...(Elements) - 1, Elements...>
+{
+public:
+	static constexpr std::size_t size()
+	{
+		return sizeof...(Elements);
+	}
+};
 
 #define _C ,
 #define VARS(...) std::tuple<__VA_ARGS__>
