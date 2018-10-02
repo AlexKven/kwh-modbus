@@ -10,6 +10,11 @@ class AsyncAwaitTests : public ::testing::Test
 public:
 	void SetUp()
 	{
+		Tuple<byte, word, int> tpl;
+		Set<0, byte, word, int>(tpl, 1, 3, 2);
+		auto p1 = Get<0>(tpl);
+		auto p2 = Get<1>(tpl);
+		auto p3 = Get<2>(tpl);
 	}
 
 	void TearDown()

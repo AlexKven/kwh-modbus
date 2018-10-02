@@ -100,6 +100,9 @@
     <ClInclude Include="libraries\asyncAwait\AsyncAwait.hpp">
       <Filter>libraries\asyncAwait</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\tuple\Tuple.hpp">
+      <Filter>libraries\tuple</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -161,6 +164,9 @@
     </Filter>
     <Filter Include="libraries\asyncAwait">
       <UniqueIdentifier>{dcbb5ec3-39ad-4f8d-9997-1d07810a33b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\tuple">
+      <UniqueIdentifier>{ec4b1875-2445-4a02-ae32-6a1f46b34223}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

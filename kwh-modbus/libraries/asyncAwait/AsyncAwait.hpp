@@ -4,109 +4,14 @@
 #else
 #include "../arduinoMacros/arduinoMacros.h"
 #endif
+#include "../tuple/Tuple.hpp"
 
 //
 // Tuple implementation below from https://codereview.stackexchange.com/questions/44546/very-basic-tuple-implementation, question part
 //
 
-constexpr bool GreaterThanZero(int N)
-{
-	return N > 0;
-}
-
-template <int, typename...>
-struct Helper;
-
-template <int N, typename Head, typename... Tail>
-struct Helper<N, Head, Tail...>
-{
-	typedef typename Helper<N - 1, Tail...>::type type;
-};
-
-template <typename Head, typename... Tail>
-struct Helper<0, Head, Tail...>
-{
-	typedef Head& type;
-};
-
-template <int, typename...>
-class TupleImpl;
-
-template <>
-class TupleImpl<-1>
-{
-
-};
-
-template <typename Head>
-class TupleImpl<0, Head>
-{
-protected:
-	Head head;
-
-public:
-	template <int Depth>
-	Head& get()
-	{
-		static_assert(Depth == 0, "Requested member deeper than Tuple");
-		return head;
-	}
-
-	template <int Depth>
-	const Head& get() const
-	{
-		static_assert(Depth == 0, "Requested member deeper than Tuple");
-		return head;
-	}
-};
-
-template <int N, typename Head, typename... Tail>
-class TupleImpl<N, Head, Tail...>
-{
-protected:
-	Head head;
-	TupleImpl<N - 1, Tail...> tail;
-
-
-
-public:
-	template <int M>
-	typename std::enable_if<M == 0, Head&>::type get()
-	{
-		return head;
-	}
-
-	template <int M>
-	typename std::enable_if<GreaterThanZero(M), typename Helper<M, Head, Tail...>::type>::type get()
-	{
-		return tail.get<M - 1>();
-	}
-
-	template <int M>
-	typename std::enable_if<M == 0, const Head&>::type get() const
-	{
-		return head;
-	}
-
-	template <int M>
-	typename std::enable_if<GreaterThanZero(M), typename Helper<M, Head, Tail...>::type>::type get() const
-	{
-		return tail.get<M - 1>();
-	}
-};
-
-template <typename... Elements>
-class Tuple : public TupleImpl<sizeof...(Elements) - 1, Elements...>
-{
-public:
-	static constexpr std::size_t size()
-	{
-		return sizeof...(Elements);
-	}
-};
-
 #define _C ,
-#define VARS(...) std::tuple<__VA_ARGS__>
+#define VARS(...) Tuple<__VA_ARGS__>
 #define DEFINE_TASK(FNAME, T_RET, TUPLE_VAR, ...) \
 typedef AsyncTaskSpecific<T_RET, TUPLE_VAR, ##__VA_ARGS__> FNAME ## _Task
 #define DEFINE_CLASS_TASK(CNAME, FNAME, T_RET, TUPLE_VAR, ...) \
@@ -146,8 +51,8 @@ return (TASK())
 case __LINE__: \
 if (!TASK()) return false
 
-#define ASYNC_VAR(NUM, NAME) auto &NAME = std::get<NUM>(*state._variables);
-#define ASYNC_VAR_INIT(NUM, NAME, INIT) auto &NAME = std::get<NUM>(*state._variables); \
+#define ASYNC_VAR(NUM, NAME) auto &NAME = Get<NUM>(*state._variables);
+#define ASYNC_VAR_INIT(NUM, NAME, INIT) auto &NAME = Get<NUM>(*state._variables); \
 if (*state._line == 0) NAME = INIT;
 
 #define RETURN_ASYNC return true;
@@ -252,7 +157,7 @@ public:
 		TReturn *_result;
 	};
 private:
-	std::tuple<TParams...> _parameters;
+	Tuple<TParams...> _parameters;
 	bool(*_func)(StateParam&, TParams...);
 	TupleVar _variables;
 	int _curLine = 0;
@@ -274,20 +179,15 @@ protected:
 	bool callFunc(seq<S...>)
 	{
 		StateParam sp = StateParam(&_variables, &_curLine, (TReturn*)&_resultVal);
-		return _func(sp, std::get<S>(_parameters) ...);
-	}
-
-	template <std::size_t ...I, typename T1, typename T2>
-	void copy_tuple_impl(T1 const & from, T2 & to, std::index_sequence<I...>)
-	{
-		int dummy[] = { (std::get<I>(to) = std::get<I>(from), 0)... };
-		static_cast<void>(dummy);
+		return _func(sp, Get<S>(_parameters) ...);
 	}
 public:
 	AsyncTaskSpecific(bool(*ptr)(StateParam&, TParams...), TParams... params)
 	{
 		_func = ptr;
-		_parameters = std::make_tuple(params...);
+		Set<0, TParams...>(_parameters, params...);
+		//_parameters.setItems(params...);
+		//_parameters = std::make_tuple(params...);
 	}
 
 	AsyncTaskSpecific(AsyncTaskSpecific<void, TReturn, TupleVar, TParams...> &copy)
@@ -327,7 +227,7 @@ public:
 		TReturn *_result;
 	};
 private:
-	std::tuple<TParams...> _parameters;
+	Tuple<TParams...> _parameters;
 	bool (TCls::*_func)(StateParam&, TParams...);
 	TCls *_funcLocation;
 	TupleVar _variables;
@@ -350,13 +250,13 @@ protected:
 	bool callFunc(seq<S...>)
 	{
 		StateParam sp = StateParam(&_variables, &_curLine, (TReturn*)&_resultVal);
-		return (_funcLocation->*_func)(sp, std::get<S>(_parameters) ...);
+		return (_funcLocation->*_func)(sp, Get<S>(_parameters) ...);
 	}
 
-	template <std::size_t ...I, typename T1, typename T2>
+	template <size_t ...I, typename T1, typename T2>
 	void copy_tuple_impl(T1 const & from, T2 & to, std::index_sequence<I...>)
 	{
-		int dummy[] = { (std::get<I>(to) = std::get<I>(from), 0)... };
+		int dummy[] = { (Get<I>(to) = Get<I>(from), 0)... };
 		static_cast<void>(dummy);
 	}
 public:
@@ -364,15 +264,17 @@ public:
 	{
 		_func = ptr;
 		_funcLocation = funcLocation;
-		_parameters = std::make_tuple(params...);
+		Set<0, TParams...>(_parameters, params...);
 	}
 
 	AsyncClassTaskSpecific(AsyncTaskSpecific<TCls, TReturn, TupleVar, TParams...> &copy)
 	{
 		_func = copy._func;
 		_funcLocation = copy._funcLocation;
-		copy_tuple_impl(copy._parameters, _parameters);
-		copy_tuple_impl(copy._variables, _variables);
+
+		Copy(_parameters, copy._parameters);
+		Copy(_variables, copy._variables);
+
 		_isCompleted = copy._isCompleted;
 		for (int i = 0; i < sizeof(TResult); i++)
 		{
