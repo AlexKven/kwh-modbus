@@ -85,6 +85,24 @@ protected:
 	bool _isCompleted = false;
 	virtual bool work() = 0;
 
+	void setIsCompleted(bool val)
+	{
+		_isCompleted = val;
+	}
+
+	char *getResultVal()
+	{
+		return _resultVal;
+	}
+
+	void setResultVal(char* val)
+	{
+		for (int i = 0; i < sizeof(T); i++)
+		{
+			_resultVal[i] = val[i];
+		}
+	}
+
 public:
 	bool operator()()
 	{
@@ -117,6 +135,21 @@ protected:
 	void *_result = (void*)&_resultVal;
 	bool _isCompleted = false;
 	virtual bool work() = 0;
+
+	void setIsCompleted(bool val)
+	{
+		_isCompleted = val;
+	}
+
+	char *getResultVal()
+	{
+		return _resultVal;
+	}
+
+	void setResultVal(char* val)
+	{
+		_resultVal[0] = val[0];
+	}
 
 public:
 	bool operator()()
@@ -171,14 +204,14 @@ private:
 protected:
 	bool work()
 	{
-		_isCompleted = callFunc(typename gens<sizeof...(TParams)>::type());
-		return _isCompleted;
+		setIsCompleted(callFunc(typename gens<sizeof...(TParams)>::type()));
+		return completed();
 	}
 
 	template<int ...S>
 	bool callFunc(seq<S...>)
 	{
-		StateParam sp = StateParam(&_variables, &_curLine, (TReturn*)&_resultVal);
+		StateParam sp = StateParam(&_variables, &_curLine, (TReturn*)getResultVal());
 		return _func(sp, Get<S>(_parameters) ...);
 	}
 public:
@@ -195,11 +228,8 @@ public:
 		_func = copy._func;
 		copy_tuple_impl(copy._parameters, _parameters);
 		copy_tuple_impl(copy._variables, _variables);
-		_isCompleted = copy._isCompleted;
-		for (int i = 0; i < sizeof(TResult); i++)
-		{
-			_resultVal[i] = copy._resultVal[i];
-		}
+		setIsCompleted(copy.completed());
+		setResultVal(copy.getResultVal());
 		_curLine = copy._curLine;
 	}
 
@@ -242,22 +272,15 @@ private:
 protected:
 	bool work()
 	{
-		_isCompleted = callFunc(typename gens<sizeof...(TParams)>::type());
-		return _isCompleted;
+		setIsCompleted(callFunc(typename gens<sizeof...(TParams)>::type()));
+		return completed();
 	}
 
 	template<int ...S>
 	bool callFunc(seq<S...>)
 	{
-		StateParam sp = StateParam(&_variables, &_curLine, (TReturn*)&_resultVal);
+		StateParam sp = StateParam(&_variables, &_curLine, (TReturn*)getResultVal());
 		return (_funcLocation->*_func)(sp, Get<S>(_parameters) ...);
-	}
-
-	template <size_t ...I, typename T1, typename T2>
-	void copy_tuple_impl(T1 const & from, T2 & to, std::index_sequence<I...>)
-	{
-		int dummy[] = { (Get<I>(to) = Get<I>(from), 0)... };
-		static_cast<void>(dummy);
 	}
 public:
 	AsyncClassTaskSpecific(bool(TCls::*ptr)(StateParam&, TParams...), TCls *funcLocation, TParams... params)
@@ -275,11 +298,8 @@ public:
 		Copy(_parameters, copy._parameters);
 		Copy(_variables, copy._variables);
 
-		_isCompleted = copy._isCompleted;
-		for (int i = 0; i < sizeof(TResult); i++)
-		{
-			_resultVal[i] = copy._resultVal[i];
-		}
+		setIsCompleted(copy.completed());
+		setResultVal(copy.getResultVal());
 		_curLine = copy._curLine;
 	}
 
