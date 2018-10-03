@@ -87,14 +87,14 @@ public:
 	}
 
 	class Class;
-	DEFINE_CLASS_TASK(Class, multiply, int, VARS(int, int), int);
+	DEFINE_CLASS_TASK(Class, classMultiply, int, VARS(int, int), int);
 
 	class Class
 	{
 	public:
 		int x = 5;
 
-		ASYNC_CLASS_FUNC(Class, multiply, int y)
+		ASYNC_CLASS_FUNC(Class, classMultiply, int y)
 		{
 			ASYNC_VAR(0, i);
 			ASYNC_VAR_INIT(1, acc, 0);
@@ -236,7 +236,7 @@ TEST_F(AsyncAwaitTests, ClassTask_Multiply)
 {
 	Class cls;
 	
-	auto task = CREATE_CLASS_TASK(Class, &cls, multiply, 7);
+	auto task = CREATE_CLASS_TASK(Class, &cls, classMultiply, 7);
 	ASSERT_FALSE(task.completed());
 	ASSERT_FALSE(task());
 	ASSERT_FALSE(task.completed());
@@ -253,12 +253,12 @@ TEST_F(AsyncAwaitTests, ClassTask_Multiply_Sync)
 {
 	Class cls;
 
-	auto task = CREATE_CLASS_TASK(Class, &cls, multiply, 7);
+	auto task = CREATE_CLASS_TASK(Class, &cls, classMultiply, 7);
 	cls.x = 6;
 	ASSERT_FALSE(task.completed());
 	ASSERT_EQ(task.runSynchronously(), 42);
 	cls.x = 7;
-	task = CREATE_CLASS_TASK(Class, &cls, multiply, 7);
+	task = CREATE_CLASS_TASK(Class, &cls, classMultiply, 7);
 	ASSERT_FALSE(task.completed());
 	ASSERT_EQ(task.runSynchronously(), 49);
 }

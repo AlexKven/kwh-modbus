@@ -11,25 +11,29 @@
 //
 
 #define _C ,
+#define ESCAPE(...) __VA_ARGS__
 #define VARS(...) Tuple<__VA_ARGS__>
 #define DEFINE_TASK(FNAME, T_RET, TUPLE_VAR, ...) \
-typedef AsyncTaskSpecific<T_RET, TUPLE_VAR, ##__VA_ARGS__> FNAME ## _Task
+typedef AsyncTaskSpecific<T_RET, TUPLE_VAR, ##__VA_ARGS__> FNAME ## _Task; \
+typedef StateParam<T_RET, TUPLE_VAR> FNAME ## _Param
+
 #define DEFINE_CLASS_TASK(CNAME, FNAME, T_RET, TUPLE_VAR, ...) \
-typedef AsyncClassTaskSpecific<CNAME, T_RET, TUPLE_VAR, ##__VA_ARGS__> FNAME ## _Task_ ## CNAME
+typedef AsyncClassTaskSpecific<CNAME, T_RET, TUPLE_VAR, ##__VA_ARGS__> FNAME ## _Task; \
+typedef StateParam<T_RET, TUPLE_VAR> FNAME ## _Param
 
 #define ASYNC_FUNC(FNAME, ...) \
-static bool FNAME(FNAME ## _Task::StateParam &state, ##__VA_ARGS__)
+static bool FNAME(FNAME ## _Param &state, ##__VA_ARGS__)
 
 #define ASYNC_CLASS_FUNC(CNAME, FNAME, ...) \
-bool FNAME(FNAME ## _Task_ ## CNAME::StateParam &state, ##__VA_ARGS__)
+bool FNAME(FNAME ## _Param &state, ##__VA_ARGS__)
 
 #define CREATE_TASK(FNAME, ...) FNAME ## _Task(FNAME, ##__VA_ARGS__);
 
 #define CREATE_ASSIGN_TASK(VNAME, FNAME, ...) VNAME = FNAME ## _Task(FNAME, ##__VA_ARGS__);
 
-#define CREATE_CLASS_TASK(CNAME, CVALUE, FNAME, ...) FNAME ## _Task_ ## CNAME(&CNAME::FNAME, CVALUE, ##__VA_ARGS__);
+#define CREATE_CLASS_TASK(CNAME, CVALUE, FNAME, ...) FNAME ## _Task(&CNAME::FNAME, CVALUE, ##__VA_ARGS__);
 
-#define CREATE_ASSIGN_CLASS_TASK(VNAME, CNAME, CVALUE, FNAME, ...) VNAME = FNAME ## _Task_ ## CNAME(FNAME, CVALUE, ##__VA_ARGS__);
+#define CREATE_ASSIGN_CLASS_TASK(VNAME, CNAME, CVALUE, FNAME, ...) VNAME = FNAME ## _Task(FNAME, CVALUE, ##__VA_ARGS__);
 
 #define AWAIT_RESULT(TASK) \
 *state._line = __LINE__; \
@@ -172,26 +176,27 @@ public:
 	}
 };
 
+template<class TReturn, class TupleVar>
+struct StateParam
+{
+public:
+	StateParam(TupleVar *vars, int *line, TReturn *result)
+	{
+		_variables = vars;
+		_line = line;
+		_result = result;
+	}
+	TupleVar *_variables;
+	int *_line;
+	TReturn *_result;
+};
+
 template<class TReturn, class TupleVar, class ...TParams>
 class AsyncTaskSpecific : public AsyncTask<TReturn>
 {
-public:
-	struct StateParam
-	{
-	public:
-		StateParam(TupleVar *vars, int *line, TReturn *result)
-		{
-			_variables = vars;
-			_line = line;
-			_result = result;
-		}
-		TupleVar *_variables;
-		int *_line;
-		TReturn *_result;
-	};
 private:
 	Tuple<TParams...> _parameters;
-	bool(*_func)(StateParam&, TParams...);
+	bool(*_func)(StateParam<TReturn, TupleVar>&, TParams...);
 	TupleVar _variables;
 	int _curLine = 0;
 
@@ -211,11 +216,11 @@ protected:
 	template<int ...S>
 	bool callFunc(seq<S...>)
 	{
-		StateParam sp = StateParam(&_variables, &_curLine, (TReturn*)getResultVal());
+		StateParam<TReturn, TupleVar> sp = StateParam<TReturn, TupleVar>(&_variables, &_curLine, (TReturn*)getResultVal());
 		return _func(sp, Get<S>(_parameters) ...);
 	}
 public:
-	AsyncTaskSpecific(bool(*ptr)(StateParam&, TParams...), TParams... params)
+	AsyncTaskSpecific(bool(*ptr)(StateParam<TReturn, TupleVar>&, TParams...), TParams... params)
 	{
 		_func = ptr;
 		Set<0, TParams...>(_parameters, params...);
@@ -242,23 +247,9 @@ public:
 template<class TCls, class TReturn, class TupleVar, class ...TParams>
 class AsyncClassTaskSpecific : public AsyncTask<TReturn>
 {
-public:
-	struct StateParam
-	{
-	public:
-		StateParam(TupleVar *vars, int *line, TReturn *result)
-		{
-			_variables = vars;
-			_line = line;
-			_result = result;
-		}
-		TupleVar *_variables;
-		int *_line;
-		TReturn *_result;
-	};
 private:
 	Tuple<TParams...> _parameters;
-	bool (TCls::*_func)(StateParam&, TParams...);
+	bool (TCls::*_func)(StateParam<TReturn, TupleVar>&, TParams...);
 	TCls *_funcLocation;
 	TupleVar _variables;
 	int _curLine = 0;
@@ -279,11 +270,11 @@ protected:
 	template<int ...S>
 	bool callFunc(seq<S...>)
 	{
-		StateParam sp = StateParam(&_variables, &_curLine, (TReturn*)getResultVal());
+		StateParam<TReturn, TupleVar> sp = StateParam<TReturn, TupleVar>(&_variables, &_curLine, (TReturn*)getResultVal());
 		return (_funcLocation->*_func)(sp, Get<S>(_parameters) ...);
 	}
 public:
-	AsyncClassTaskSpecific(bool(TCls::*ptr)(StateParam&, TParams...), TCls *funcLocation, TParams... params)
+	AsyncClassTaskSpecific(bool(TCls::*ptr)(StateParam<TReturn, TupleVar>&, TParams...), TCls *funcLocation, TParams... params)
 	{
 		_func = ptr;
 		_funcLocation = funcLocation;

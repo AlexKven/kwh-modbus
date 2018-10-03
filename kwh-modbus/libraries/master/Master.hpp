@@ -6,7 +6,7 @@
 #endif
 
 #include "../device/Device.h"
-#include <tuple>
+#include "../asyncAwait/AsyncAwait.hpp"
 
 #define ENSURE(statement) if (!(statement)) return false
 
@@ -19,7 +19,12 @@ line##__line__##: \
 await_state = __LINE__ \
 if (!statement) return false;
 
-
+enum SearchResultCode : byte
+{
+	notFound = 0,
+	found = 1,
+	error = 2
+};
 
 enum SlaveState : word
 {
@@ -59,6 +64,43 @@ private_testable:
 
 	MasterState _state;
 
+protected_testable:
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), checkForNewSlaves, SearchResultCode, VARS());
+	ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), checkForNewSlaves)
+	{
+		while (_modbus->getStatus() != TaskNotStarted)
+		{
+			_modbus->reset();
+			YIELD_ASYNC;
+		}
+		_modbus->setRequest_ReadRegisters(0, 0, 7);
+		if (_modbus->getStatus() != TaskNotStarted)
+		{
+			_modbus->reset();
+			do
+			{
+				YIELD_ASYNC;
+			} while (_modbus->getStatus() != TaskNotStarted);
+		}
+		do
+		{
+			_modbus->work();
+			YIELD_ASYNC;
+		} while (_modbus->getStatus() < 4);
+		if (_modbus->getStatus() == TaskComplete)
+		{
+			RESULT_ASYNC((SearchResultCode), found);
+		}
+		else if (_modbus->getStatus() == taskFatal || _modbus->getStatus() == TaskFullyAttempted)
+		{
+			RESULT_ASYNC((SearchResultCode), error);
+		}
+		else
+		{
+			RESULT_ASYNC((SearchResultCode), notFound);
+		}
+	}
+
 public:
 	void config(S *system, M *modbus)
 	{
@@ -80,7 +122,7 @@ public:
 	}
 
 	byte newSlaveId;
-	bool onboardNewSlaveAsync()
+	bool onboardNewSlavesAsync()
 	{
 		auto status = _modbus->getStatus()
 		switch (_state)
