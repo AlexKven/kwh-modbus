@@ -28,7 +28,7 @@ public:
 		YIELD_ASYNC;
 		YIELD_ASYNC;
 		YIELD_ASYNC;
-		RESULT_ASYNC(5);
+		RESULT_ASYNC(int, 5);
 		END_ASYNC;
 	}
 
