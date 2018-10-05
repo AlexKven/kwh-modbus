@@ -73,6 +73,11 @@ protected_testable:
 		return _modbus->setRequest_ReadRegisters(recipientId, regStart, regCount);
 	}
 
+	virtual void reportMalfunction(int line)
+	{
+
+	}
+
 	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), ensureTaskNotStarted, void, VARS());
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), ensureTaskNotStarted)
 	{
@@ -93,7 +98,11 @@ protected_testable:
 	{
 		START_ASYNC;
 		//AsyncClassTaskSpecific<int, int, VARS()>( c;
-		modbusSetRequest_ReadRegisters(recipientId, regStart, regCount);
+		if (!modbusSetRequest_ReadRegisters(recipientId, regStart, regCount))
+		{
+			reportMalfunction(__LINE__);
+			YIELD_ASYNC;
+		}
 		while (!modbusWork())
 		{
 			YIELD_ASYNC;
@@ -116,12 +125,17 @@ protected_testable:
 		{
 			RESULT_ASYNC(SearchResultCode, found);
 		}
-		else if (modbusGetStatus() == TaskFatal || modbusGetStatus() == TaskFullyAttempted)
+		else if (modbusGetStatus() == TaskFullyAttempted)
 		{
 			RESULT_ASYNC(SearchResultCode, error);
 		}
+		else if (modbusGetStatus() == TaskStatus::TaskTimeOut)
+		{
+			RESULT_ASYNC(SearchResultCode, notFound);
+		}
 		else
 		{
+			reportMalfunction(__LINE__);
 			RESULT_ASYNC(SearchResultCode, notFound);
 		}
 		END_ASYNC;

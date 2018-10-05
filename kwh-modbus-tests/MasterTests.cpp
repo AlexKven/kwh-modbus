@@ -126,6 +126,18 @@ TEST_F(MasterTests, completeModbusReadRegisters_CompletesWithSomeAttempts)
 	Verify(Method(masterMock, modbusSetRequest_ReadRegisters).Using(2, 3, 5)).Once();
 }
 
+TEST_F(MasterTests, completeModbusReadRegisters_Malfunction)
+{
+	MOCK_MASTER;
+	When(Method(masterMock, modbusSetRequest_ReadRegisters)).AlwaysReturn(false);
+	Fake(Method(masterMock, reportMalfunction));
+	T_MASTER::completeModbusReadRegisters_Task task(&T_MASTER::completeModbusReadRegisters, master, 2, 3, 5);
+	ASSERT_FALSE(task());
+
+	Verify(Method(masterMock, modbusSetRequest_ReadRegisters).Using(2, 3, 5)).Once();
+	Verify(Method(masterMock, reportMalfunction)).Once();
+}
+
 TEST_F(MasterTests, checkForNewSlaves_Found)
 {
 	MOCK_MASTER;
@@ -135,6 +147,51 @@ TEST_F(MasterTests, checkForNewSlaves_Found)
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
-	//Verify(Method(masterMock, modbusWork)).Exactly(3);
-	//Verify(Method(masterMock, modbusSetRequest_ReadRegisters).Using(2, 3, 5)).Once();
+	Verify(Method(masterMock, ensureTaskNotStarted)).Once();
+	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 0, 0, 7)).Once();
+	ASSERT_EQ(task.result(), found);
+}
+
+TEST_F(MasterTests, checkForNewSlaves_Error)
+{
+	MOCK_MASTER;
+	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
+	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskFullyAttempted);
+
+	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	ASSERT_TRUE(task());
+	Verify(Method(masterMock, ensureTaskNotStarted)).Once();
+	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 0, 0, 7)).Once();
+	ASSERT_EQ(task.result(), error);
+}
+
+TEST_F(MasterTests, checkForNewSlaves_NotFound)
+{
+	MOCK_MASTER;
+	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
+	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskTimeOut);
+
+	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	ASSERT_TRUE(task());
+	Verify(Method(masterMock, ensureTaskNotStarted)).Once();
+	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 0, 0, 7)).Once();
+	ASSERT_EQ(task.result(), notFound);
+}
+
+TEST_F(MasterTests, checkForNewSlaves_Malfunction)
+{
+	MOCK_MASTER;
+	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
+	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskNotStarted);
+	Fake(Method(masterMock, reportMalfunction));
+
+	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	ASSERT_TRUE(task());
+	Verify(Method(masterMock, ensureTaskNotStarted)).Once();
+	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 0, 0, 7)).Once();
+	ASSERT_EQ(task.result(), notFound);
+	Verify(Method(masterMock, reportMalfunction)).Once();
 }
