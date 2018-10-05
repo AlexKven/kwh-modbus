@@ -65,8 +65,8 @@ class Modbus {
     public:
         Modbus();
 
-        bool Hreg(word offset, word value);
-        word Hreg(word offset);
+		virtual bool Hreg(word offset, word value);
+        virtual word Hreg(word offset);
 
 		virtual bool validRange(word startReg, word numReg) = 0;
 
