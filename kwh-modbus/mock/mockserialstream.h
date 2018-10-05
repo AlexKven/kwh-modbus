@@ -13,7 +13,7 @@ class MockSerialStream :
 	public ISerialStream
 {
 public:
-	void begin(long _baud);
+	virtual void begin(long _baud);
 	bool listen();
 	void end();
 	bool isListening();
