@@ -49,21 +49,67 @@ public:
 	}
 };
 
-TEST_F(MasterTests, checkForNewSlaves_ModbusNeedsReset)
+TEST_F(MasterTests, ensureTaskNotStarted_NeedsReset_Doesnt)
 {
 	MOCK_MASTER;
 	Fake(Method(masterMock, modbusReset));
-	When(Method(masterMock, modbusWork)).AlwaysReturn(true);
-	When(Method(masterMock, modbusSetRequest_ReadRegisters)).AlwaysReturn(true);
+	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskInProgress);
+
+	T_MASTER::ensureTaskNotStarted_Task task(&T_MASTER::ensureTaskNotStarted, master);
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+
+	Verify(Method(masterMock, modbusGetStatus)).Exactly(3);
+	Verify(Method(masterMock, modbusReset)).Once();
+}
+
+TEST_F(MasterTests, ensureTaskNotStarted_NeedsReset_Does)
+{
+	MOCK_MASTER;
+	Fake(Method(masterMock, modbusReset));
 	When(Method(masterMock, modbusGetStatus))
 		.Return(TaskInProgress)
-		.Return(TaskInProgress)
+		.Return(TaskComplete)
 		.Return(TaskNotStarted);
 
-	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	T_MASTER::ensureTaskNotStarted_Task task(&T_MASTER::ensureTaskNotStarted, master);
 	ASSERT_FALSE(task());
 	ASSERT_FALSE(task());
-	ASSERT_FALSE(task());
+	ASSERT_TRUE(task());
 
-
+	Verify(Method(masterMock, modbusGetStatus)).Exactly(3);
+	Verify(Method(masterMock, modbusReset)).Once();
 }
+
+TEST_F(MasterTests, ensureTaskNotStarted_DoesntNeedReset)
+{
+	MOCK_MASTER;
+	Fake(Method(masterMock, modbusReset));
+	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskNotStarted);
+
+	T_MASTER::ensureTaskNotStarted_Task task(&T_MASTER::ensureTaskNotStarted, master);
+	ASSERT_TRUE(task());
+
+	Verify(Method(masterMock, modbusGetStatus)).Once();
+	Verify(Method(masterMock, modbusReset)).Never();
+}
+
+//TEST_F(MasterTests, ensureTaskNotStarted_NeedsReset)
+//{
+//	MOCK_MASTER;
+//	Fake(Method(masterMock, modbusReset));
+//	When(Method(masterMock, modbusWork)).AlwaysReturn(true);
+//	When(Method(masterMock, modbusSetRequest_ReadRegisters)).AlwaysReturn(true);
+//	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskInProgress);
+//
+//	T_MASTER::ensureTaskNotStarted_Task task(&T_MASTER::ensureTaskNotStarted, master);
+//	ASSERT_FALSE(task());
+//	ASSERT_FALSE(task());
+//	ASSERT_FALSE(task());
+//
+//	Verify(Method(masterMock, modbusGetStatus)).Exactly(3);
+//	Verify(Method(masterMock, modbusReset)).Once();
+//	Verify(Method(masterMock, modbusWork)).Never();
+//	Verify(Method(masterMock, modbusSetRequest_ReadRegisters)).Never();
+//}

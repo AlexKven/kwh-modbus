@@ -73,8 +73,8 @@ protected_testable:
 		return _modbus->setRequest_ReadRegisters(recipientId, regStart, regCount);
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), checkForNewSlaves, SearchResultCode, VARS());
-	ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), checkForNewSlaves)
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), ensureTaskNotStarted, void, VARS());
+	ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), ensureTaskNotStarted)
 	{
 		START_ASYNC;
 		if (modbusGetStatus() != TaskNotStarted)
@@ -85,6 +85,16 @@ protected_testable:
 				YIELD_ASYNC;
 			} while (modbusGetStatus() != TaskNotStarted);
 		}
+		END_ASYNC;
+	}
+
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), checkForNewSlaves, SearchResultCode, VARS(ensureTaskNotStarted_Task));
+	ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), checkForNewSlaves)
+	{
+		ASYNC_VAR(0, taskNotStartedCheck);
+		START_ASYNC;
+		CREATE_ASSIGN_CLASS_TASK(taskNotStartedCheck, ESCAPE(Master<M, S, D>), *this, ensureTaskNotStarted);
+		AWAIT(taskNotStartedCheck);
 		modbusSetRequest_ReadRegisters(0, 0, 7);
 		do
 		{
