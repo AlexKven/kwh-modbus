@@ -13,10 +13,10 @@ using namespace fakeit;
 typedef ResilientModbusMaster<MockSerialStream, WindowsSystemFunctions, ModbusArray> T_MODBUS;
 typedef Master<T_MODBUS, WindowsSystemFunctions, DeviceDirectory<byte*>> T_MASTER;
 
-#define MOCK_MASTER Mock<T_MASTER> mock(*master); \
-T_MASTER & mMaster = mock.get()
+#define MOCK_MASTER Mock<T_MASTER> masterMock(*master); \
+T_MASTER & mMaster = masterMock.get()
 
-class SlaveTests : public ::testing::Test
+class MasterTests : public ::testing::Test
 {
 protected:
 	word *registerArray;
@@ -39,6 +39,7 @@ public:
 		registerArray = new word[12];
 		modbus->init(registerArray, 0, 12, 20);
 		master->config(system, modbus);
+		modbus->config(serial, system, 1200);
 	}
 
 	void TearDown()
@@ -47,3 +48,22 @@ public:
 		delete[] registerArray;
 	}
 };
+
+TEST_F(MasterTests, checkForNewSlaves_ModbusNeedsReset)
+{
+	MOCK_MASTER;
+	Fake(Method(masterMock, modbusReset));
+	When(Method(masterMock, modbusWork)).AlwaysReturn(true);
+	When(Method(masterMock, modbusSetRequest_ReadRegisters)).AlwaysReturn(true);
+	When(Method(masterMock, modbusGetStatus))
+		.Return(TaskInProgress)
+		.Return(TaskInProgress)
+		.Return(TaskNotStarted);
+
+	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+
+
+}

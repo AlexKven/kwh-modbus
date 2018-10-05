@@ -10,15 +10,6 @@
 
 #define ENSURE(statement) if (!(statement)) return false
 
-
-#define STATE word;
-#define RESUME(state) goto line ## state;
-#define IN_STATE STATE await_state;
-#define AWAIT(statement) \
-line##__line__##: \
-await_state = __LINE__ \
-if (!statement) return false;
-
 enum SearchResultCode : byte
 {
 	notFound = 0,
@@ -65,40 +56,54 @@ private_testable:
 	MasterState _state;
 
 protected_testable:
+	virtual byte modbusGetStatus()
+	{
+		return _modbus->getStatus();
+	}
+	virtual void modbusReset()
+	{
+		_modbus->reset();
+	}
+	virtual bool modbusWork()
+	{
+		return _modbus->work();
+	}
+	virtual bool modbusSetRequest_ReadRegisters(byte recipientId, word regStart, word regCount)
+	{
+		return _modbus->setRequest_ReadRegisters(recipientId, regStart, regCount);
+	}
+
 	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), checkForNewSlaves, SearchResultCode, VARS());
 	ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), checkForNewSlaves)
 	{
-		while (_modbus->getStatus() != TaskNotStarted)
+		START_ASYNC;
+		if (modbusGetStatus() != TaskNotStarted)
 		{
-			_modbus->reset();
-			YIELD_ASYNC;
-		}
-		_modbus->setRequest_ReadRegisters(0, 0, 7);
-		if (_modbus->getStatus() != TaskNotStarted)
-		{
-			_modbus->reset();
+			modbusReset();
 			do
 			{
 				YIELD_ASYNC;
-			} while (_modbus->getStatus() != TaskNotStarted);
+			} while (modbusGetStatus() != TaskNotStarted);
 		}
+		modbusSetRequest_ReadRegisters(0, 0, 7);
 		do
 		{
-			_modbus->work();
+			modbusWork();
 			YIELD_ASYNC;
-		} while (_modbus->getStatus() < 4);
-		if (_modbus->getStatus() == TaskComplete)
+		} while (modbusGetStatus() < 4);
+		if (modbusGetStatus() == TaskComplete)
 		{
-			RESULT_ASYNC((SearchResultCode), found);
+			RESULT_ASYNC(SearchResultCode, found);
 		}
-		else if (_modbus->getStatus() == taskFatal || _modbus->getStatus() == TaskFullyAttempted)
+		else if (modbusGetStatus() == TaskFatal || modbusGetStatus() == TaskFullyAttempted)
 		{
-			RESULT_ASYNC((SearchResultCode), error);
+			RESULT_ASYNC(SearchResultCode, error);
 		}
 		else
 		{
-			RESULT_ASYNC((SearchResultCode), notFound);
+			RESULT_ASYNC(SearchResultCode, notFound);
 		}
+		END_ASYNC;
 	}
 
 public:
