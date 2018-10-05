@@ -129,13 +129,12 @@ TEST_F(MasterTests, completeModbusReadRegisters_CompletesWithSomeAttempts)
 TEST_F(MasterTests, checkForNewSlaves_Found)
 {
 	MOCK_MASTER;
-	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
+	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
 	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
 	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskComplete);
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
-
 	//Verify(Method(masterMock, modbusWork)).Exactly(3);
 	//Verify(Method(masterMock, modbusSetRequest_ReadRegisters).Using(2, 3, 5)).Once();
 }

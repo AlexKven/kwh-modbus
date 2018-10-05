@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../noArduino/TestHelpers.h"
 #ifdef NO_ARDUINO
+#include "../../noArduino/TestHelpers.h"
 #include "../../noArduino/ArduinoMacros.h"
 #endif
 

@@ -33,7 +33,7 @@ bool FNAME(FNAME ## _Param &state, ##__VA_ARGS__)
 
 #define CREATE_CLASS_TASK(CNAME, CVALUE, FNAME, ...) FNAME ## _Task(&CNAME::FNAME, CVALUE, ##__VA_ARGS__);
 
-#define CREATE_ASSIGN_CLASS_TASK(VNAME, CNAME, CVALUE, FNAME, ...) VNAME = FNAME ## _Task(FNAME, CVALUE, ##__VA_ARGS__);
+#define CREATE_ASSIGN_CLASS_TASK(VNAME, CNAME, CVALUE, FNAME, ...) VNAME = FNAME ## _Task(&CNAME::FNAME, CVALUE, ##__VA_ARGS__);
 
 #define AWAIT_RESULT(TASK) \
 *state._line = __LINE__; \

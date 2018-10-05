@@ -5,6 +5,8 @@
 #include "ModbusMaster.hpp"
 #include "HardwareSerial.h"
 #include "ResilientModbusMaster.hpp"
+#include "Master.hpp"
+#include "DeviceDirectory.hpp"
 
 
 class ArduinoFunctions
@@ -43,6 +45,7 @@ public:
 
 word *registers = new word[15];
 ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray> master;
+Master<ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions, DeviceDirectory<byte*>> mstr;
 ArduinoFunctions funcions;
 
 void setup() {
@@ -50,7 +53,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting...");
 
-  master.config(&Serial1, &funcions, 19200, 4);
+  //master.config(&Serial1, &funcions, 19200, 4);
   master.init(registers, 0, 15, 30);
   master.setMaxTimePerTryMicros(100000);
   master.setMaxTries(15);
@@ -70,6 +73,7 @@ int getMemAllocation()
 }
 
 void loop() {
+  mstr.task();
 //  // put your main code here, to run repeatedly:
   if (done)
   {
@@ -79,7 +83,7 @@ void loop() {
       {
         Serial.read();
       }
-      Serial1.flush();
+      Serial.flush();
       master.reset();
       master.setRequest_WriteRegister(3, 3, i++);
       Serial.println("Master reset");

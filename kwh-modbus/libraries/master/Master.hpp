@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../noArduino/TestHelpers.h"
 #ifdef NO_ARDUINO
+#include "../../noArduino/TestHelpers.h"
 #include "../../noArduino/ArduinoMacros.h"
 #endif
 
@@ -92,6 +92,7 @@ protected_testable:
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), completeModbusReadRegisters, byte recipientId, word regStart, word regCount)
 	{
 		START_ASYNC;
+		//AsyncClassTaskSpecific<int, int, VARS()>( c;
 		modbusSetRequest_ReadRegisters(recipientId, regStart, regCount);
 		while (!modbusWork())
 		{
@@ -106,8 +107,9 @@ protected_testable:
 		ASYNC_VAR(0, taskNotStartedCheck);
 		ASYNC_VAR(1, completeReadRegisters);
 		START_ASYNC;
-		CREATE_ASSIGN_CLASS_TASK(taskNotStartedCheck, ESCAPE(Master<M, S, D>), *this, &ESCAPE(Master<M, S, D>)::ensureTaskNotStarted);
-		CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), *this, &ESCAPE(Master<M, S, D>)::completeModbusReadRegisters, 0, 0, 7);
+		//completeReadRegisters = ESCAPE(Master<M, S, D>)::completeModbusReadRegisters_Task(&Master<M, S, D>::completeModbusReadRegisters, this, 2, 5, 5);
+		CREATE_ASSIGN_CLASS_TASK(taskNotStartedCheck, ESCAPE(Master<M, S, D>), this, ensureTaskNotStarted);
+		CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, 0, 0, 7);
 		AWAIT(taskNotStartedCheck);
 		AWAIT(completeReadRegisters);
 		if (modbusGetStatus() == TaskComplete)
@@ -139,80 +141,12 @@ public:
 
 	void task()
 	{
+		auto tsk = checkForNewSlaves_Task(&Master<M, S, D>::checkForNewSlaves, this);
+		tsk();
 		_prevTime = _curTime;
 		_curTime = _system->micros();
 		if (_prevTime == 0)
 			return;
-	}
-
-	byte newSlaveId;
-	bool onboardNewSlavesAsync()
-	{
-		auto status = _modbus->getStatus()
-		switch (_state)
-		{
-		case mIdle:
-			if (status != TaskNotStarted)
-			{
-				_modbus->reset();
-			}
-			_modbus->setRequest_ReadRegisters(0, 0, 7);
-			_modbus->work();
-			status = _modbus->getStatus();
-			if (status >= TaskInProgress)
-			{
-				status = mReadingSlave;
-				return false;
-			}
-			break;
-		case: mReadingSlave:
-			if (status >= TaskComplete)
-			{
-				word[7] registers;
-				if (isReadRegsResponse(7, registers))
-				{
-					if (registers[0] == _majorVersion << 8 | _minorVersion)
-					{
-						// New slave is accepted
-						newSlaveId = _deviceDirectory->findFreeSlaveID();
-						
-					}
-				}
-			}
-			break;
-		}
-		auto status = _modbus->getStatus();
-		if (readPending)
-		{
-			if (status == TaskNotStarted)
-			{
-				return false;
-			}
-			if (status >= TaskInProgress && status <= TaskAttemptTimeOut)
-			{
-				_modbus->work();
-				return false;
-			}
-			if (status >= TaskComplete)
-			{
-				readPending = false;
-				return false;
-			}
-		}
-		else
-		{
-			if (status == TaskComplete)
-			{
-				word[7] registers;
-				if (isReadRegsResponse(7, registers))
-				{
-					if (registers[0] == _majorVersion << 8 | _minorVersion)
-					{
-
-					}
-				}
-			}
-		}
 	}
 
 	Master() { }
