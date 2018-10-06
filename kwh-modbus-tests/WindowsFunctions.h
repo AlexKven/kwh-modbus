@@ -13,7 +13,7 @@ typedef void *handle;
 class WindowsFunctions
 {
 private:
-	unsigned long _hProv = NULL;
+	unsigned long long _hProv = NULL;
 
 public:
 	WindowsFunctions();
