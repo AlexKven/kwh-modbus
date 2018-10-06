@@ -44,13 +44,15 @@ inline bool contains(ModbusTransmissionError a, ModbusTransmissionError b)
 	return (a | b) == a;
 }
 
+typedef ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory> T_ModbusSlave;
+typedef ResilientModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory> T_ModbusMaster;
 class ModbusIntegrationTests :
 	public ::testing::Test,
 	public ::testing::WithParamInterface<ModbusTransmissionError>
 {
 protected:
-	ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory> *slave = new ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory>();
-	ResilientModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory> *master = new ResilientModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>();
+	T_ModbusSlave *slave = new T_ModbusSlave();
+	T_ModbusMaster *master = new T_ModbusMaster();
 	queue<byte> *slaveIn;
 	queue<byte> *masterIn;
 	MockSerialStream *slaveSerial;
