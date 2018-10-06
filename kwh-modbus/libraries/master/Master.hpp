@@ -17,19 +17,6 @@ enum SearchResultCode : byte
 	error = 2
 };
 
-enum SlaveState : word
-{
-	sIdle = 0,
-	sReceivedRequest = 1,
-	sDisplayDevInfo = 2,
-	sDisplayDevData = 3,
-	sReceivingDevData = 4,
-	sDisplayDevCommand = 5,
-	sReceivingDevCommand = 6,
-	sDisplayDevMessage = 7,
-	sDisplaySlaveMessage = 8
-};
-
 enum MasterState : byte
 {
 	mIdle = 0,
