@@ -152,20 +152,6 @@ TEST_F(MasterTests, checkForNewSlaves_Found)
 	ASSERT_EQ(task.result(), found);
 }
 
-TEST_F(MasterTests, checkForNewSlaves_Error)
-{
-	MOCK_MASTER;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
-	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
-	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskFatal);
-
-	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
-	ASSERT_TRUE(task());
-	Verify(Method(masterMock, ensureTaskNotStarted)).Once();
-	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
-	ASSERT_EQ(task.result(), error);
-}
-
 TEST_F(MasterTests, checkForNewSlaves_NotFound)
 {
 	MOCK_MASTER;
@@ -180,18 +166,18 @@ TEST_F(MasterTests, checkForNewSlaves_NotFound)
 	ASSERT_EQ(task.result(), notFound);
 }
 
-TEST_F(MasterTests, checkForNewSlaves_Malfunction)
+TEST_F(MasterTests, checkForNewSlaves_Error)
 {
 	MOCK_MASTER;
 	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
 	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
-	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskNotStarted);
+	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskFatal);
 	Fake(Method(masterMock, reportMalfunction));
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
 	Verify(Method(masterMock, ensureTaskNotStarted)).Once();
 	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
-	ASSERT_EQ(task.result(), notFound);
+	ASSERT_EQ(task.result(), error);
 	Verify(Method(masterMock, reportMalfunction)).Once();
 }

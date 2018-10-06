@@ -112,18 +112,14 @@ protected_testable:
 		{
 			RESULT_ASYNC(SearchResultCode, found);
 		}
-		else if (modbusGetStatus() == TaskFatal)
-		{
-			RESULT_ASYNC(SearchResultCode, error);
-		}
-		else if (modbusGetStatus() == TaskFullyAttempted || modbusGetStatus() == TaskStatus::TaskTimeOut)
+		else if (modbusGetStatus() == TaskStatus::TaskFullyAttempted || modbusGetStatus() == TaskStatus::TaskTimeOut)
 		{
 			RESULT_ASYNC(SearchResultCode, notFound);
 		}
 		else
 		{
 			reportMalfunction(__LINE__);
-			RESULT_ASYNC(SearchResultCode, notFound);
+			RESULT_ASYNC(SearchResultCode, error);
 		}
 		END_ASYNC;
 	}
