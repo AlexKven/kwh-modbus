@@ -130,6 +130,16 @@ public:
 		}
 	}
 
+	// Basic initial version
+	void task()
+	{
+		bool processed;
+		bool broadcast;
+		_modbus->task(processed, broadcast);
+		if (processed)
+			processIncomingState(processed);
+	}
+
 	void clearDevices()
 	{
 		if (_deviceNames != nullptr)

@@ -148,7 +148,7 @@ TEST_F(MasterTests, checkForNewSlaves_Found)
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
 	Verify(Method(masterMock, ensureTaskNotStarted)).Once();
-	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 0, 0, 7)).Once();
+	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
 	ASSERT_EQ(task.result(), found);
 }
 
@@ -157,12 +157,12 @@ TEST_F(MasterTests, checkForNewSlaves_Error)
 	MOCK_MASTER;
 	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
 	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
-	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskFullyAttempted);
+	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskFatal);
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
 	Verify(Method(masterMock, ensureTaskNotStarted)).Once();
-	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 0, 0, 7)).Once();
+	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
 	ASSERT_EQ(task.result(), error);
 }
 
@@ -176,7 +176,7 @@ TEST_F(MasterTests, checkForNewSlaves_NotFound)
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
 	Verify(Method(masterMock, ensureTaskNotStarted)).Once();
-	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 0, 0, 7)).Once();
+	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
 	ASSERT_EQ(task.result(), notFound);
 }
 
@@ -191,7 +191,7 @@ TEST_F(MasterTests, checkForNewSlaves_Malfunction)
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
 	Verify(Method(masterMock, ensureTaskNotStarted)).Once();
-	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 0, 0, 7)).Once();
+	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
 	ASSERT_EQ(task.result(), notFound);
 	Verify(Method(masterMock, reportMalfunction)).Once();
 }

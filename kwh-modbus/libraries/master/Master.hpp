@@ -105,18 +105,18 @@ protected_testable:
 		START_ASYNC;
 		//completeReadRegisters = ESCAPE(Master<M, S, D>)::completeModbusReadRegisters_Task(&Master<M, S, D>::completeModbusReadRegisters, this, 2, 5, 5);
 		CREATE_ASSIGN_CLASS_TASK(taskNotStartedCheck, ESCAPE(Master<M, S, D>), this, ensureTaskNotStarted);
-		CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, 0, 0, 7);
+		CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, 1, 0, 7);
 		AWAIT(taskNotStartedCheck);
 		AWAIT(completeReadRegisters);
 		if (modbusGetStatus() == TaskComplete)
 		{
 			RESULT_ASYNC(SearchResultCode, found);
 		}
-		else if (modbusGetStatus() == TaskFullyAttempted)
+		else if (modbusGetStatus() == TaskFatal)
 		{
 			RESULT_ASYNC(SearchResultCode, error);
 		}
-		else if (modbusGetStatus() == TaskStatus::TaskTimeOut)
+		else if (modbusGetStatus() == TaskFullyAttempted || modbusGetStatus() == TaskStatus::TaskTimeOut)
 		{
 			RESULT_ASYNC(SearchResultCode, notFound);
 		}

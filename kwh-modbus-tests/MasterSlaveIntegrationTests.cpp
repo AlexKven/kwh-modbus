@@ -73,6 +73,9 @@ protected:
 
 	static WindowsSystemFunctions *system;
 
+	function<bool()> slaveAction;
+	function<bool()> masterAction;
+
 public:
 	void SetUp()
 	{
@@ -86,10 +89,14 @@ public:
 		slaveSerial->setSystem(system);
 		masterSerial->setSystem(system);
 
-		modbusMaster->config(masterSerial, system, 1200);
-		modbusSlave->config(slaveSerial, system, 1200);
+		modbusMaster->config(masterSerial, system, 2400);
+		modbusSlave->config(slaveSerial, system, 2400);
+		master->config(system, modbusMaster);
+		slave->config(system, modbusSlave);
 		seedRandom(masterSerial);
 		seedRandom(slaveSerial);
+		modbusMaster->setMaxTimePerTryMicros(100000);
+		modbusMaster->setMaxTries(10);
 
 		if (contains(errorType, InboundError))
 		{
@@ -99,7 +106,6 @@ public:
 		if (contains(errorType, OutboundError))
 		{
 			slaveSerial->setPerBitErrorProb(0.012);
-			modbusMaster->setMaxTimePerTryMicros(100000);
 		}
 
 		if (contains(errorType, InboundDelays))
@@ -138,18 +144,9 @@ public:
 		bool processed;
 		bool broadcast;
 		TIMEOUT_START(3000);
-		if (this->errorType == 0)
+		while (!this->slaveAction())
 		{
-			while (!this->modbusSlave->task(processed, broadcast))
-				TIMEOUT_CHECK;
-		}
-		else
-		{
-			while (this->modbusMaster->getStatus() < 4)
-			{
-				this->modbusSlave->task(processed, broadcast);
-				TIMEOUT_CHECK;
-			}
+			TIMEOUT_CHECK;
 		}
 		this->slaveSuccess = true;
 	}
@@ -158,17 +155,9 @@ public:
 	{
 		this->masterSuccess = false;
 		TIMEOUT_START(3000);
-
-		if (this->errorType == 0)
+		while (!this->masterAction())
 		{
-			this->modbusMaster->send();
-			while (!this->modbusMaster->receive())
-				TIMEOUT_CHECK;
-		}
-		else
-		{
-			while (!this->modbusMaster->work())
-				TIMEOUT_CHECK;
+			TIMEOUT_CHECK;
 		}
 		this->masterSuccess = true;
 	}
@@ -183,3 +172,62 @@ public:
 		((MasterSlaveIntegrationTests*)param)->masterThread();
 	}
 };
+
+WindowsSystemFunctions *MasterSlaveIntegrationTests::system;
+
+TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlaves_found)
+{
+	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master);
+	slaveAction = [this]() {
+		//return true;
+		slave->task();
+		return masterSuccess;
+	};
+	masterAction = [this, &task]()
+	{
+		return task();
+	};
+
+	modbusSlave->setSlaveId(1);
+
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+	ASSERT_EQ(task.result(), found);
+}
+
+TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlaves_notFound)
+{
+	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master);
+	slaveAction = [this]() {
+		//return true;
+		slave->task();
+		return masterSuccess;
+	};
+	masterAction = [this, &task]()
+	{
+		return task();
+	};
+
+	modbusSlave->setSlaveId(2);
+
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+	ASSERT_EQ(task.result(), notFound);
+}
+
+INSTANTIATE_TEST_CASE_P(NoErrors, MasterSlaveIntegrationTests, ::testing::Values(None));
+INSTANTIATE_TEST_CASE_P(InboundError, MasterSlaveIntegrationTests, ::testing::Values(InboundError));
+INSTANTIATE_TEST_CASE_P(OutboundError, MasterSlaveIntegrationTests, ::testing::Values(OutboundError));
+INSTANTIATE_TEST_CASE_P(InboundDelays, MasterSlaveIntegrationTests, ::testing::Values(InboundDelays));
+INSTANTIATE_TEST_CASE_P(OutboundDelays, MasterSlaveIntegrationTests, ::testing::Values(OutboundDelays));
+INSTANTIATE_TEST_CASE_P(AllErrors, MasterSlaveIntegrationTests, ::testing::Values(InboundError & OutboundError));
+INSTANTIATE_TEST_CASE_P(AllDelays, MasterSlaveIntegrationTests, ::testing::Values(InboundDelays & OutboundDelays));
+INSTANTIATE_TEST_CASE_P(AllDelaysAndErrors, MasterSlaveIntegrationTests, ::testing::Values(InboundError & OutboundError & InboundDelays & OutboundDelays));
