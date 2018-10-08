@@ -69,8 +69,6 @@ protected:
 
 	bool masterSuccess = false;
 	bool slaveSuccess = false;
-	bool masterStarted = false;
-	bool slaveStarted = false;
 	ModbusTransmissionError errorType;
 
 	static WindowsSystemFunctions *system;
@@ -141,12 +139,12 @@ public:
 
 		if (contains(errorType, InboundDelays))
 		{
-			masterSerial->setReadDelays(7000, 2000);
+			masterSerial->setReadDelays(3000, 1000);
 		}
 
 		if (contains(errorType, OutboundDelays))
 		{
-			slaveSerial->setReadDelays(7000, 2000);
+			slaveSerial->setReadDelays(3000, 1000);
 		}
 	}
 
@@ -171,8 +169,6 @@ public:
 
 	void slaveThread()
 	{
-		this->slaveStarted = true;
-		while (!this->masterStarted)
 		this->slaveSuccess = false;
 		bool processed;
 		bool broadcast;
@@ -186,8 +182,6 @@ public:
 
 	void masterThread()
 	{
-		this->masterStarted = true;
-		while (!this->slaveStarted)
 		this->masterSuccess = false;
 		TIMEOUT_START(5000);
 		while (!this->masterAction())
@@ -244,6 +238,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 {
 	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master);
 	slaveAction = [this]() {
+		//return true;
 		slave->task();
 		return masterSuccess;
 	};
