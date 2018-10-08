@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "fakeit.hpp"
+#include <stack>
 
 #include "../kwh-modbus/libraries/modbus/Modbus.h"
 #include "../kwh-modbus/noArduino/ModbusMemory.h"
@@ -78,6 +79,16 @@ protected:
 
 	function<bool()> slaveAction;
 	function<bool()> masterAction;
+
+	bool runTaskStack(stack<IAsyncTask*> &tasks)
+	{
+		if ((*tasks.top())())
+		{
+			tasks.pop();
+			return (tasks.empty());
+		}
+		return false;
+	}
 
 public:
 	void SetUp()
@@ -263,21 +274,18 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 {
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
 	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master);
-	int curAction = 0;
+	
+	stack<IAsyncTask*> tasks;
+	tasks.push(&task1);
+	tasks.push(&task0);
+
 	slaveAction = [this]() {
 		slave->task();
 		return masterSuccess;
 	};
-	masterAction = [this, &task0, &task1, &curAction]()
+	masterAction = [this, &tasks]()
 	{
-		if (curAction == 0)
-		{
-			if (!task0())
-				return false;
-			else
-				curAction++;
-		}
-		return task1();
+		return runTaskStack(tasks);
 	};
 
 	modbusSlave->setSlaveId(1);
