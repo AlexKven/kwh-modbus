@@ -112,12 +112,12 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
 		sDisplayDevInfo,
 		(word)1,
 		(word)7,
-		(byte)'e',
 		(byte)'d',
-		(byte)'0',
+		(byte)'e',
 		(byte)'v',
-		(byte)0,
+		(byte)'0',
 		(byte)'2',
+		(byte)0,
 		(word)0,
 		(word)0);
 }

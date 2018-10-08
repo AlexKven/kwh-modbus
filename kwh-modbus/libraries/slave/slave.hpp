@@ -62,10 +62,10 @@ private_testable:
 			word index = 0;
 			for (int i = 0; i < _deviceNameLength; i += 2)
 			{
-				word reg = name[i] << 8;
+				word reg = name[i];
 				if (i < _deviceNameLength - 1)
 				{
-					reg = reg | name[i + 1];
+					reg = reg | (name[i + 1] << 8);
 				}
 				ENSURE(_modbus->Hreg(3 + index, reg));
 				index++;
