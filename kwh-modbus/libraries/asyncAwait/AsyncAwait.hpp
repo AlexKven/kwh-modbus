@@ -14,12 +14,12 @@
 #define ESCAPE(...) __VA_ARGS__
 #define VARS(...) Tuple<__VA_ARGS__>
 #define DEFINE_TASK(FNAME, T_RET, TUPLE_VAR, ...) \
-typedef AsyncTaskSpecific<T_RET, TUPLE_VAR, ##__VA_ARGS__> FNAME ## _Task; \
-typedef StateParam<T_RET, TUPLE_VAR> FNAME ## _Param
+using FNAME ## _Task = AsyncTaskSpecific<T_RET, TUPLE_VAR, ##__VA_ARGS__>; \
+using FNAME ## _Param = StateParam<T_RET, TUPLE_VAR>
 
 #define DEFINE_CLASS_TASK(CNAME, FNAME, T_RET, TUPLE_VAR, ...) \
-typedef AsyncClassTaskSpecific<CNAME, T_RET, TUPLE_VAR, ##__VA_ARGS__> FNAME ## _Task; \
-typedef StateParam<T_RET, TUPLE_VAR> FNAME ## _Param
+using FNAME ## _Task = AsyncClassTaskSpecific<CNAME, T_RET, TUPLE_VAR, ##__VA_ARGS__>; \
+using FNAME ## _Param = StateParam<T_RET, TUPLE_VAR>
 
 #define ASYNC_FUNC(FNAME, ...) \
 static bool FNAME(FNAME ## _Param &state, ##__VA_ARGS__)

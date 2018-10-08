@@ -31,14 +31,14 @@ protected:
 		delete modbus;
 		modbus = new T_MODBUS();
 		modbus->init(registerArray, 20, 12, 20);
-		master->config(system, modbus);
+		master->config(system, modbus, &mockDeviceDirectory.get());
 	}
 public:
 	void SetUp()
 	{
 		registerArray = new word[12];
 		modbus->init(registerArray, 0, 12, 20);
-		master->config(system, modbus);
+		master->config(system, modbus, &mockDeviceDirectory.get());
 		modbus->config(serial, system, 1200);
 	}
 
@@ -138,16 +138,108 @@ TEST_F(MasterTests, completeModbusReadRegisters_Malfunction)
 	Verify(Method(masterMock, reportMalfunction)).Once();
 }
 
+TEST_F(MasterTests, completeModbusWriteRegisters_single_CompletesImmediately)
+{
+	MOCK_MASTER;
+	When(Method(masterMock, modbusWork)).AlwaysReturn(true);
+	When(Method(masterMock, modbusSetRequest_WriteRegister)).AlwaysReturn(true);
+
+	word value = 6;
+	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 1, &value);
+	ASSERT_TRUE(task());
+
+	Verify(Method(masterMock, modbusWork)).Once();
+	Verify(Method(masterMock, modbusSetRequest_WriteRegister).Using(2, 3, 6)).Once();
+}
+
+TEST_F(MasterTests, completeModbusWriteRegisters_single_CompletesWithSomeAttempts)
+{
+	MOCK_MASTER;
+	When(Method(masterMock, modbusWork))
+		.Return(false)
+		.Return(false)
+		.Return(true);
+	When(Method(masterMock, modbusSetRequest_WriteRegister)).AlwaysReturn(true);
+
+	word value = 6;
+	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 1, &value);
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_TRUE(task());
+
+	Verify(Method(masterMock, modbusWork)).Exactly(3);
+	Verify(Method(masterMock, modbusSetRequest_WriteRegister).Using(2, 3, 6)).Once();
+}
+
+TEST_F(MasterTests, completeModbusWriteRegisters_single_Malfunction)
+{
+	MOCK_MASTER;
+	When(Method(masterMock, modbusSetRequest_WriteRegister)).AlwaysReturn(false);
+	Fake(Method(masterMock, reportMalfunction));
+
+	word value = 6;
+	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 1, &value);
+	ASSERT_FALSE(task());
+
+	Verify(Method(masterMock, modbusSetRequest_WriteRegister).Using(2, 3, 6)).Once();
+	Verify(Method(masterMock, reportMalfunction)).Once();
+}
+
+TEST_F(MasterTests, completeModbusWriteRegisters_multiple_CompletesImmediately)
+{
+	MOCK_MASTER;
+	When(Method(masterMock, modbusWork)).AlwaysReturn(true);
+	When(Method(masterMock, modbusSetRequest_WriteRegisters)).AlwaysReturn(true);
+
+	word values[3] = { 7, 8, 9 };
+	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 3, (word*)values);
+	ASSERT_TRUE(task());
+
+	Verify(Method(masterMock, modbusWork)).Once();
+	Verify(Method(masterMock, modbusSetRequest_WriteRegisters).Using(2, 3, 3, (word*)values)).Once();
+}
+
+TEST_F(MasterTests, completeModbusWriteRegisters_multiple_CompletesWithSomeAttempts)
+{
+	MOCK_MASTER;
+	When(Method(masterMock, modbusWork))
+		.Return(false)
+		.Return(false)
+		.Return(true);
+	When(Method(masterMock, modbusSetRequest_WriteRegisters)).AlwaysReturn(true);
+
+	word values[3] = { 7, 8, 9 };
+	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 3, (word*)values);
+	ASSERT_FALSE(task());
+	ASSERT_FALSE(task());
+	ASSERT_TRUE(task());
+
+	Verify(Method(masterMock, modbusWork)).Exactly(3);
+	Verify(Method(masterMock, modbusSetRequest_WriteRegisters).Using(2, 3, 3, (word*)values)).Once();
+}
+
+TEST_F(MasterTests, completeModbusWriteRegisters_multiple_Malfunction)
+{
+	MOCK_MASTER;
+	When(Method(masterMock, modbusSetRequest_WriteRegisters)).AlwaysReturn(false);
+	Fake(Method(masterMock, reportMalfunction));
+	
+	word values[3] = { 7, 8, 9 };
+	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 3, (word*)values);
+	ASSERT_FALSE(task());
+
+	Verify(Method(masterMock, modbusSetRequest_WriteRegisters).Using(2, 3, 3, (word*)values)).Once();
+	Verify(Method(masterMock, reportMalfunction)).Once();
+}
+
 TEST_F(MasterTests, checkForNewSlaves_Found)
 {
 	MOCK_MASTER;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
 	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
 	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskComplete);
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
-	Verify(Method(masterMock, ensureTaskNotStarted)).Once();
 	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
 	ASSERT_EQ(task.result(), found);
 }
@@ -155,13 +247,11 @@ TEST_F(MasterTests, checkForNewSlaves_Found)
 TEST_F(MasterTests, checkForNewSlaves_NotFound)
 {
 	MOCK_MASTER;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
 	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
 	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskTimeOut);
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
-	Verify(Method(masterMock, ensureTaskNotStarted)).Once();
 	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
 	ASSERT_EQ(task.result(), notFound);
 }
@@ -169,14 +259,12 @@ TEST_F(MasterTests, checkForNewSlaves_NotFound)
 TEST_F(MasterTests, checkForNewSlaves_Error)
 {
 	MOCK_MASTER;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
 	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
 	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskFatal);
 	Fake(Method(masterMock, reportMalfunction));
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
-	Verify(Method(masterMock, ensureTaskNotStarted)).Once();
 	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
 	ASSERT_EQ(task.result(), error);
 	Verify(Method(masterMock, reportMalfunction)).Once();

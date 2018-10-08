@@ -141,7 +141,7 @@ public:
 		if (!this->resetFrame(length))
 			return false;
 		readToFrame();
-		
+
 		if (this->readInputFrame(broadcast_out))
 		{
 			if (broadcast_out)

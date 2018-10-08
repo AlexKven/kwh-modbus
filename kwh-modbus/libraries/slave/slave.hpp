@@ -31,7 +31,7 @@ private_testable:
 	word _deviceCount;
 	byte **_deviceNames = nullptr;
 	Device **_devices = nullptr;
-	SlaveState _state;
+	SlaveState _state = sIdle;
 
 	S *_system;
 	M *_modbus;

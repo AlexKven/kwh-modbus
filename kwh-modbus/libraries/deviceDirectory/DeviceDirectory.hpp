@@ -185,7 +185,7 @@ public:
 
 	virtual byte findFreeSlaveID()
 	{
-		byte slaveId = 1;
+		byte slaveId = 2;
 		for (int i = 0; i < _maxDevices; i++)
 		{
 			if (_slaveIds[i] == 0)

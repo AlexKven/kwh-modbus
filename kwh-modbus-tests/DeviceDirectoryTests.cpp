@@ -477,7 +477,7 @@ TEST_F(DeviceDirectoryTests, findFreeSlaveID_empty)
 
 	byte freeSlaveId = deviceDirectory->findFreeSlaveID();
 
-	ASSERT_EQ(freeSlaveId, 1);
+	ASSERT_EQ(freeSlaveId, 2);
 }
 
 TEST_F(DeviceDirectoryTests, findFreeSlaveID_full)

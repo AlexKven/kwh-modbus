@@ -69,9 +69,14 @@ protected:
 
 	bool masterSuccess = false;
 	bool slaveSuccess = false;
+	bool masterStarted = false;
+	bool slaveStarted = false;
 	ModbusTransmissionError errorType;
 
 	static WindowsSystemFunctions *system;
+
+	Mock<Device> device0;
+	Mock<Device> device1;
 
 	function<bool()> slaveAction;
 	function<bool()> masterAction;
@@ -88,15 +93,41 @@ public:
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
 		slaveSerial->setSystem(system);
 		masterSerial->setSystem(system);
+		deviceDirectory = new DeviceDirectory<byte*>();
 
-		modbusMaster->config(masterSerial, system, 2400);
-		modbusSlave->config(slaveSerial, system, 2400);
-		master->config(system, modbusMaster);
+		modbusMaster->config(masterSerial, system, 4800);
+		modbusSlave->config(slaveSerial, system, 4800);
+		modbusSlave->addReg(0, 0);
+		modbusSlave->addReg(1, 0);
+		modbusSlave->addReg(2, 0);
+		modbusSlave->addReg(3, 0);
+		modbusSlave->addReg(4, 0);
+		modbusSlave->addReg(5, 0);
+		modbusSlave->addReg(6, 0);
+		modbusSlave->addReg(7, 0);
+		modbusSlave->addReg(8, 0);
+		modbusSlave->addReg(9, 0);
+		modbusSlave->addReg(10, 0);
+		modbusSlave->addReg(11, 0);
+		modbusSlave->addReg(12, 0);
+		master->config(system, modbusMaster, deviceDirectory);
 		slave->config(system, modbusSlave);
+		deviceDirectory->init(5, 20);
 		seedRandom(masterSerial);
 		seedRandom(slaveSerial);
-		modbusMaster->setMaxTimePerTryMicros(100000);
-		modbusMaster->setMaxTries(10);
+		modbusMaster->setMaxTimePerTryMicros(200000);
+		modbusMaster->setMaxTimeMicros(3500000);
+
+		When(Method(device0, getType)).AlwaysReturn(1);
+		When(Method(device1, getType)).AlwaysReturn(2);
+		Device* devices[2];
+		devices[0] = &device0.get();
+		devices[1] = &device1.get();
+		byte* names[2];
+		names[0] = (byte*)"dev00";
+		names[1] = (byte*)"dev01";
+
+		slave->init(2, 5, devices, names);
 
 		if (contains(errorType, InboundError))
 		{
@@ -140,10 +171,12 @@ public:
 
 	void slaveThread()
 	{
+		this->slaveStarted = true;
+		while (!this->masterStarted)
 		this->slaveSuccess = false;
 		bool processed;
 		bool broadcast;
-		TIMEOUT_START(3000);
+		TIMEOUT_START(5000);
 		while (!this->slaveAction())
 		{
 			TIMEOUT_CHECK;
@@ -153,8 +186,10 @@ public:
 
 	void masterThread()
 	{
+		this->masterStarted = true;
+		while (!this->slaveStarted)
 		this->masterSuccess = false;
-		TIMEOUT_START(3000);
+		TIMEOUT_START(5000);
 		while (!this->masterAction())
 		{
 			TIMEOUT_CHECK;
@@ -179,7 +214,6 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 {
 	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master);
 	slaveAction = [this]() {
-		//return true;
 		slave->task();
 		return masterSuccess;
 	};
@@ -189,11 +223,18 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 	};
 
 	modbusSlave->setSlaveId(1);
+	slave->setOutgoingState();
 
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
 
+	word count;
+	word *regs;
+	ASSERT_TRUE(modbusMaster->isReadRegsResponse(count, regs));
+	ASSERT_EQ(count, 7);
+	assertArrayEq<word, byte, byte, word, word, word, word, word>(regs,
+		sIdle, 0, 1, 2, 5, 0, 0, 0);
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
 	ASSERT_EQ(task.result(), found);
@@ -203,7 +244,6 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 {
 	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master);
 	slaveAction = [this]() {
-		//return true;
 		slave->task();
 		return masterSuccess;
 	};
@@ -213,6 +253,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 	};
 
 	modbusSlave->setSlaveId(2);
+	slave->setOutgoingState();
 
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);
@@ -221,6 +262,39 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
 	ASSERT_EQ(task.result(), notFound);
+}
+
+TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
+{
+	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
+	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master);
+	int curAction = 0;
+	slaveAction = [this]() {
+		slave->task();
+		return masterSuccess;
+	};
+	masterAction = [this, &task0, &task1, &curAction]()
+	{
+		if (curAction == 0)
+		{
+			if (!task0())
+				return false;
+			else
+				curAction++;
+		}
+		return task1();
+	};
+
+	modbusSlave->setSlaveId(1);
+	slave->setOutgoingState();
+
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+	ASSERT_EQ(task0.result(), found);
 }
 
 INSTANTIATE_TEST_CASE_P(NoErrors, MasterSlaveIntegrationTests, ::testing::Values(None));
