@@ -295,6 +295,13 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
 
+	word tpe;
+	byte slv;
+	int row;
+	deviceDirectory->findDeviceForName((byte*)"dev00", tpe, slv, row);
+	deviceDirectory->findDeviceForName((byte*)"dev01", tpe, slv, row);
+	deviceDirectory->findDeviceForName((byte*)"dev02", tpe, slv, row);
+
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
 	ASSERT_EQ(task0.result(), found);

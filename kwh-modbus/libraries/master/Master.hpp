@@ -198,6 +198,10 @@ protected_testable:
 			// reject slave due to no devices
 		}
 		slaveId = _deviceDirectory->findFreeSlaveID();
+		if (slaveId == -1)
+		{
+			// reject slave due to master being full and unable to accept new slaves
+		}
 		for (i = 0; i < numDevices; i++)
 		{
 			sentData[0] = 1;
@@ -217,8 +221,15 @@ protected_testable:
 				reportMalfunction(__LINE__);
 				RETURN_ASYNC;
 			}
-			_modbus->isReadRegsResponse(regCount, regs);
-
+			if (!_modbus->isReadRegsResponse(regCount, regs) && regCount != 4 + (deviceNameLength + 1) / 2)
+			{
+				reportMalfunction(__LINE__);
+				RETURN_ASYNC;
+			}
+			if (_deviceDirectory->addDevice((byte*)(regs + 3), regs[2], slaveId) == -1)
+			{
+				// Device directory filled up. Abort operation and reject slave.
+			}
 		}
 		END_ASYNC;
 	}
