@@ -295,16 +295,22 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
 
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+
+	ASSERT_EQ(modbusSlave->getSlaveId(), 2);
+
 	word tpe;
 	byte slv;
 	int row;
-	deviceDirectory->findDeviceForName((byte*)"dev00", tpe, slv, row);
-	deviceDirectory->findDeviceForName((byte*)"dev01", tpe, slv, row);
-	deviceDirectory->findDeviceForName((byte*)"dev02", tpe, slv, row);
-
-	ASSERT_TRUE(slaveSuccess);
-	ASSERT_TRUE(masterSuccess);
-	ASSERT_EQ(task0.result(), found);
+	ASSERT_TRUE(deviceDirectory->findDeviceForName((byte*)"dev00", tpe, slv, row));
+	ASSERT_EQ(tpe, 1);
+	ASSERT_EQ(slv, 2);
+	ASSERT_EQ(row, 0);
+	ASSERT_TRUE(deviceDirectory->findDeviceForName((byte*)"dev01", tpe, slv, row));
+	ASSERT_EQ(tpe, 2);
+	ASSERT_EQ(slv, 2);
+	ASSERT_EQ(row, 1);
 }
 
 INSTANTIATE_TEST_CASE_P(NoErrors, MasterSlaveIntegrationTests, ::testing::Values(None));

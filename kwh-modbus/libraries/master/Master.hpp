@@ -209,7 +209,7 @@ protected_testable:
 			sentData[2] = i;
 			CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 			AWAIT(completeWriteRegisters);
-			if (modbusGetStatus() != TaskComplete)
+			if (modbusGetStatus() != TaskComplete || !_modbus->isWriteRegsResponse())
 			{
 				reportMalfunction(__LINE__);
 				RETURN_ASYNC;
@@ -226,11 +226,22 @@ protected_testable:
 				reportMalfunction(__LINE__);
 				RETURN_ASYNC;
 			}
-			if (_deviceDirectory->addDevice((byte*)(regs + 3), regs[2], slaveId) == -1)
+			if (_deviceDirectory->addOrReplaceDevice((byte*)(regs + 3), regs[2], slaveId) == -1)
 			{
 				// Device directory filled up. Abort operation and reject slave.
 			}
 		}
+		sentData[0] = 1;
+		sentData[1] = 1;
+		sentData[2] = slaveId;
+		CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
+		AWAIT(completeWriteRegisters);
+		if (modbusGetStatus() != TaskComplete || !_modbus->isWriteRegsResponse())
+		{
+			reportMalfunction(__LINE__);
+			RETURN_ASYNC;
+		}
+
 		END_ASYNC;
 	}
 
