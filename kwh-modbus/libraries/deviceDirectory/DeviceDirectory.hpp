@@ -68,7 +68,6 @@ public:
 		devTypeOut = 0;
 		slaveIdOut = 0;
 		rowOut = -1;
-		bool found;
 		for (int i = 0; i < _maxDevices; i++)
 		{
 			if (_slaveIds[i] == 0)
@@ -241,6 +240,19 @@ public:
 		return numDeleted;
 	}
 	
+	virtual int addOrReplaceDevice(byte* devName, word devType, byte slaveId)
+	{
+		int row;
+		word dummyType;
+		byte dummySlave;
+		if (findDeviceForName(devName, dummyType, dummySlave, row))
+		{
+			insertIntoRow(row, devName, devType, slaveId);
+			return row;
+		}
+		else
+			return addDevice(devName, devType, slaveId);
+	}
 
 	~DeviceDirectory()
 	{

@@ -556,12 +556,48 @@ TEST_F(DeviceDirectoryTests, addDevice_failure)
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	When(Method(mock, findFreeRow)).Return(-1);
 	Fake(Method(mock, insertIntoRow));
-
+	
 	byte* name = (byte*)"Aleah";
 	int row = deviceDirectory->addDevice(name, 5, 1);
 
 	ASSERT_EQ(row, -1);
 	Verify(Method(mock, insertIntoRow)).Never();
+}
+
+TEST_F(DeviceDirectoryTests, addOrReplaceDevice_deviceAdded)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, int &row)
+	{
+		row = -1;
+		return false;
+	});
+	When(Method(mock, addDevice)).Return(703);
+
+	byte* name = (byte*)"Aleah";
+	int row = deviceDirectory->addOrReplaceDevice(name, 5, 1);
+
+	ASSERT_EQ(row, 703);
+	Verify(Method(mock, addDevice).Using(name, 5, 1)).Once();
+}
+
+TEST_F(DeviceDirectoryTests, addOrReplaceDevice_deviceReplaced)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, int &row)
+	{
+		type = 41;
+		slave = 42;
+		row = 23;
+		return true;
+	});
+	Fake(Method(mock, insertIntoRow));
+
+	byte* name = (byte*)"Aleah";
+	int row = deviceDirectory->addOrReplaceDevice(name, 5, 1);
+
+	ASSERT_EQ(row, 23);
+	Verify(Method(mock, insertIntoRow).Using(23, name, 5, 1)).Once();
 }
 
 TEST_F(DeviceDirectoryTests, filterDevicesForSlave_empty)
