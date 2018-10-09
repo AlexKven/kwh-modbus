@@ -245,6 +245,9 @@ public:
 			return;
 	}
 
+	checkForNewSlaves_Task t1;
+	processNewSlave_Task t2;
+
 	Master() { }
 
 	~Master() { }
