@@ -168,4 +168,9 @@ public:
 			return false;
 		return true;
 	}
+
+	virtual bool isAnyWriteResponse()
+	{
+		return isWriteRegResponse() || isWriteRegsResponse();
+	}
 };

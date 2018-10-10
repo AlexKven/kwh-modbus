@@ -17,6 +17,16 @@ enum SearchResultCode : byte
 	error = 2
 };
 
+enum ModbusRequestStatus : byte
+{
+	success = 0,
+	masterFailure = 1,
+	taskFailure = 2,
+	exceptionResponse = 3,
+	incorrectResponseSize = 4,
+	otherResponse = 5
+};
+
 enum MasterState : byte
 {
 	mIdle = 0,
@@ -96,26 +106,32 @@ protected_testable:
 		END_ASYNC;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), completeModbusReadRegisters, void, VARS(ensureTaskNotStarted_Task), byte, word, word);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), completeModbusReadRegisters, ModbusRequestStatus, VARS(ensureTaskNotStarted_Task), byte, word, word);
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), completeModbusReadRegisters, byte recipientId, word regStart, word regCount)
 	{
+		word* dummy0 = nullptr;
+		byte dummy1 = 0
 		ASYNC_VAR(0, taskNotStartedCheck);
 		START_ASYNC;
 		CREATE_ASSIGN_CLASS_TASK(taskNotStartedCheck, ESCAPE(Master<M, S, D>), this, ensureTaskNotStarted);
 		AWAIT(taskNotStartedCheck);
 		if (!modbusSetRequest_ReadRegisters(recipientId, regStart, regCount))
 		{
-			reportMalfunction(__LINE__);
-			YIELD_ASYNC;
+			RESULT_ASYNC(ModbusRequestStatus, masterFailure);
 		}
 		while (!modbusWork())
 		{
 			YIELD_ASYNC;
 		}
+		if (modbusGetStatus() != TaskComplete)
+		{
+			RESULT_ASYNC(ModbusRequestStatus, taskFailure);
+		}
+		
 		END_ASYNC;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), completeModbusWriteRegisters, void, VARS(ensureTaskNotStarted_Task), byte, word, word, word*);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), completeModbusWriteRegisters, ModbusRequestStatus, VARS(ensureTaskNotStarted_Task), byte, word, word, word*);
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), completeModbusWriteRegisters, byte recipientId, word regStart, word regCount, word *regValues)
 	{
 		ASYNC_VAR(0, taskNotStartedCheck);
@@ -165,6 +181,7 @@ protected_testable:
 			reportMalfunction(__LINE__);
 			RESULT_ASYNC(SearchResultCode, error);
 		}
+
 		END_ASYNC;
 	}
 
