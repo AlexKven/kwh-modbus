@@ -103,6 +103,9 @@
     <ClInclude Include="libraries\tuple\Tuple.hpp">
       <Filter>libraries\tuple</Filter>
     </ClInclude>
+    <ClInclude Include="mock\MockableResilientModbusMaster.hpp">
+      <Filter>mock</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">

@@ -1,3 +1,4 @@
+#pragma once
 #include "../modbusMaster/ModbusMaster.hpp"
 #include "../resilientTask/ResilientTask.hpp"
 

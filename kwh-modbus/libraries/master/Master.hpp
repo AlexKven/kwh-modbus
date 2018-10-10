@@ -51,14 +51,14 @@ protected_testable:
 	{
 		_modbus->reset();
 	}
-	virtual bool modbusWork()
-	{
-		return _modbus->work();
-	}
-	virtual bool modbusSetRequest_ReadRegisters(byte recipientId, word regStart, word regCount)
-	{
-		return _modbus->setRequest_ReadRegisters(recipientId, regStart, regCount);
-	}
+	//virtual bool modbusWork()
+	//{
+	//	return _modbus->work();
+	//}
+	//virtual bool modbusSetRequest_ReadRegisters(byte recipientId, word regStart, word regCount)
+	//{
+	//	return _modbus->setRequest_ReadRegisters(recipientId, regStart, regCount);
+	//}
 	virtual bool modbusSetRequest_WriteRegisters(byte recipientId, word regStart, word regCount, word *regValues)
 	{
 		return _modbus->setRequest_WriteRegisters(recipientId, regStart, regCount, regValues);
@@ -103,12 +103,12 @@ protected_testable:
 		START_ASYNC;
 		CREATE_ASSIGN_CLASS_TASK(taskNotStartedCheck, ESCAPE(Master<M, S, D>), this, ensureTaskNotStarted);
 		AWAIT(taskNotStartedCheck);
-		if (!modbusSetRequest_ReadRegisters(recipientId, regStart, regCount))
+		if (!_modbus->setRequest_ReadRegisters(recipientId, regStart, regCount))
 		{
 			reportMalfunction(__LINE__);
 			YIELD_ASYNC;
 		}
-		while (!modbusWork())
+		while (!_modbus->work())
 		{
 			YIELD_ASYNC;
 		}
@@ -138,7 +138,7 @@ protected_testable:
 				YIELD_ASYNC;
 			}
 		}
-		while (!modbusWork())
+		while (!!_modbus->work())
 		{
 			YIELD_ASYNC;
 		}
