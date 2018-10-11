@@ -13,11 +13,15 @@ using namespace fakeit;
 
 typedef MockableResilientModbusMaster<MockSerialStream, WindowsSystemFunctions, ModbusArray> T_MODBUS;
 typedef Master<T_MODBUS, WindowsSystemFunctions, DeviceDirectory<byte*>> T_MASTER;
+typedef ModbusMaster<MockSerialStream, WindowsSystemFunctions, ModbusArray> T_MODBUS_BASE;
+typedef ResilientTask<WindowsSystemFunctions> T_MODBUS_TASK;
 
 #define MOCK_MASTER Mock<T_MASTER> masterMock(*master); \
 T_MASTER & mMaster = masterMock.get()
-#define MOCK_MODBUS Mock<T_MODBUS> modbusMock(*modbus); \
-T_MODBUS & mModbus = modbusMock.get()
+#define MOCK_MODBUS Mock<T_MODBUS_BASE> modbusBaseMock(*(T_MODBUS_BASE*)modbus); \
+T_MODBUS_BASE & mModbusBase = modbusBaseMock.get(); \
+Mock<T_MODBUS_TASK> modbusTaskMock(*(T_MODBUS_TASK*)modbus); \
+T_MODBUS_TASK & mModbusTask = modbusTaskMock.get()
 
 class MasterTests : public ::testing::Test
 {
@@ -102,12 +106,11 @@ TEST_F(MasterTests, completeModbusReadRegisters_CompletesImmediately)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(modbusMock, work)).AlwaysReturn(true);
-	When(Method(modbusMock, setRequest_ReadRegisters)).AlwaysReturn(true);
-
+	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
+	When(Method(modbusBaseMock, setRequest_ReadRegisters)).AlwaysReturn(true);
 	T_MASTER::completeModbusReadRegisters_Task task(&T_MASTER::completeModbusReadRegisters, master, 2, 3, 5);
 	ASSERT_TRUE(task());
 
-	Verify(Method(modbusMock, work)).Once();
-	Verify(Method(modbusMock, setRequest_ReadRegisters).Using(2, 3, 5)).Once();
+	Verify(OverloadedMethod(modbusTaskMock, work, bool())).Once();
+	Verify(Method(modbusBaseMock, setRequest_ReadRegisters).Using(2, 3, 5)).Once();
 }

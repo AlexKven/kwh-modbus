@@ -69,7 +69,7 @@ protected_testable:
 		return curTime - _lastBeginTime >= _minTimePerTryMicros;
 	}
 public:
-	bool work()
+	virtual bool work()
 	{
 		bool tryAgain = false;
 		bool previouslyCompleted = (_status >= 4);
