@@ -50,7 +50,6 @@
     <ClCompile Include="ModbusSlaveTests.cpp" />
     <ClCompile Include="ModbusTests.cpp" />
     <ClCompile Include="ModbusIntegrationTests.cpp" />
-    <ClCompile Include="MultipleInheritanceMock.cpp" />
     <ClCompile Include="ResilientTaskTests.cpp" />
     <ClCompile Include="SlaveTests.cpp" />
     <ClCompile Include="Source.cpp" />
