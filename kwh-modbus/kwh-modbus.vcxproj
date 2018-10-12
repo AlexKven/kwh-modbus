@@ -95,6 +95,7 @@
     <ClInclude Include="libraries\resilientTask\ResilientTask.hpp" />
     <ClInclude Include="libraries\slave\Slave.hpp" />
     <ClInclude Include="libraries\tuple\Tuple.hpp" />
+    <ClInclude Include="mock\MockableResilientModbusMaster.hpp" />
     <ClInclude Include="mock\MockSerialStream.h" />
     <ClInclude Include="noArduino\SystemFunctions.h" />
     <ClInclude Include="noArduino\ArduinoMacros.h" />

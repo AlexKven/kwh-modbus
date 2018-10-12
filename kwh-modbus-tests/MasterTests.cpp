@@ -4,17 +4,24 @@
 #include "../kwh-modbus/libraries/master/Master.hpp"
 #include "../kwh-modbus/libraries/resilientModbusMaster/ResilientModbusMaster.hpp"
 #include "../kwh-modbus/mock/MockSerialStream.h"
+#include "../kwh-modbus/mock/MockableResilientModbusMaster.hpp"
 #include "../kwh-modbus/libraries/deviceDirectory/DeviceDirectory.hpp"
 #include "WindowsSystemFunctions.h"
 #include "test_helpers.h"
 
 using namespace fakeit;
 
-typedef ResilientModbusMaster<MockSerialStream, WindowsSystemFunctions, ModbusArray> T_MODBUS;
+typedef MockableResilientModbusMaster<MockSerialStream, WindowsSystemFunctions, ModbusArray> T_MODBUS;
 typedef Master<T_MODBUS, WindowsSystemFunctions, DeviceDirectory<byte*>> T_MASTER;
+typedef ModbusMaster<MockSerialStream, WindowsSystemFunctions, ModbusArray> T_MODBUS_BASE;
+typedef ResilientTask<WindowsSystemFunctions> T_MODBUS_TASK;
 
 #define MOCK_MASTER Mock<T_MASTER> masterMock(*master); \
 T_MASTER & mMaster = masterMock.get()
+#define MOCK_MODBUS Mock<T_MODBUS_BASE> modbusBaseMock(*(T_MODBUS_BASE*)modbus); \
+T_MODBUS_BASE & mModbusBase = modbusBaseMock.get(); \
+Mock<T_MODBUS_TASK> modbusTaskMock(*(T_MODBUS_TASK*)modbus); \
+T_MODBUS_TASK & mModbusTask = modbusTaskMock.get()
 
 class MasterTests : public ::testing::Test
 {
@@ -98,174 +105,12 @@ TEST_F(MasterTests, ensureTaskNotStarted_DoesntNeedReset)
 TEST_F(MasterTests, completeModbusReadRegisters_CompletesImmediately)
 {
 	MOCK_MASTER;
-	When(Method(masterMock, modbusWork)).AlwaysReturn(true);
-	When(Method(masterMock, modbusSetRequest_ReadRegisters)).AlwaysReturn(true);
-
+	MOCK_MODBUS;
+	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
+	When(Method(modbusBaseMock, setRequest_ReadRegisters)).AlwaysReturn(true);
 	T_MASTER::completeModbusReadRegisters_Task task(&T_MASTER::completeModbusReadRegisters, master, 2, 3, 5);
 	ASSERT_TRUE(task());
 
-	Verify(Method(masterMock, modbusWork)).Once();
-	Verify(Method(masterMock, modbusSetRequest_ReadRegisters).Using(2, 3, 5)).Once();
-}
-
-TEST_F(MasterTests, completeModbusReadRegisters_CompletesWithSomeAttempts)
-{
-	MOCK_MASTER;
-	When(Method(masterMock, modbusWork))
-		.Return(false)
-		.Return(false)
-		.Return(true);
-	When(Method(masterMock, modbusSetRequest_ReadRegisters)).AlwaysReturn(true);
-
-	T_MASTER::completeModbusReadRegisters_Task task(&T_MASTER::completeModbusReadRegisters, master, 2, 3, 5);
-	ASSERT_FALSE(task());
-	ASSERT_FALSE(task());
-	ASSERT_TRUE(task());
-
-	Verify(Method(masterMock, modbusWork)).Exactly(3);
-	Verify(Method(masterMock, modbusSetRequest_ReadRegisters).Using(2, 3, 5)).Once();
-}
-
-TEST_F(MasterTests, completeModbusReadRegisters_Malfunction)
-{
-	MOCK_MASTER;
-	When(Method(masterMock, modbusSetRequest_ReadRegisters)).AlwaysReturn(false);
-	Fake(Method(masterMock, reportMalfunction));
-	T_MASTER::completeModbusReadRegisters_Task task(&T_MASTER::completeModbusReadRegisters, master, 2, 3, 5);
-	ASSERT_FALSE(task());
-
-	Verify(Method(masterMock, modbusSetRequest_ReadRegisters).Using(2, 3, 5)).Once();
-	Verify(Method(masterMock, reportMalfunction)).Once();
-}
-
-TEST_F(MasterTests, completeModbusWriteRegisters_single_CompletesImmediately)
-{
-	MOCK_MASTER;
-	When(Method(masterMock, modbusWork)).AlwaysReturn(true);
-	When(Method(masterMock, modbusSetRequest_WriteRegister)).AlwaysReturn(true);
-
-	word value = 6;
-	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 1, &value);
-	ASSERT_TRUE(task());
-
-	Verify(Method(masterMock, modbusWork)).Once();
-	Verify(Method(masterMock, modbusSetRequest_WriteRegister).Using(2, 3, 6)).Once();
-}
-
-TEST_F(MasterTests, completeModbusWriteRegisters_single_CompletesWithSomeAttempts)
-{
-	MOCK_MASTER;
-	When(Method(masterMock, modbusWork))
-		.Return(false)
-		.Return(false)
-		.Return(true);
-	When(Method(masterMock, modbusSetRequest_WriteRegister)).AlwaysReturn(true);
-
-	word value = 6;
-	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 1, &value);
-	ASSERT_FALSE(task());
-	ASSERT_FALSE(task());
-	ASSERT_TRUE(task());
-
-	Verify(Method(masterMock, modbusWork)).Exactly(3);
-	Verify(Method(masterMock, modbusSetRequest_WriteRegister).Using(2, 3, 6)).Once();
-}
-
-TEST_F(MasterTests, completeModbusWriteRegisters_single_Malfunction)
-{
-	MOCK_MASTER;
-	When(Method(masterMock, modbusSetRequest_WriteRegister)).AlwaysReturn(false);
-	Fake(Method(masterMock, reportMalfunction));
-
-	word value = 6;
-	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 1, &value);
-	ASSERT_FALSE(task());
-
-	Verify(Method(masterMock, modbusSetRequest_WriteRegister).Using(2, 3, 6)).Once();
-	Verify(Method(masterMock, reportMalfunction)).Once();
-}
-
-TEST_F(MasterTests, completeModbusWriteRegisters_multiple_CompletesImmediately)
-{
-	MOCK_MASTER;
-	When(Method(masterMock, modbusWork)).AlwaysReturn(true);
-	When(Method(masterMock, modbusSetRequest_WriteRegisters)).AlwaysReturn(true);
-
-	word values[3] = { 7, 8, 9 };
-	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 3, (word*)values);
-	ASSERT_TRUE(task());
-
-	Verify(Method(masterMock, modbusWork)).Once();
-	Verify(Method(masterMock, modbusSetRequest_WriteRegisters).Using(2, 3, 3, (word*)values)).Once();
-}
-
-TEST_F(MasterTests, completeModbusWriteRegisters_multiple_CompletesWithSomeAttempts)
-{
-	MOCK_MASTER;
-	When(Method(masterMock, modbusWork))
-		.Return(false)
-		.Return(false)
-		.Return(true);
-	When(Method(masterMock, modbusSetRequest_WriteRegisters)).AlwaysReturn(true);
-
-	word values[3] = { 7, 8, 9 };
-	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 3, (word*)values);
-	ASSERT_FALSE(task());
-	ASSERT_FALSE(task());
-	ASSERT_TRUE(task());
-
-	Verify(Method(masterMock, modbusWork)).Exactly(3);
-	Verify(Method(masterMock, modbusSetRequest_WriteRegisters).Using(2, 3, 3, (word*)values)).Once();
-}
-
-TEST_F(MasterTests, completeModbusWriteRegisters_multiple_Malfunction)
-{
-	MOCK_MASTER;
-	When(Method(masterMock, modbusSetRequest_WriteRegisters)).AlwaysReturn(false);
-	Fake(Method(masterMock, reportMalfunction));
-	
-	word values[3] = { 7, 8, 9 };
-	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 3, (word*)values);
-	ASSERT_FALSE(task());
-
-	Verify(Method(masterMock, modbusSetRequest_WriteRegisters).Using(2, 3, 3, (word*)values)).Once();
-	Verify(Method(masterMock, reportMalfunction)).Once();
-}
-
-TEST_F(MasterTests, checkForNewSlaves_Found)
-{
-	MOCK_MASTER;
-	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
-	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskComplete);
-
-	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
-	ASSERT_TRUE(task());
-	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
-	ASSERT_EQ(task.result(), found);
-}
-
-TEST_F(MasterTests, checkForNewSlaves_NotFound)
-{
-	MOCK_MASTER;
-	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
-	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskTimeOut);
-
-	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
-	ASSERT_TRUE(task());
-	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
-	ASSERT_EQ(task.result(), notFound);
-}
-
-TEST_F(MasterTests, checkForNewSlaves_Error)
-{
-	MOCK_MASTER;
-	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
-	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskFatal);
-	Fake(Method(masterMock, reportMalfunction));
-
-	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
-	ASSERT_TRUE(task());
-	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
-	ASSERT_EQ(task.result(), error);
-	Verify(Method(masterMock, reportMalfunction)).Once();
+	Verify(OverloadedMethod(modbusTaskMock, work, bool())).Once();
+	Verify(Method(modbusBaseMock, setRequest_ReadRegisters).Using(2, 3, 5)).Once();
 }
