@@ -146,7 +146,6 @@ protected_testable:
 		{
 			YIELD_ASYNC;
 		}
-		END_ASYNC;
 		if (_modbus->getStatus() != TaskComplete)
 		{
 			RESULT_ASYNC(ModbusRequestStatus, taskFailure);
@@ -167,6 +166,7 @@ protected_testable:
 				RESULT_ASYNC(ModbusRequestStatus, otherResponse);
 			}
 		}
+		END_ASYNC;
 	}
 
 	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), checkForNewSlaves, SearchResultCode, VARS(completeModbusReadRegisters_Task));
