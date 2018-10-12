@@ -53,39 +53,6 @@ private_testable:
 	MasterState _state;
 
 protected_testable:
-	virtual byte modbusGetStatus()
-	{
-		return _modbus->getStatus();
-	}
-	virtual void modbusReset()
-	{
-		_modbus->reset();
-	}
-	//virtual bool modbusWork()
-	//{
-	//	return _modbus->work();
-	//}
-	//virtual bool modbusSetRequest_ReadRegisters(byte recipientId, word regStart, word regCount)
-	//{
-	//	return _modbus->setRequest_ReadRegisters(recipientId, regStart, regCount);
-	//}
-	virtual bool modbusSetRequest_WriteRegisters(byte recipientId, word regStart, word regCount, word *regValues)
-	{
-		return _modbus->setRequest_WriteRegisters(recipientId, regStart, regCount, regValues);
-	}
-	virtual bool modbusSetRequest_WriteRegister(byte recipientId, word regIndex, word regValue)
-	{
-		return _modbus->setRequest_WriteRegister(recipientId, regIndex, regValue);
-	}
-	virtual word modbusGetFrameLength()
-	{
-		return _modbus->getFrameLength();
-	}
-	virtual byte* modbusGetFramePtr()
-	{
-		return _modbus->getFramePtr();
-	}
-
 	virtual void reportMalfunction(int line)
 	{
 
@@ -95,13 +62,13 @@ protected_testable:
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), ensureTaskNotStarted)
 	{
 		START_ASYNC;
-		if (modbusGetStatus() != TaskNotStarted)
+		if (_modbus->getStatus() != TaskNotStarted)
 		{
-			modbusReset();
+			_modbus->reset();
 			do
 			{
 				YIELD_ASYNC;
-			} while (modbusGetStatus() != TaskNotStarted);
+			} while (_modbus->getStatus() != TaskNotStarted);
 		}
 		END_ASYNC;
 	}
@@ -110,7 +77,7 @@ protected_testable:
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), completeModbusReadRegisters, byte recipientId, word regStart, word regCount)
 	{
 		word* dummy0 = nullptr;
-		byte dummy1 = 0
+		byte dummy1 = 0;
 		ASYNC_VAR(0, taskNotStartedCheck);
 		START_ASYNC;
 		CREATE_ASSIGN_CLASS_TASK(taskNotStartedCheck, ESCAPE(Master<M, S, D>), this, ensureTaskNotStarted);
@@ -123,11 +90,33 @@ protected_testable:
 		{
 			YIELD_ASYNC;
 		}
-		if (modbusGetStatus() != TaskComplete)
+		if (_modbus->getStatus() != TaskComplete)
 		{
 			RESULT_ASYNC(ModbusRequestStatus, taskFailure);
 		}
-		
+		word finalRegCount;
+		if (_modbus->isReadRegsResponse(finalRegCount, dummy0))
+		{
+			if (finalRegCount == regCount)
+			{
+				RESULT_ASYNC(ModbusRequestStatus, success);
+			}
+			else
+			{
+				RESULT_ASYNC(ModbusRequestStatus, incorrectResponseSize);
+			}
+		}
+		else
+		{
+			if (_modbus->isExceptionResponse(dummy1, dummy1))
+			{
+				RESULT_ASYNC(ModbusRequestStatus, exceptionResponse);
+			}
+			else
+			{
+				RESULT_ASYNC(ModbusRequestStatus, otherResponse);
+			}
+		}
 		END_ASYNC;
 	}
 
@@ -135,30 +124,49 @@ protected_testable:
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), completeModbusWriteRegisters, byte recipientId, word regStart, word regCount, word *regValues)
 	{
 		ASYNC_VAR(0, taskNotStartedCheck);
+		byte dummy;
 		START_ASYNC;
 		CREATE_ASSIGN_CLASS_TASK(taskNotStartedCheck, ESCAPE(Master<M, S, D>), this, ensureTaskNotStarted);
 		AWAIT(taskNotStartedCheck);
 		if (regCount == 1)
 		{
-			if (!modbusSetRequest_WriteRegister(recipientId, regStart, *regValues))
+			if (!_modbus->setRequest_WriteRegister(recipientId, regStart, *regValues))
 			{
-				reportMalfunction(__LINE__);
-				YIELD_ASYNC;
+				RESULT_ASYNC(ModbusRequestStatus, masterFailure);
 			}
 		}
 		else
 		{
-			if (!modbusSetRequest_WriteRegisters(recipientId, regStart, regCount, regValues))
+			if (!_modbus->setRequest_WriteRegisters(recipientId, regStart, regCount, regValues))
 			{
-				reportMalfunction(__LINE__);
-				YIELD_ASYNC;
+				RESULT_ASYNC(ModbusRequestStatus, masterFailure);
 			}
 		}
-		while (!!_modbus->work())
+		while (!_modbus->work())
 		{
 			YIELD_ASYNC;
 		}
 		END_ASYNC;
+		if (_modbus->getStatus() != TaskComplete)
+		{
+			RESULT_ASYNC(ModbusRequestStatus, taskFailure);
+		}
+		word finalRegCount;
+		if ((_modbus->isWriteRegResponse() && regCount == 1) || (_modbus->isWriteRegsResponse() && regCount != 1))
+		{
+			RESULT_ASYNC(ModbusRequestStatus, success);
+		}
+		else
+		{
+			if (_modbus->isExceptionResponse(dummy, dummy))
+			{
+				RESULT_ASYNC(ModbusRequestStatus, exceptionResponse);
+			}
+			else
+			{
+				RESULT_ASYNC(ModbusRequestStatus, otherResponse);
+			}
+		}
 	}
 
 	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), checkForNewSlaves, SearchResultCode, VARS(completeModbusReadRegisters_Task));
@@ -168,11 +176,11 @@ protected_testable:
 		START_ASYNC;
 		CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, 1, 0, 7);
 		AWAIT(completeReadRegisters);
-		if (modbusGetStatus() == TaskComplete)
+		if (_modbus->getStatus() == TaskComplete)
 		{
 			RESULT_ASYNC(SearchResultCode, found);
 		}
-		else if (modbusGetStatus() == TaskStatus::TaskFullyAttempted || modbusGetStatus() == TaskStatus::TaskTimeOut)
+		else if (_modbus->getStatus() == TaskStatus::TaskFullyAttempted || _modbus->getStatus() == TaskStatus::TaskTimeOut)
 		{
 			RESULT_ASYNC(SearchResultCode, notFound);
 		}
@@ -226,14 +234,14 @@ protected_testable:
 			sentData[2] = i;
 			CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 			AWAIT(completeWriteRegisters);
-			if (modbusGetStatus() != TaskComplete || !_modbus->isWriteRegsResponse())
+			if (_modbus->getStatus() != TaskComplete || !_modbus->isWriteRegsResponse())
 			{
 				reportMalfunction(__LINE__);
 				RETURN_ASYNC;
 			}
 			CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, 1, 0, 4 + (deviceNameLength + 1) / 2);
 			AWAIT(completeReadRegisters);
-			if (modbusGetStatus() != TaskComplete)
+			if (_modbus->getStatus() != TaskComplete)
 			{
 				reportMalfunction(__LINE__);
 				RETURN_ASYNC;
@@ -253,7 +261,7 @@ protected_testable:
 		sentData[2] = slaveId;
 		CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 		AWAIT(completeWriteRegisters);
-		if (modbusGetStatus() != TaskComplete || !_modbus->isWriteRegsResponse())
+		if (_modbus->getStatus() != TaskComplete || !_modbus->isWriteRegsResponse())
 		{
 			reportMalfunction(__LINE__);
 			RETURN_ASYNC;

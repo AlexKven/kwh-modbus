@@ -58,24 +58,24 @@ public:
 
 TEST_F(MasterTests, ensureTaskNotStarted_NeedsReset_Doesnt)
 {
-	MOCK_MASTER;
-	Fake(Method(masterMock, modbusReset));
-	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskInProgress);
+	MOCK_MODBUS;
+	Fake(Method(modbusTaskMock, reset));
+	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskInProgress);
 
 	T_MASTER::ensureTaskNotStarted_Task task(&T_MASTER::ensureTaskNotStarted, master);
 	ASSERT_FALSE(task());
 	ASSERT_FALSE(task());
 	ASSERT_FALSE(task());
 
-	Verify(Method(masterMock, modbusGetStatus)).Exactly(3);
-	Verify(Method(masterMock, modbusReset)).Once();
+	Verify(Method(modbusTaskMock, getStatus)).Exactly(3);
+	Verify(Method(modbusTaskMock, reset)).Once();
 }
 
 TEST_F(MasterTests, ensureTaskNotStarted_NeedsReset_Does)
 {
-	MOCK_MASTER;
-	Fake(Method(masterMock, modbusReset));
-	When(Method(masterMock, modbusGetStatus))
+	MOCK_MODBUS;
+	Fake(Method(modbusTaskMock, reset));
+	When(Method(modbusTaskMock, getStatus))
 		.Return(TaskInProgress)
 		.Return(TaskComplete)
 		.Return(TaskNotStarted);
@@ -85,21 +85,21 @@ TEST_F(MasterTests, ensureTaskNotStarted_NeedsReset_Does)
 	ASSERT_FALSE(task());
 	ASSERT_TRUE(task());
 
-	Verify(Method(masterMock, modbusGetStatus)).Exactly(3);
-	Verify(Method(masterMock, modbusReset)).Once();
+	Verify(Method(modbusTaskMock, getStatus)).Exactly(3);
+	Verify(Method(modbusTaskMock, reset)).Once();
 }
 
 TEST_F(MasterTests, ensureTaskNotStarted_DoesntNeedReset)
 {
-	MOCK_MASTER;
-	Fake(Method(masterMock, modbusReset));
-	When(Method(masterMock, modbusGetStatus)).AlwaysReturn(TaskNotStarted);
+	MOCK_MODBUS;
+	Fake(Method(modbusTaskMock, reset));
+	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskNotStarted);
 
 	T_MASTER::ensureTaskNotStarted_Task task(&T_MASTER::ensureTaskNotStarted, master);
 	ASSERT_TRUE(task());
 
-	Verify(Method(masterMock, modbusGetStatus)).Once();
-	Verify(Method(masterMock, modbusReset)).Never();
+	Verify(Method(modbusTaskMock, getStatus)).Once();
+	Verify(Method(modbusTaskMock, reset)).Never();
 }
 
 TEST_F(MasterTests, completeModbusReadRegisters_CompletesImmediately)

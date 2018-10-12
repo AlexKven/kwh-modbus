@@ -171,65 +171,65 @@ public:
 		return (_status >= 4);
 	}
 
-	bool work(TaskStatus &statusOut)
+	virtual bool work(TaskStatus &statusOut)
 	{
 		auto result = work();
 		statusOut = _status;
 		return result;
 	}
 
-	TaskStatus getStatus()
+	virtual TaskStatus getStatus()
 	{
 		return _status;
 	}
 
-	int getMaxTries()
+	virtual int getMaxTries()
 	{
 		return _maxTries;
 	}
 
-	void setMaxTries(int value)
+	virtual void setMaxTries(int value)
 	{
 		_maxTries = value;
 	}
 
-	unsigned long long getMaxTimeMicros()
+	virtual unsigned long long getMaxTimeMicros()
 	{
 		return _maxTimeMicros;
 	}
 
-	void setMaxTimeMicros(unsigned long long value)
+	virtual void setMaxTimeMicros(unsigned long long value)
 	{
 		_maxTimeMicros = value;
 	}
 
-	unsigned long long getMaxTimePerTryMicros()
+	virtual unsigned long long getMaxTimePerTryMicros()
 	{
 		return _maxTimePerTryMicros;
 	}
 
-	void setMaxTimePerTryMicros(unsigned long long value)
+	virtual void setMaxTimePerTryMicros(unsigned long long value)
 	{
 		_maxTimePerTryMicros = value;
 	}
 
-	unsigned long long getMinTimePerTryMicros()
+	virtual unsigned long long getMinTimePerTryMicros()
 	{
 		return _minTimePerTryMicros;
 	}
 
-	void setMinTimePerTryMicros(unsigned long long value)
+	virtual void setMinTimePerTryMicros(unsigned long long value)
 	{
 		_minTimePerTryMicros = value;
 	}
 
-	void setSystem(S *system)
+	virtual void setSystem(S *system)
 	{
 		_system = system;
 	}
 
 	// Not tested
-	void reset()
+	virtual void reset()
 	{
 		_status = TaskNotStarted;
 		_currentTries = 0;
