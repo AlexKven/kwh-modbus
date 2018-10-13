@@ -273,8 +273,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 {
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
-	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master);
-	
+	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, false);
+
 	stack<IAsyncTask*> tasks;
 	tasks.push(&task1);
 	tasks.push(&task0);
@@ -311,6 +311,37 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 	ASSERT_EQ(tpe, 2);
 	ASSERT_EQ(slv, 2);
 	ASSERT_EQ(row, 1);
+}
+
+TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave_JustReject)
+{
+	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
+	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, true);
+
+	stack<IAsyncTask*> tasks;
+	tasks.push(&task1);
+	tasks.push(&task0);
+
+	slaveAction = [this]() {
+		slave->task();
+		return masterSuccess;
+	};
+	masterAction = [this, &tasks]()
+	{
+		return runTaskStack(tasks);
+	};
+
+	modbusSlave->setSlaveId(1);
+	slave->setOutgoingState();
+
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+
+	ASSERT_EQ(modbusSlave->getSlaveId(), 255);
 }
 
 INSTANTIATE_TEST_CASE_P(NoErrors, MasterSlaveIntegrationTests, ::testing::Values(None));

@@ -9,6 +9,11 @@
 #include "../asyncAwait/AsyncAwait.hpp"
 
 #define ENSURE(statement) if (!(statement)) return false
+#define ENSURE_NONMALFUNCTION(modbus_task) if (modbus_task.result() != success) \
+{ \
+	reportMalfunction(__LINE__); \
+	return true; \
+}
 
 enum SearchResultCode : byte
 {
@@ -200,8 +205,8 @@ protected_testable:
 		END_ASYNC;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), processNewSlave, void, VARS(completeModbusReadRegisters_Task, completeModbusWriteRegisters_Task, byte, word, word, word, word[3]));
-	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), processNewSlave)
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), processNewSlave, void, VARS(completeModbusReadRegisters_Task, completeModbusWriteRegisters_Task, byte, word, word, word, word[3]), bool);
+	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), processNewSlave, bool justReject)
 	{
 		ASYNC_VAR(0, completeReadRegisters);
 		ASYNC_VAR(1, completeWriteRegisters);
@@ -213,26 +218,31 @@ protected_testable:
 		START_ASYNC;
 		word regCount;
 		word *regs;
-		if (!_modbus->isReadRegsResponse(regCount, regs) || regCount != 7)
+		numDevices = 0;
+		if (_modbus->isReadRegsResponse(regCount, regs))
 		{
-			reportMalfunction(__LINE__);
-			RETURN_ASYNC;
+			numDevices = regs[2];
 		}
-		numDevices = regs[2];
 		deviceNameLength = regs[3];
-		if (regs[1] >> 8 < 1)
-		{
-			// version of slave is less than 1.0
-			// reject slave due to version mismatch
-		}
-		if (numDevices == 0)
-		{
-			// reject slave due to no devices
-		}
 		slaveId = _deviceDirectory->findFreeSlaveID();
-		if (slaveId == -1)
+		if ((regs[1] >> 8 < 1) || (numDevices == 0) || justReject || (slaveId == -1))
 		{
-			// reject slave due to master being full and unable to accept new slaves
+			// first case: version of slave is less than 1.0
+			// reject slave due to version mismatch
+
+			// second case: reject slave due to no devices
+
+			// third case: we are told to simply reject the slave
+
+			// fourth case: reject slave due to master being full and unable to accept new slaves
+
+			sentData[0] = 1;
+			sentData[1] = 1;
+			sentData[2] = 255;
+			CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
+			AWAIT(completeWriteRegisters);
+			ENSURE_NONMALFUNCTION(completeWriteRegisters);
+			RETURN_ASYNC;
 		}
 		for (i = 0; i < numDevices; i++)
 		{
@@ -241,22 +251,20 @@ protected_testable:
 			sentData[2] = i;
 			CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 			AWAIT(completeWriteRegisters);
-			if (completeWriteRegisters.result() != success)
-			{
-				reportMalfunction(__LINE__);
-				RETURN_ASYNC;
-			}
+			ENSURE_NONMALFUNCTION(completeWriteRegisters);
 			CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, 1, 0, 4 + (deviceNameLength + 1) / 2);
 			AWAIT(completeReadRegisters);
-			if (completeReadRegisters.result() != success)
-			{
-				reportMalfunction(__LINE__);
-				RETURN_ASYNC;
-			}
+			ENSURE_NONMALFUNCTION(completeReadRegisters);
 			_modbus->isReadRegsResponse(regCount, regs);
 			if (_deviceDirectory->addOrReplaceDevice((byte*)(regs + 3), regs[2], slaveId) == -1)
 			{
-				// Device directory filled up. Abort operation and reject slave.
+				sentData[0] = 1;
+				sentData[1] = 1;
+				sentData[2] = 255;
+				CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
+				AWAIT(completeWriteRegisters);
+				ENSURE_NONMALFUNCTION(completeWriteRegisters);
+				_deviceDirectory->filterDevicesForSlave(nullptr, 0, slaveId);
 			}
 		}
 		sentData[0] = 1;
@@ -264,12 +272,7 @@ protected_testable:
 		sentData[2] = slaveId;
 		CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 		AWAIT(completeWriteRegisters);
-		if (_modbus->getStatus() != TaskComplete || !_modbus->isWriteRegsResponse())
-		{
-			reportMalfunction(__LINE__);
-			RETURN_ASYNC;
-		}
-
+		ENSURE_NONMALFUNCTION(completeWriteRegisters);
 		END_ASYNC;
 	}
 
