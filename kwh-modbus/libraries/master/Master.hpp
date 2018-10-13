@@ -225,7 +225,10 @@ protected_testable:
 		}
 		deviceNameLength = regs[3];
 		slaveId = _deviceDirectory->findFreeSlaveID();
-		if ((regs[1] >> 8 < 1) || (numDevices == 0) || justReject || (slaveId == -1))
+		if ((regs[1] >> 8 < 1) ||
+			(numDevices == 0) ||
+			justReject ||
+			(slaveId == -1))
 		{
 			// first case: version of slave is less than 1.0
 			// reject slave due to version mismatch

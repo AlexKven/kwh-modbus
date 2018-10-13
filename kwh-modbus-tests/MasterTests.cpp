@@ -557,3 +557,32 @@ TEST_F(MasterTests, checkForNewSlaves_BadSlave)
 	Verify(Method(completeReadRegsMock, func).Using(1, 0, 7)).Once();
 	ASSERT_EQ(task.result(), badSlave);
 }
+
+TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
+{
+	MOCK_MODBUS;
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
+	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
+	When(Method(completeReadRegsMock, func)).Return(true);
+	When(Method(completeReadRegsMock, result)).Return(success);
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
+	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
+	When(Method(completeWriteRegsMock, func)).Return(true);
+	When(Method(completeWriteRegsMock, result)).Return(success);
+	
+	word* mockRegs[1] = 
+	{
+		
+	};
+	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([](word &regCount, word *regs) {
+		regCount = 7;
+		return true;
+	});
+
+	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	ASSERT_TRUE(task());
+	Verify(Method(completeReadRegsMock, func).Using(1, 0, 7)).Once();
+	ASSERT_EQ(task.result(), badSlave);
+}
