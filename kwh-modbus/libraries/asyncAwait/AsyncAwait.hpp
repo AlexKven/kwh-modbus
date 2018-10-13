@@ -118,7 +118,7 @@ public:
 		return _isCompleted;
 	}
 
-	T result()
+	virtual T result()
 	{
 		T res = *(T*)_resultVal;
 		return res;
@@ -166,7 +166,7 @@ public:
 		return _isCompleted;
 	}
 
-	void result()
+	virtual void result()
 	{
 	}
 
@@ -191,9 +191,31 @@ public:
 	TReturn *_result;
 };
 
+#ifdef TEST
+template<class TReturn, class ...TParams>
+class IMockedTask
+{
+public:
+	virtual bool func(TParams...) = 0;
+
+	virtual TReturn result() = 0;
+};
+#endif
+
 template<class TReturn, class TupleVar, class ...TParams>
 class AsyncTaskSpecific : public AsyncTask<TReturn>
 {
+#ifdef TEST
+public:
+	static IMockedTask<TReturn, TParams...> *mock;
+
+	TReturn result()
+	{
+		if (mock != nullptr)
+			return mock->result();
+		return AsyncTask<TReturn>::result();
+	}
+#endif
 private:
 	Tuple<TParams...> _parameters;
 	bool(*_func)(StateParam<TReturn, TupleVar>&, TParams...);
@@ -216,9 +238,14 @@ protected:
 	template<int ...S>
 	bool callFunc(seq<S...>)
 	{
+#ifdef TEST
+		if (mock != nullptr)
+			return mock->func(Get<S>(_parameters) ...);
+#endif
 		StateParam<TReturn, TupleVar> sp = StateParam<TReturn, TupleVar>(&_variables, &_curLine, (TReturn*)getResultVal());
 		return _func(sp, Get<S>(_parameters) ...);
 	}
+
 public:
 	AsyncTaskSpecific(bool(*ptr)(StateParam<TReturn, TupleVar>&, TParams...), TParams... params)
 	{
@@ -244,9 +271,23 @@ public:
 	}
 };
 
+template<class TReturn, class TupleVar, class ...TParam>
+IMockedTask<TReturn, TParam...>* AsyncTaskSpecific<TReturn, TupleVar, TParam...>::mock = nullptr;
+
 template<class TCls, class TReturn, class TupleVar, class ...TParams>
 class AsyncClassTaskSpecific : public AsyncTask<TReturn>
 {
+#ifdef TEST
+public:
+	static IMockedTask<TReturn, TParams...> *mock;
+
+	TReturn result()
+	{
+		if (mock != nullptr)
+			return mock->result();
+		return AsyncTask<TReturn>::result();
+	}
+#endif
 private:
 	Tuple<TParams...> _parameters;
 	bool (TCls::*_func)(StateParam<TReturn, TupleVar>&, TParams...);
@@ -270,6 +311,10 @@ protected:
 	template<int ...S>
 	bool callFunc(seq<S...>)
 	{
+#ifdef TEST
+		if (mock != nullptr)
+			return mock->func(Get<S>(_parameters) ...);
+#endif
 		StateParam<TReturn, TupleVar> sp = StateParam<TReturn, TupleVar>(&_variables, &_curLine, (TReturn*)getResultVal());
 		return (_funcLocation->*_func)(sp, Get<S>(_parameters) ...);
 	}
@@ -299,3 +344,6 @@ public:
 		_func = nullptr;
 	}
 };
+
+template<class TCls, class TReturn, class TupleVar, class ...TParam>
+IMockedTask<TReturn, TParam...>* AsyncClassTaskSpecific<TCls, TReturn, TupleVar, TParam...>::mock = nullptr;
