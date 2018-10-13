@@ -486,9 +486,11 @@ TEST_F(MasterTests, completeModbusWriteRegisters_multiple_OtherResponse)
 TEST_F(MasterTests, checkForNewSlaves_Found)
 {
 	MOCK_MASTER;
-	MOCK_MODBUS;
-	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
-	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskComplete);
+	When(Method(masterMock, completeModbusReadRegisters)).Do(
+		[](T_MASTER::completeModbusReadRegisters_Param &state, byte recipientId, word regStart, word regCount)
+	{
+		RESULT_ASYNC(ModbusRequestStatus, success);
+	});
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
@@ -500,7 +502,11 @@ TEST_F(MasterTests, checkForNewSlaves_NotFound)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
+	When(Method(masterMock, completeModbusReadRegisters)).Do(
+		[](T_MASTER::completeModbusReadRegisters_Param &state, byte recipientId, word regStart, word regCount)
+	{
+		RESULT_ASYNC(ModbusRequestStatus, taskFailure);
+	});
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskTimeOut);
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
@@ -509,11 +515,15 @@ TEST_F(MasterTests, checkForNewSlaves_NotFound)
 	ASSERT_EQ(task.result(), notFound);
 }
 
-TEST_F(MasterTests, checkForNewSlaves_Error)
+TEST_F(MasterTests, checkForNewSlaves_Error_TaskFailure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, completeModbusReadRegisters)).Return(true);
+	When(Method(masterMock, completeModbusReadRegisters)).Do(
+		[](T_MASTER::completeModbusReadRegisters_Param &state, byte recipientId, word regStart, word regCount)
+	{
+		RESULT_ASYNC(ModbusRequestStatus, taskFailure);
+	});
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskFatal);
 	Fake(Method(masterMock, reportMalfunction));
 
@@ -522,4 +532,36 @@ TEST_F(MasterTests, checkForNewSlaves_Error)
 	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
 	ASSERT_EQ(task.result(), error);
 	Verify(Method(masterMock, reportMalfunction)).Once();
+}
+
+TEST_F(MasterTests, checkForNewSlaves_Error_MasterFailure)
+{
+	MOCK_MASTER;
+	When(Method(masterMock, completeModbusReadRegisters)).Do(
+		[](T_MASTER::completeModbusReadRegisters_Param &state, byte recipientId, word regStart, word regCount)
+	{
+		RESULT_ASYNC(ModbusRequestStatus, masterFailure);
+	});
+	Fake(Method(masterMock, reportMalfunction));
+
+	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	ASSERT_TRUE(task());
+	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
+	ASSERT_EQ(task.result(), error);
+	Verify(Method(masterMock, reportMalfunction)).Once();
+}
+
+TEST_F(MasterTests, checkForNewSlaves_BadSlave)
+{
+	MOCK_MASTER;
+	When(Method(masterMock, completeModbusReadRegisters)).Do(
+		[](T_MASTER::completeModbusReadRegisters_Param &state, byte recipientId, word regStart, word regCount)
+	{
+		RESULT_ASYNC(ModbusRequestStatus, exceptionResponse);
+	});
+
+	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	ASSERT_TRUE(task());
+	Verify(Method(masterMock, completeModbusReadRegisters).Using(Any<T_MASTER::completeModbusReadRegisters_Param>(), 1, 0, 7)).Once();
+	ASSERT_EQ(task.result(), badSlave);
 }

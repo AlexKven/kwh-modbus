@@ -14,7 +14,8 @@ enum SearchResultCode : byte
 {
 	notFound = 0,
 	found = 1,
-	error = 2
+	badSlave = 2,
+	error = 3
 };
 
 enum ModbusRequestStatus : byte
@@ -176,20 +177,26 @@ protected_testable:
 		START_ASYNC;
 		CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, 1, 0, 7);
 		AWAIT(completeReadRegisters);
-		if (_modbus->getStatus() == TaskComplete)
+		switch (completeReadRegisters.result())
 		{
+		case success:
 			RESULT_ASYNC(SearchResultCode, found);
-		}
-		else if (_modbus->getStatus() == TaskStatus::TaskFullyAttempted || _modbus->getStatus() == TaskStatus::TaskTimeOut)
-		{
-			RESULT_ASYNC(SearchResultCode, notFound);
-		}
-		else
-		{
+		case taskFailure:
+			if (_modbus->getStatus() == TaskStatus::TaskFullyAttempted || _modbus->getStatus() == TaskStatus::TaskTimeOut)
+			{
+				RESULT_ASYNC(SearchResultCode, notFound);
+			}
+			else
+			{
+				reportMalfunction(__LINE__);
+				RESULT_ASYNC(SearchResultCode, error);
+			}
+		case masterFailure:
 			reportMalfunction(__LINE__);
 			RESULT_ASYNC(SearchResultCode, error);
+		default:
+			RESULT_ASYNC(SearchResultCode, badSlave);
 		}
-
 		END_ASYNC;
 	}
 
@@ -234,23 +241,19 @@ protected_testable:
 			sentData[2] = i;
 			CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 			AWAIT(completeWriteRegisters);
-			if (_modbus->getStatus() != TaskComplete || !_modbus->isWriteRegsResponse())
+			if (completeWriteRegisters.result() != success)
 			{
 				reportMalfunction(__LINE__);
 				RETURN_ASYNC;
 			}
 			CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, 1, 0, 4 + (deviceNameLength + 1) / 2);
 			AWAIT(completeReadRegisters);
-			if (_modbus->getStatus() != TaskComplete)
+			if (completeReadRegisters.result() != success)
 			{
 				reportMalfunction(__LINE__);
 				RETURN_ASYNC;
 			}
-			if (!_modbus->isReadRegsResponse(regCount, regs) && regCount != 4 + (deviceNameLength + 1) / 2)
-			{
-				reportMalfunction(__LINE__);
-				RETURN_ASYNC;
-			}
+			_modbus->isReadRegsResponse(regCount, regs);
 			if (_deviceDirectory->addOrReplaceDevice((byte*)(regs + 3), regs[2], slaveId) == -1)
 			{
 				// Device directory filled up. Abort operation and reject slave.
