@@ -9,6 +9,9 @@
 #include "WindowsSystemFunctions.h"
 #include "test_helpers.h"
 
+#include <stack>
+#include <tuple>
+
 using namespace fakeit;
 
 typedef MockableResilientModbusMaster<MockSerialStream, WindowsSystemFunctions, ModbusArray> T_MODBUS;
@@ -572,17 +575,17 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 	When(Method(completeWriteRegsMock, func)).Return(true);
 	When(Method(completeWriteRegsMock, result)).Return(success);
 	
-	word* mockRegs[1] = 
-	{
-		
-	};
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([](word &regCount, word *regs) {
-		regCount = 7;
+	stack<tuple<word, word*>> regsStack;
+	regsStack.push(make_tuple(7, new word[7]{ 0, 1 << 8, 3, 6, 0, 0, 0 }));
+	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
+		auto next = regsStack.top();
+		regsStack.pop();
+		regCount = get<0>(next);
+		regs = get<1>(next);
 		return true;
 	});
 
-	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
 	Verify(Method(completeReadRegsMock, func).Using(1, 0, 7)).Once();
-	ASSERT_EQ(task.result(), badSlave);
 }
