@@ -563,29 +563,61 @@ TEST_F(MasterTests, checkForNewSlaves_BadSlave)
 
 TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 {
+	byte curSlaveId = 1;
 	MOCK_MODBUS;
+
+	When(Method(mockDeviceDirectory, findFreeSlaveID)).Return(13);
+	When(Method(mockDeviceDirectory, addOrReplaceDevice)).AlwaysReturn(0);
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
 	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
-	When(Method(completeReadRegsMock, func)).Return(true);
-	When(Method(completeReadRegsMock, result)).Return(success);
+	When(Method(completeReadRegsMock, func)).AlwaysReturn(true);
+	When(Method(completeReadRegsMock, result)).AlwaysReturn(success);
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
-	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
-	When(Method(completeWriteRegsMock, func)).Return(true);
-	When(Method(completeWriteRegsMock, result)).Return(success);
+	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
+	When(Method(completeWriteRegsMock, func)).AlwaysDo([&curSlaveId](byte slaveId, word start, word count, word* data)
+	{
+		if ((count == 3) &&
+			data[0] == 1 &&
+			data[1] == 1)
+			curSlaveId = data[2];
+		return true;
+	});
+	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 	
 	stack<tuple<word, word*>> regsStack;
+	word* prevPtr = nullptr;
+	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 9, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('C' << 8), 0 }));
+	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 8, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('B' << 8), 0 }));
+	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 7, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('A' << 8), 0 }));
 	regsStack.push(make_tuple(7, new word[7]{ 0, 1 << 8, 3, 6, 0, 0, 0 }));
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
+	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&prevPtr, &regsStack](word &regCount, word *&regs) {
+		if (prevPtr != nullptr)
+			delete[] prevPtr;
 		auto next = regsStack.top();
 		regsStack.pop();
 		regCount = get<0>(next);
 		regs = get<1>(next);
+		prevPtr = regs;
 		return true;
 	});
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
-	Verify(Method(completeReadRegsMock, func).Using(1, 0, 7)).Once();
+
+	// Three requests for device data, plus write new slave ID
+	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Exactly(4);
+
+	// Add three new devices to device directory
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 7, 13)).Once();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 8, 13)).Once();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 9, 13)).Once();
+	
+	// Slave ID set to 13
+	ASSERT_EQ(curSlaveId, 13);
+	
+	// Cleanup
+	if (prevPtr != nullptr)
+		delete[] prevPtr;
 }
