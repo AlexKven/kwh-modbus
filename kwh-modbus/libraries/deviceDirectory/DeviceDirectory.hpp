@@ -212,7 +212,7 @@ public:
 		return row;
 	}
 
-	int filterDevicesForSlave(byte** devNames, int devNamesCount, byte slaveId)
+	virtual int filterDevicesForSlave(byte** devNames, int devNamesCount, byte slaveId)
 	{
 		int numDeleted = 0;
 		int ind;

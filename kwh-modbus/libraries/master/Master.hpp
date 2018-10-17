@@ -205,7 +205,7 @@ protected_testable:
 		END_ASYNC;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), processNewSlave, void, VARS(completeModbusReadRegisters_Task, completeModbusWriteRegisters_Task, byte, word, word, word, word[3]), bool);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), processNewSlave, void, VARS(completeModbusReadRegisters_Task, completeModbusWriteRegisters_Task, byte, word, byte, word, word[3]), bool);
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), processNewSlave, bool justReject)
 	{
 		ASYNC_VAR(0, completeReadRegisters);
@@ -228,7 +228,7 @@ protected_testable:
 		if ((regs[1] >> 8 < 1) ||
 			(numDevices == 0) ||
 			justReject ||
-			(slaveId == -1))
+			(slaveId == 0))
 		{
 			// first case: version of slave is less than 1.0
 			// reject slave due to version mismatch
@@ -268,6 +268,7 @@ protected_testable:
 				AWAIT(completeWriteRegisters);
 				ENSURE_NONMALFUNCTION(completeWriteRegisters);
 				_deviceDirectory->filterDevicesForSlave(nullptr, 0, slaveId);
+				RETURN_ASYNC;
 			}
 		}
 		sentData[0] = 1;
