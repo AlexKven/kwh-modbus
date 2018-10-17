@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../noArduino/TestHelpers.h"
 #ifdef NO_ARDUINO
 #include "../../noArduino/ArduinoMacros.h"
+#include "../../noArduino/TestHelpers.h"
 #endif
 
 #include "../device/Device.h"

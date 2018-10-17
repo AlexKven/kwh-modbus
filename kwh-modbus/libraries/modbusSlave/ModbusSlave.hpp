@@ -163,6 +163,7 @@ public:
 		}
 
 		this->resetFrame(0);
+		this->flush();
 		return true;
 	}
 

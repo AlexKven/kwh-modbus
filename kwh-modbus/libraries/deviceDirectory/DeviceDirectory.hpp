@@ -254,6 +254,32 @@ public:
 			return addDevice(devName, devType, slaveId);
 	}
 
+	// Untested
+	int findNextDevice(byte* devName, byte &slaveIdOut, word &devTypeOut, int startRow = 0)
+	{
+		int row = startRow;
+		while (_slaveIds[row] == 0)
+		{
+			if (_deviceTypes[row] == 0)
+				return -1;
+			row++;
+		}
+		byte* name = getDeviceName(row);
+		for (int i = 0; i < _deviceNameLength; i++)
+		{
+			devName[i] = name[i];
+		}
+		devTypeOut = _deviceTypes[row];
+		slaveIdOut = _slaveIds[row];
+		return row + 1;
+	}
+
+	// Untested
+	bool isEmpty()
+	{
+		return _slaveIds[0] == 0 && _deviceTypes[0] == 0;
+	}
+
 	~DeviceDirectory()
 	{
 		if (_slaveIds != nullptr)

@@ -271,8 +271,10 @@ public:
 	}
 };
 
+#ifdef TEST
 template<class TReturn, class TupleVar, class ...TParam>
 IMockedTask<TReturn, TParam...>* AsyncTaskSpecific<TReturn, TupleVar, TParam...>::mock = nullptr;
+#endif
 
 template<class TCls, class TReturn, class TupleVar, class ...TParams>
 class AsyncClassTaskSpecific : public AsyncTask<TReturn>
@@ -345,5 +347,7 @@ public:
 	}
 };
 
+#ifdef TEST
 template<class TCls, class TReturn, class TupleVar, class ...TParam>
 IMockedTask<TReturn, TParam...>* AsyncClassTaskSpecific<TCls, TReturn, TupleVar, TParam...>::mock = nullptr;
+#endif

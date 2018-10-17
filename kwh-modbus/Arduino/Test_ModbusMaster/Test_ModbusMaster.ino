@@ -43,20 +43,30 @@ public:
   }
 };
 
-word *registers = new word[15];
-ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray> master;
-Master<ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions, DeviceDirectory<byte*>> mstr;
-ArduinoFunctions funcions;
+word *registers = new word[20];
+typedef ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
+typedef Master<ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions, DeviceDirectory<byte*>> T_Master;
+
+T_Modbus modbus;
+T_Master master;
+ArduinoFunctions functions;
+DeviceDirectory<byte*> directory;
 
 void setup() {
+  for (int i = 0; i < 20; i++)
+  {
+    registers[i] = 0;
+  }
   // put your setup code here, to run once:
   Serial.begin(9600);
   Serial.println("Starting...");
 
-  //master.config(&Serial1, &funcions, 19200, 4);
-  master.init(registers, 0, 15, 30);
-  master.setMaxTimePerTryMicros(100000);
-  master.setMaxTries(15);
+  modbus.config(&Serial1, &functions, 9600, 4);
+  modbus.init(registers, 0, 20, 30);
+  modbus.setMaxTimePerTryMicros(100000);
+  modbus.setMaxTries(15);
+  directory.init(8, 20);
+  master.config(&functions, &modbus, &directory);
   Serial.println("Master initialized");
   Serial.print("Initial Memory: ");
   Serial.println(getMemAllocation());
@@ -64,6 +74,7 @@ void setup() {
 
 int i = 0;
 bool done = true;
+int interval = 0;
 
 int getMemAllocation()
 {
@@ -73,34 +84,49 @@ int getMemAllocation()
 }
 
 void loop() {
-  mstr.task();
-//  // put your main code here, to run repeatedly:
-  if (done)
+//  Serial.println("loop start");
+  Serial.println("");
+  Serial.println("");
+  Serial.println("");
+
+  T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, &master);
+  T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, &master, false);
+
+  while (!task0())
   {
-    if (Serial.available())
-    {
-      while (Serial.available())
-      {
-        Serial.read();
-      }
-      Serial.flush();
-      master.reset();
-      master.setRequest_WriteRegister(3, 3, i++);
-      Serial.println("Master reset");
-      done = false;
-    }
+    delay(20);
+  }
+  while (!task1())
+  {
+    delay(20);
+  }
+//  master.task();
+  if (directory.isEmpty())
+  {
+    Serial.println("Directory is empty.");
+//  Serial.print("current Memory: ");
+//  Serial.println(getMemAllocation());
   }
   else
   {
-    done = master.work();
-    Serial.print("Status: ");
-    Serial.println(master.getStatus());
+    int row = 0;
+    byte devName[8];
+    byte devSlaveId;
+    word devType;
+    do
+    {
+      row = directory.findNextDevice(devName, devSlaveId, devType, row);
+      Serial.println("");
+      Serial.print("Device ");
+      for (int i = 0; i < 8; i++)
+        Serial.write(devName[i]);
+      Serial.println(":");
+      Serial.print("Slave ID: ");
+      Serial.println(devSlaveId);
+      Serial.print("Device type: ");
+      Serial.println(devType);
+    } while (row != -1);
   }
-//
 
-//  if (Serial1.available())
-//  {
-//    while (Serial1.available())
-//    Serial.print(Serial1.read());
-//  }
+  delay(500);
 }
