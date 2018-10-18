@@ -63,7 +63,7 @@ void setup() {
 
   modbus.config(&Serial1, &functions, 9600, 4);
   modbus.init(registers, 0, 20, 30);
-  modbus.setMaxTimePerTryMicros(1000000);
+  modbus.setMaxTimePerTryMicros(300000);
   modbus.setMaxTries(15);
   directory.init(8, 20);
   master.config(&functions, &modbus, &directory);
@@ -109,13 +109,12 @@ void loop() {
   }
   else
   {
-    int row = 0;
     byte devName[8];
     byte devSlaveId;
     word devType;
-    do
+    int row = directory.findNextDevice(devName, devSlaveId, devType, 0);
+    while (row != -1);
     {
-      row = directory.findNextDevice(devName, devSlaveId, devType, row);
       Serial.println("");
       Serial.print("Device ");
       for (int i = 0; i < 8; i++)
@@ -125,7 +124,10 @@ void loop() {
       Serial.println(devSlaveId);
       Serial.print("Device type: ");
       Serial.println(devType);
-    } while (row != -1);
+      Serial.print("Row: ");
+      Serial.println(row);
+      row = directory.findNextDevice(devName, devSlaveId, devType, row);
+    } 
   }
 
   delay(500);

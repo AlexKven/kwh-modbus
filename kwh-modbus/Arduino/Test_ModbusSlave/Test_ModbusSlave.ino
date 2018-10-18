@@ -74,6 +74,7 @@ void setup() {
   names[1] = (byte*)"device01";
 
   slave.init(2, 8, devices, names);
+  slave.setOutgoingState();
 }
 
 void loop() {
@@ -86,11 +87,11 @@ void loop() {
   Serial.print("Slave ID: ");
   Serial.println(slave.getSlaveId());
 
-for (int i = 0; i < 500; i++)
+for (int i = 0; i < 1000; i++)
 {
   slave.task();
-  
-  delay(5);
+//  
+//  delay(5);
 }
 
 //  for (int i = 0; i < 15; i++)

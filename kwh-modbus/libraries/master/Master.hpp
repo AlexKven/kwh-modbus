@@ -295,18 +295,29 @@ public:
 
 	void task()
 	{
-		auto tsk = checkForNewSlaves_Task(&Master<M, S, D>::checkForNewSlaves, this);
-		while (!tsk());
+		if (!slaveFound)
+		{
+			auto tsk = checkForNewSlaves_Task(&Master<M, S, D>::checkForNewSlaves, this);
+			while (!tsk());
 
-		Serial.println("Task result");
-		Serial.print(tsk.result());
-		
-		_prevTime = _curTime;
-		_curTime = _system->micros();
-		if (_prevTime == 0)
+			Serial.print("Task result ");
+			Serial.println(tsk.result());
+			if (tsk.result() == 1)
+			{
+				slaveFound = true;
+				t2 = processNewSlave_Task(&Master<M, S, D>::processNewSlave, this, false);
+				while (!t2());
+			}
 			return;
+		}
+		
+		//_prevTime = _curTime;
+		//_curTime = _system->micros();
+		//if (_prevTime == 0)
+		//	return;
 	}
 
+	bool slaveFound = false;
 	checkForNewSlaves_Task t1;
 	processNewSlave_Task t2;
 

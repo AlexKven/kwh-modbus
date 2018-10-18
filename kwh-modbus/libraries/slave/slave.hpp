@@ -24,7 +24,8 @@ enum SlaveState : word
 template<class M, class S>
 class Slave
 {
-private_testable:
+//private_testable:
+public:
 	const byte _majorVersion = 1;
 	const byte _minorVersion = 0;
 	word _deviceNameLength;
@@ -133,7 +134,6 @@ public:
 	// Basic initial version
 	void task()
 	{
-		setOutgoingState();
 		bool processed;
 		bool broadcast;
 		_modbus->task(processed, broadcast);
