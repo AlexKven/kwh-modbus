@@ -51,7 +51,6 @@ ArduinoFunctions functions;
 int interval = 0;
 
 void setup() {
-  
   for (int i = 0; i < 20; i++)
   {
     registers[i] = 0;
@@ -60,7 +59,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting...");
   
-  modbus.config(&Serial1, &functions, 4800, 4);
+  modbus.config(&Serial1, &functions, 9600, 4);
   Serial.println("Slave initialized");
   modbus.init(registers, 0, 20, 30);
   modbus.setSlaveId(1);
@@ -84,7 +83,7 @@ void loop() {
   Serial.println("");
   Serial.println("");
   Serial.println("");
-  Serial.print(F("Slave ID: "));
+  Serial.print("Slave ID: ");
   Serial.println(slave.getSlaveId());
 
 for (int i = 0; i < 50; i++)

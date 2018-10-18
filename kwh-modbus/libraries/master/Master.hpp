@@ -62,8 +62,7 @@ private_testable:
 public:
 	virtual void reportMalfunction(int line)
 	{
-		Serial.print("malfunction ");
-		Serial.println(line);
+
 	}
 
 	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), ensureTaskNotStarted, void, VARS());
@@ -223,11 +222,6 @@ public:
 		numDevices = 0;
 		if (_modbus->isReadRegsResponse(regCount, regs))
 		{
-			Serial.print("Count ");
-			Serial.println(regCount);
-			for (int i = 0; i < regCount; i++)
-				Serial.println(regs[i]);
-
 			numDevices = regs[2];
 		}
 		deviceNameLength = regs[3];
@@ -245,11 +239,6 @@ public:
 			// third case: we are told to simply reject the slave
 
 			// fourth case: reject slave due to master being full and unable to accept new slaves
-
-			Serial.println(regs[1]);
-			Serial.println(numDevices);
-			Serial.println(justReject);
-			Serial.println(slaveId);
 
 			sentData[0] = 1;
 			sentData[1] = 1;
