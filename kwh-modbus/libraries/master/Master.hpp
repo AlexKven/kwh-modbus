@@ -105,6 +105,10 @@ public:
 		word finalRegCount;
 		if (_modbus->isReadRegsResponse(finalRegCount, dummy0))
 		{
+			Serial.print("rCount ");
+			Serial.println(finalRegCount);
+			for (int i = 0; i < finalRegCount; i++)
+				Serial.println(dummy0[i]);
 			if (finalRegCount == regCount)
 			{
 				RESULT_ASYNC(ModbusRequestStatus, success);
@@ -116,6 +120,7 @@ public:
 		}
 		else
 		{
+			Serial.println("not read response ");
 			if (_modbus->isExceptionResponse(dummy1, dummy1))
 			{
 				RESULT_ASYNC(ModbusRequestStatus, exceptionResponse);
