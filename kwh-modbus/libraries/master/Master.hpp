@@ -291,48 +291,24 @@ public:
 
 	void init(D *deviceDirectory)
 	{
-		CREATE_ASSIGN_CLASS_TASK(t1, ESCAPE(Master<M, S, D>), this, checkForNewSlaves);
 	}
 
 	void task()
 	{
+		auto tsk = checkForNewSlaves_Task(&Master<M, S, D>::checkForNewSlaves, this);
+		while (!tsk());
+
+		Serial.println("Task result");
+		Serial.print(tsk.result());
+		
 		_prevTime = _curTime;
 		_curTime = _system->micros();
 		if (_prevTime == 0)
 			return;
-
-		if (processingSlave)
-		{
-			if (t2())
-			{
-				processingSlave = false;
-				CREATE_ASSIGN_CLASS_TASK(t1, ESCAPE(Master<M, S, D>), this, checkForNewSlaves);
-			}
-		}
-		else
-		{
-			if (t1())
-			{
-				switch (t1.result())
-				{
-				case found:
-					CREATE_ASSIGN_CLASS_TASK(t2, ESCAPE(Master<M, S, D>), this, processNewSlave, false);
-					processingSlave = true;
-					break;
-				case badSlave:
-					CREATE_ASSIGN_CLASS_TASK(t2, ESCAPE(Master<M, S, D>), this, processNewSlave, true);
-					processingSlave = true;
-					break;
-				default:
-					CREATE_ASSIGN_CLASS_TASK(t1, ESCAPE(Master<M, S, D>), this, checkForNewSlaves);
-				}
-			}
-		}
 	}
 
 	checkForNewSlaves_Task t1;
 	processNewSlave_Task t2;
-	bool processingSlave = false;
 
 	Master() { }
 

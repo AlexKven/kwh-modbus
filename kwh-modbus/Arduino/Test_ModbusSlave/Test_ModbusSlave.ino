@@ -86,11 +86,11 @@ void loop() {
   Serial.print("Slave ID: ");
   Serial.println(slave.getSlaveId());
 
-for (int i = 0; i < 50; i++)
+for (int i = 0; i < 500; i++)
 {
   slave.task();
   
-  delay(20);
+  delay(5);
 }
 
 //  for (int i = 0; i < 15; i++)

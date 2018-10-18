@@ -133,6 +133,7 @@ public:
 	// Basic initial version
 	void task()
 	{
+		setOutgoingState();
 		bool processed;
 		bool broadcast;
 		_modbus->task(processed, broadcast);
