@@ -24,7 +24,7 @@ enum SlaveState : word
 template<class M, class S>
 class Slave
 {
-public:
+private_testable:
 	const byte _majorVersion = 1;
 	const byte _minorVersion = 0;
 	word _deviceNameLength;
@@ -38,7 +38,6 @@ public:
 
 	virtual bool setOutgoingState()
 	{
-		Serial.println("setState");
 		ENSURE(_modbus->validRange(0, 10));
 		ENSURE(_modbus->Hreg(0, _state));
 		switch (_state)
