@@ -144,6 +144,7 @@ public:
 
 		if (this->readInputFrame(broadcast_out))
 		{
+			delay(1);
 			if (broadcast_out)
 			{
 				// You cannot reply to a broadcast
@@ -162,14 +163,15 @@ public:
 				}
 		}
 
+		delay(1);
 		this->resetFrame(0);
-		this->flush();
 		return true;
 	}
 
 	// Tested
 	bool readInputFrame(bool &broadcast_out)
 	{
+		delay(1);
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
 		// first byte of frame = address
@@ -203,6 +205,7 @@ public:
 
 	// Tested
 	bool receivePDU(byte* frame) {
+		delay(1);
 		byte fcode = frame[0];
 		word field1 = (word)frame[1] << 8 | (word)frame[2];
 		word field2 = (word)frame[3] << 8 | (word)frame[4];
@@ -233,6 +236,7 @@ public:
 	// Tested
 	bool sendPDU()
 	{
+		delay(1);
 		beginTransmission();
 
 		//Send slaveId

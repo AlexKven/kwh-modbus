@@ -61,7 +61,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting...");
 
-  modbus.config(&Serial1, &functions, 9600, 4);
+  modbus.config(&Serial1, &functions, 4800, 4);
   modbus.init(registers, 0, 20, 30);
   modbus.setMaxTimePerTryMicros(100000);
   modbus.setMaxTries(15);
@@ -92,10 +92,10 @@ void loop() {
   T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, &master);
   T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, &master, false);
 
-  while (!task0())
-  {
-    delay(20);
-  }
+//  while (!task0())
+//  {
+//    delay(20);
+//  }
   while (!task1())
   {
     delay(20);
