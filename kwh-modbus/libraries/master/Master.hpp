@@ -307,38 +307,25 @@ public:
 
 	void task()
 	{
-		_prevTime = _curTime;
-		_curTime = _system->micros();
-		if (_prevTime == 0)
-			return;
-
-		if (processingSlave)
+		start:
+		//_prevTime = _curTime;
+		//_curTime = _system->micros();
+		//if (_prevTime == 0)
+		//	return;
+		CREATE_ASSIGN_CLASS_TASK(t1, ESCAPE(Master<M, S, D>), this, checkForNewSlaves);
+		while (!t1());
+		switch (t1.result())
 		{
-			if (t2())
-			{
-				processingSlave = false;
-				CREATE_ASSIGN_CLASS_TASK(t1, ESCAPE(Master<M, S, D>), this, checkForNewSlaves);
-			}
+		case found:
+			CREATE_ASSIGN_CLASS_TASK(t2, ESCAPE(Master<M, S, D>), this, processNewSlave, false);
+			break;
+		case badSlave:
+			CREATE_ASSIGN_CLASS_TASK(t2, ESCAPE(Master<M, S, D>), this, processNewSlave, true);
+			break;
+		default:
+			goto start;
 		}
-		else
-		{
-			if (t1())
-			{
-				switch (t1.result())
-				{
-				case found:
-					CREATE_ASSIGN_CLASS_TASK(t2, ESCAPE(Master<M, S, D>), this, processNewSlave, false);
-					processingSlave = true;
-					break;
-				case badSlave:
-					CREATE_ASSIGN_CLASS_TASK(t2, ESCAPE(Master<M, S, D>), this, processNewSlave, true);
-					processingSlave = true;
-					break;
-				default:
-					CREATE_ASSIGN_CLASS_TASK(t1, ESCAPE(Master<M, S, D>), this, checkForNewSlaves);
-				}
-			}
-		}
+		while (!t2());
 	}
 
 	checkForNewSlaves_Task t1;

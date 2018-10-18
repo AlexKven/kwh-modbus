@@ -89,16 +89,13 @@ private_testable:
 			{
 			case 0:
 				_state = sIdle;
-				setOutgoingState();
 				break;
 			case 1:
 				_state = sIdle;
 				_modbus->setSlaveId((byte)_modbus->Hreg(2));
-				setOutgoingState();
 				break;
 			case 2:
 				_state = sDisplayDevInfo;
-				setOutgoingState();
 				break;
 			}
 		}
@@ -138,6 +135,7 @@ public:
 		_modbus->task(processed, broadcast);
 		if (processed)
 			processIncomingState(processed);
+		setOutgoingState();
 	}
 
 	void clearDevices()

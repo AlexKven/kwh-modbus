@@ -60,7 +60,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting...");
   
-  modbus.config(&Serial1, &functions, 4800, 4);
+  modbus.config(&Serial1, &functions, 9600, 4);
   Serial.println("Slave initialized");
   modbus.init(registers, 0, 20, 30);
   modbus.setSlaveId(1);
@@ -91,7 +91,7 @@ for (int i = 0; i < 50; i++)
 {
   slave.task();
   
-  delay(20);
+//  delay(20);
 }
 
 //  for (int i = 0; i < 15; i++)

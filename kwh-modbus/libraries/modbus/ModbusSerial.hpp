@@ -73,8 +73,6 @@ protected_testable:
 
 	bool write(byte val)
 	{
-		Serial.print("w");
-		Serial.print(val);
 		if (!_transmitting)
 		{
 			beginTransmission();
@@ -94,27 +92,19 @@ protected_testable:
 			endTransmission();
 			return result;
 		}
-		Serial.print("w");
-		Serial.print(highByte(val));
-		Serial.print("w");
-		Serial.print(lowByte(val));
 		return (_port->write(highByte(val)) == 1 &&
 				_port->write(lowByte(val)) == 1);
 	}
 
 	int read()
 	{
-		Serial.print("r");
 		int res = _port->read();
-		Serial.print(res);
 		return res;
 	}
 
 	bool read(byte &result)
 	{
-		Serial.print("r");
 		int res = _port->read();
-		Serial.print(res);
 		if (res == -1)
 			return false;
 		result = res;
@@ -124,13 +114,9 @@ protected_testable:
 	bool readWord(word &result)
 	{
 		int high = _port->read();
-		Serial.print("r");
-		Serial.print(high);
 		if (high == -1)
 			return false;
 		int low = _port->read();
-		Serial.print("r");
-		Serial.print(low);
 		if (low == -1)
 			return false;
 		result = (high << 8) | low;
@@ -196,8 +182,7 @@ protected_testable:
 		byte *frame = this->getFramePtr();
 		for (int i = offset; i < length + offset; i++)
 		{
-			Serial.print("w");
-			Serial.print(frame[i]);
+			byteDelay();
 			int result = _port->write(frame[i]);
 			if (result != 1)
 				return i;
