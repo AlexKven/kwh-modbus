@@ -46,6 +46,7 @@ protected:
 public:
 	void SetUp()
 	{
+		auto sze = sizeof(T_MASTER);
 		registerArray = new word[12];
 		modbus->init(registerArray, 0, 12, 20);
 		master->config(system, modbus, &mockDeviceDirectory.get());
@@ -109,7 +110,7 @@ TEST_F(MasterTests, completeModbusReadRegisters_CompletesImmediately)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskComplete);
 	When(Method(modbusBaseMock, setRequest_ReadRegisters)).AlwaysReturn(true);
@@ -130,7 +131,7 @@ TEST_F(MasterTests, completeModbusReadRegisters_CompletesWithSomeAttempts)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool()))
 		.Return(false)
 		.Return(false)
@@ -156,7 +157,7 @@ TEST_F(MasterTests, completeModbusReadRegisters_MasterFailure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(Method(modbusBaseMock, setRequest_ReadRegisters)).AlwaysReturn(false);
 
 	T_MASTER::completeModbusReadRegisters_Task task(&T_MASTER::completeModbusReadRegisters, master, 2, 3, 5);
@@ -170,7 +171,7 @@ TEST_F(MasterTests, completeModbusReadRegisters_TaskFailure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskFatal);
 	When(Method(modbusBaseMock, setRequest_ReadRegisters)).AlwaysReturn(true);
@@ -187,7 +188,7 @@ TEST_F(MasterTests, completeModbusReadRegisters_IncorrectResponseSize)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskComplete);
 	When(Method(modbusBaseMock, setRequest_ReadRegisters)).AlwaysReturn(true);
@@ -208,7 +209,7 @@ TEST_F(MasterTests, completeModbusReadRegisters_ExceptionResponse)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskComplete);
 	When(Method(modbusBaseMock, setRequest_ReadRegisters)).AlwaysReturn(true);
@@ -227,7 +228,7 @@ TEST_F(MasterTests, completeModbusReadRegisters_OtherResponse)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskComplete);
 	When(Method(modbusBaseMock, setRequest_ReadRegisters)).AlwaysReturn(true);
@@ -246,7 +247,7 @@ TEST_F(MasterTests, completeModbusWriteRegisters_single_CompletesImmediately)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskComplete);
 	When(Method(modbusBaseMock, setRequest_WriteRegister)).AlwaysReturn(true);
@@ -266,7 +267,7 @@ TEST_F(MasterTests, completeModbusWriteRegisters_single_CompletesWithSomeAttempt
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool()))
 		.Return(false)
 		.Return(false)
@@ -291,7 +292,7 @@ TEST_F(MasterTests, completeModbusWriteRegisters_single_MasterFailure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(Method(modbusBaseMock, setRequest_WriteRegister)).AlwaysReturn(false);
 
 	word val = 6;
@@ -306,7 +307,7 @@ TEST_F(MasterTests, completeModbusWriteRegisters_single_TaskFailure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskFatal);
 	When(Method(modbusBaseMock, setRequest_WriteRegister)).AlwaysReturn(true);
@@ -324,7 +325,7 @@ TEST_F(MasterTests, completeModbusWriteRegisters_single_ExceptionResponse)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskComplete);
 	When(Method(modbusBaseMock, setRequest_WriteRegister)).AlwaysReturn(true);
@@ -346,7 +347,7 @@ TEST_F(MasterTests, completeModbusWriteRegisters_single_OtherResponse)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskComplete);
 	When(Method(modbusBaseMock, setRequest_WriteRegister)).AlwaysReturn(true);
@@ -368,7 +369,7 @@ TEST_F(MasterTests, completeModbusWriteRegisters_multiple_CompletesImmediately)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskComplete);
 	When(Method(modbusBaseMock, setRequest_WriteRegisters)).AlwaysReturn(true);
@@ -388,7 +389,7 @@ TEST_F(MasterTests, completeModbusWriteRegisters_multiple_CompletesWithSomeAttem
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool()))
 		.Return(false)
 		.Return(false)
@@ -413,7 +414,7 @@ TEST_F(MasterTests, completeModbusWriteRegisters_multiple_MasterFailure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(Method(modbusBaseMock, setRequest_WriteRegisters)).AlwaysReturn(false);
 
 	word vals[3] = { 1, 2, 3 };
@@ -428,7 +429,7 @@ TEST_F(MasterTests, completeModbusWriteRegisters_multiple_TaskFailure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskFatal);
 	When(Method(modbusBaseMock, setRequest_WriteRegisters)).AlwaysReturn(true);
@@ -446,7 +447,7 @@ TEST_F(MasterTests, completeModbusWriteRegisters_multiple_ExceptionResponse)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskComplete);
 	When(Method(modbusBaseMock, setRequest_WriteRegisters)).AlwaysReturn(true);
@@ -468,7 +469,7 @@ TEST_F(MasterTests, completeModbusWriteRegisters_multiple_OtherResponse)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
-	When(Method(masterMock, ensureTaskNotStarted)).Return(true);
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
 	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskComplete);
 	When(Method(modbusBaseMock, setRequest_WriteRegisters)).AlwaysReturn(true);

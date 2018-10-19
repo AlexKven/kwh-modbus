@@ -66,6 +66,7 @@ public:
 	}
 
 	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), ensureTaskNotStarted, void, VARS());
+	ensureTaskNotStarted_Task _ensureTaskNotStarted;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), ensureTaskNotStarted)
 	{
 		START_ASYNC;
@@ -79,16 +80,20 @@ public:
 		}
 		END_ASYNC;
 	}
+	virtual ensureTaskNotStarted_Task &ensureTaskNotStarted()
+	{
+		CREATE_ASSIGN_CLASS_TASK(_ensureTaskNotStarted, ESCAPE(Master<M, S, D>), this, ensureTaskNotStarted);
+		return _ensureTaskNotStarted;
+	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), completeModbusReadRegisters, ModbusRequestStatus, VARS(ensureTaskNotStarted_Task), byte, word, word);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), completeModbusReadRegisters, ModbusRequestStatus, VARS(), byte, word, word);
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), completeModbusReadRegisters, byte recipientId, word regStart, word regCount)
 	{
 		word* dummy0 = nullptr;
 		byte dummy1 = 0;
-		ASYNC_VAR(0, taskNotStartedCheck);
 		START_ASYNC;
-		CREATE_ASSIGN_CLASS_TASK(taskNotStartedCheck, ESCAPE(Master<M, S, D>), this, ensureTaskNotStarted);
-		AWAIT(taskNotStartedCheck);
+		ensureTaskNotStarted();
+		AWAIT(_ensureTaskNotStarted);
 		if (!_modbus->setRequest_ReadRegisters(recipientId, regStart, regCount))
 		{
 			RESULT_ASYNC(ModbusRequestStatus, masterFailure);
@@ -224,7 +229,6 @@ public:
 		ASYNC_VAR(5, deviceNameLength);
 		ASYNC_VAR(6, sentData);
 		START_ASYNC;
-		//Serial.println("processNewSlave 0");
 		word regCount;
 		word *regs;
 		numDevices = 0;
@@ -239,7 +243,6 @@ public:
 			justReject ||
 			(slaveId == 0))
 		{
-			//Serial.println("processNewSlave 0f");
 			// first case: version of slave is less than 1.0
 			// reject slave due to version mismatch
 
@@ -264,11 +267,9 @@ public:
 			sentData[2] = i;
 			CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 			AWAIT(completeWriteRegisters);
-			//Serial.println("processNewSlave 1");
 			ENSURE_NONMALFUNCTION(completeWriteRegisters);
 			CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, 1, 0, 4 + (deviceNameLength + 1) / 2);
 			AWAIT(completeReadRegisters);
-			//Serial.println("processNewSlave 2");
 			ENSURE_NONMALFUNCTION(completeReadRegisters);
 			_modbus->isReadRegsResponse(regCount, regs);
 			if (_deviceDirectory->addOrReplaceDevice((byte*)(regs + 3), regs[2], slaveId) == -1)
@@ -278,7 +279,6 @@ public:
 				sentData[2] = 255;
 				CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 				AWAIT(completeWriteRegisters);
-				//Serial.println("processNewSlave 3 loop");
 				ENSURE_NONMALFUNCTION(completeWriteRegisters);
 				_deviceDirectory->filterDevicesForSlave(nullptr, 0, slaveId);
 				RETURN_ASYNC;
@@ -289,7 +289,6 @@ public:
 		sentData[2] = slaveId;
 		CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 		AWAIT(completeWriteRegisters);
-		//Serial.println("processNewSlave 4");
 		ENSURE_NONMALFUNCTION(completeWriteRegisters);
 		END_ASYNC;
 	}
