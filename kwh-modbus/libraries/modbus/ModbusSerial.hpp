@@ -80,9 +80,7 @@ protected_testable:
 			endTransmission();
 			return result;
 		}
-		auto result = _port->write(val) == 1;
-		_port->flush();
-		return result;
+		return (_port->write(val) == 1);
 	}
 
 	bool writeWord(word val)
@@ -94,10 +92,8 @@ protected_testable:
 			endTransmission();
 			return result;
 		}
-		auto result = (_port->write(highByte(val)) == 1 &&
+		return (_port->write(highByte(val)) == 1 &&
 			_port->write(lowByte(val)) == 1);
-		_port->flush();
-		return result;
 	}
 
 	int read()
@@ -186,7 +182,6 @@ protected_testable:
 		for (int i = offset; i < length + offset; i++)
 		{
 			int result = _port->write(frame[i]);
-			_port->flush();
 			if (result != 1)
 				return i;
 		}
