@@ -95,6 +95,9 @@ void loop() {
   if (cur - last >= 2000)
   {
     last = cur;
+    Serial.println();
+    Serial.println();
+    Serial.println();
     if (directory.isEmpty())
     {
       Serial.println("Directory is empty.");
@@ -107,8 +110,8 @@ void loop() {
       byte devSlaveId;
       word devType;
       int row = directory.findNextDevice(devName, devSlaveId, devType, 0);
-        Serial.print("Row: ");
-        Serial.println(row);
+//        Serial.print("Row: ");
+//        Serial.println(row);
       while (row != -1)
       {
         Serial.println("");
