@@ -87,21 +87,19 @@ long last;
 long cur;
 void loop() {
 //  Serial.println("loop start");
-delay(3);
-  cur = micros();
-//  master.loop();
+  cur = millis();
   master.loop();
-  Serial.println(cur);
-  Serial.print("mem ");
-  Serial.println(getMemAllocation());
-  if (last - cur >= 2000000)
+//  Serial.println(cur);
+//  Serial.print("mem ");
+//  Serial.println(getMemAllocation());
+  if (cur - last >= 2000)
   {
     last = cur;
     if (directory.isEmpty())
     {
       Serial.println("Directory is empty.");
-    Serial.print("current Memory: ");
-    Serial.println(getMemAllocation());
+//    Serial.print("current Memory: ");
+//    Serial.println(getMemAllocation());
     }
     else
     {

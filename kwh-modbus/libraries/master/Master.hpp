@@ -325,6 +325,7 @@ public:
 				}
 				lastActivityTime = _curTime;
 			}
+			YIELD_ASYNC;
 		}
 		END_ASYNC;
 	}
