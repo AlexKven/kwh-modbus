@@ -217,6 +217,7 @@ public:
 		ASYNC_VAR(5, deviceNameLength);
 		ASYNC_VAR(6, sentData);
 		START_ASYNC;
+		Serial.println("processNewSlave 0");
 		word regCount;
 		word *regs;
 		numDevices = 0;
@@ -231,6 +232,7 @@ public:
 			justReject ||
 			(slaveId == 0))
 		{
+			Serial.println("processNewSlave 0f");
 			// first case: version of slave is less than 1.0
 			// reject slave due to version mismatch
 
@@ -255,9 +257,11 @@ public:
 			sentData[2] = i;
 			CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 			AWAIT(completeWriteRegisters);
+			Serial.println("processNewSlave 1");
 			ENSURE_NONMALFUNCTION(completeWriteRegisters);
 			CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, 1, 0, 4 + (deviceNameLength + 1) / 2);
 			AWAIT(completeReadRegisters);
+			Serial.println("processNewSlave 2");
 			ENSURE_NONMALFUNCTION(completeReadRegisters);
 			_modbus->isReadRegsResponse(regCount, regs);
 			if (_deviceDirectory->addOrReplaceDevice((byte*)(regs + 3), regs[2], slaveId) == -1)
@@ -267,6 +271,7 @@ public:
 				sentData[2] = 255;
 				CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 				AWAIT(completeWriteRegisters);
+				Serial.println("processNewSlave 3 loop");
 				ENSURE_NONMALFUNCTION(completeWriteRegisters);
 				_deviceDirectory->filterDevicesForSlave(nullptr, 0, slaveId);
 				RETURN_ASYNC;
@@ -277,6 +282,7 @@ public:
 		sentData[2] = slaveId;
 		CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 		AWAIT(completeWriteRegisters);
+		Serial.println("processNewSlave 4");
 		ENSURE_NONMALFUNCTION(completeWriteRegisters);
 		END_ASYNC;
 	}
@@ -306,7 +312,11 @@ public:
 			{
 				slaveFound = true;
 				t2 = processNewSlave_Task(&Master<M, S, D>::processNewSlave, this, false);
-				while (!t2());
+				bool done = false;
+				while (!done)
+				{
+					done = t2();
+				}
 			}
 			return;
 		}

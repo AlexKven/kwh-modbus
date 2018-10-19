@@ -104,8 +104,8 @@ void loop() {
   if (directory.isEmpty())
   {
     Serial.println("Directory is empty.");
-//  Serial.print("current Memory: ");
-//  Serial.println(getMemAllocation());
+  Serial.print("current Memory: ");
+  Serial.println(getMemAllocation());
   }
   else
   {
@@ -113,7 +113,9 @@ void loop() {
     byte devSlaveId;
     word devType;
     int row = directory.findNextDevice(devName, devSlaveId, devType, 0);
-    while (row != -1);
+      Serial.print("Row: ");
+      Serial.println(row);
+    while (row != -1)
     {
       Serial.println("");
       Serial.print("Device ");
