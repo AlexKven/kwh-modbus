@@ -328,7 +328,7 @@ public:
 		Set<0, TParams...>(_parameters, params...);
 	}
 
-	AsyncClassTaskSpecific(AsyncTaskSpecific<TCls, TReturn, TupleVar, TParams...> &copy)
+	AsyncClassTaskSpecific(AsyncClassTaskSpecific<TCls, TReturn, TupleVar, TParams...> &copy)
 	{
 		_func = copy._func;
 		_funcLocation = copy._funcLocation;

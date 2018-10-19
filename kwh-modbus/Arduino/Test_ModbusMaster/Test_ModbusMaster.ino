@@ -32,12 +32,12 @@ public:
     ::pinMode(pin, mode);
   }
 
-  unsigned long micros()
+  long micros()
   {
     return ::micros();
   }
 
-  unsigned long millis()
+  long millis()
   {
     return ::millis();
   }
@@ -83,54 +83,49 @@ int getMemAllocation()
   return (int)dummy;
 }
 
+long last;
+long cur;
 void loop() {
 //  Serial.println("loop start");
-  Serial.println("");
-  Serial.println("");
-  Serial.println("");
-
-  T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, &master);
-  T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, &master, false);
-
-//  while (!task0())
-//  {
-////    delay(5);
-//  }
-//  while (!task1())
-//  {
-////    delay(5);
-//  }
-  master.task();
-  if (directory.isEmpty())
-  {
-    Serial.println("Directory is empty.");
-  Serial.print("current Memory: ");
+delay(3);
+  cur = micros();
+//  master.loop();
+  master.loop();
+  Serial.println(cur);
+  Serial.print("mem ");
   Serial.println(getMemAllocation());
-  }
-  else
+  if (last - cur >= 2000000)
   {
-    byte devName[8];
-    byte devSlaveId;
-    word devType;
-    int row = directory.findNextDevice(devName, devSlaveId, devType, 0);
-      Serial.print("Row: ");
-      Serial.println(row);
-    while (row != -1)
+    last = cur;
+    if (directory.isEmpty())
     {
-      Serial.println("");
-      Serial.print("Device ");
-      for (int i = 0; i < 8; i++)
-        Serial.write(devName[i]);
-      Serial.println(":");
-      Serial.print("Slave ID: ");
-      Serial.println(devSlaveId);
-      Serial.print("Device type: ");
-      Serial.println(devType);
-      Serial.print("Row: ");
-      Serial.println(row);
-      row = directory.findNextDevice(devName, devSlaveId, devType, row);
-    } 
+      Serial.println("Directory is empty.");
+    Serial.print("current Memory: ");
+    Serial.println(getMemAllocation());
+    }
+    else
+    {
+      byte devName[8];
+      byte devSlaveId;
+      word devType;
+      int row = directory.findNextDevice(devName, devSlaveId, devType, 0);
+        Serial.print("Row: ");
+        Serial.println(row);
+      while (row != -1)
+      {
+        Serial.println("");
+        Serial.print("Device ");
+        for (int i = 0; i < 8; i++)
+          Serial.write(devName[i]);
+        Serial.println(":");
+        Serial.print("Slave ID: ");
+        Serial.println(devSlaveId);
+        Serial.print("Device type: ");
+        Serial.println(devType);
+        Serial.print("Row: ");
+        Serial.println(row);
+        row = directory.findNextDevice(devName, devSlaveId, devType, row);
+      } 
+    }
   }
-
-  delay(500);
 }

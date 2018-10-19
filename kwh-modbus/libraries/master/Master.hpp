@@ -177,6 +177,7 @@ public:
 	}
 
 	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), checkForNewSlaves, SearchResultCode, VARS(completeModbusReadRegisters_Task));
+	checkForNewSlaves_Task _checkForNewSlaves;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), checkForNewSlaves)
 	{
 		ASYNC_VAR(0, completeReadRegisters);
@@ -205,8 +206,14 @@ public:
 		}
 		END_ASYNC;
 	}
+	checkForNewSlaves_Task &checkForNewSlaves()
+	{
+		CREATE_ASSIGN_CLASS_TASK(_checkForNewSlaves, ESCAPE(Master<M, S, D>), this, checkForNewSlaves);
+		return _checkForNewSlaves;
+	}
 
 	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), processNewSlave, void, VARS(completeModbusReadRegisters_Task, completeModbusWriteRegisters_Task, byte, word, byte, word, word[3]), bool);
+	processNewSlave_Task _processNewSlave;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), processNewSlave, bool justReject)
 	{
 		ASYNC_VAR(0, completeReadRegisters);
@@ -217,7 +224,7 @@ public:
 		ASYNC_VAR(5, deviceNameLength);
 		ASYNC_VAR(6, sentData);
 		START_ASYNC;
-		Serial.println("processNewSlave 0");
+		//Serial.println("processNewSlave 0");
 		word regCount;
 		word *regs;
 		numDevices = 0;
@@ -232,7 +239,7 @@ public:
 			justReject ||
 			(slaveId == 0))
 		{
-			Serial.println("processNewSlave 0f");
+			//Serial.println("processNewSlave 0f");
 			// first case: version of slave is less than 1.0
 			// reject slave due to version mismatch
 
@@ -257,11 +264,11 @@ public:
 			sentData[2] = i;
 			CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 			AWAIT(completeWriteRegisters);
-			Serial.println("processNewSlave 1");
+			//Serial.println("processNewSlave 1");
 			ENSURE_NONMALFUNCTION(completeWriteRegisters);
 			CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, 1, 0, 4 + (deviceNameLength + 1) / 2);
 			AWAIT(completeReadRegisters);
-			Serial.println("processNewSlave 2");
+			//Serial.println("processNewSlave 2");
 			ENSURE_NONMALFUNCTION(completeReadRegisters);
 			_modbus->isReadRegsResponse(regCount, regs);
 			if (_deviceDirectory->addOrReplaceDevice((byte*)(regs + 3), regs[2], slaveId) == -1)
@@ -271,7 +278,7 @@ public:
 				sentData[2] = 255;
 				CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 				AWAIT(completeWriteRegisters);
-				Serial.println("processNewSlave 3 loop");
+				//Serial.println("processNewSlave 3 loop");
 				ENSURE_NONMALFUNCTION(completeWriteRegisters);
 				_deviceDirectory->filterDevicesForSlave(nullptr, 0, slaveId);
 				RETURN_ASYNC;
@@ -282,8 +289,43 @@ public:
 		sentData[2] = slaveId;
 		CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
 		AWAIT(completeWriteRegisters);
-		Serial.println("processNewSlave 4");
+		//Serial.println("processNewSlave 4");
 		ENSURE_NONMALFUNCTION(completeWriteRegisters);
+		END_ASYNC;
+	}
+	processNewSlave_Task &processNewSlave(bool justReject)
+	{
+		CREATE_ASSIGN_CLASS_TASK(_processNewSlave, ESCAPE(Master<M, S, D>), this, processNewSlave, justReject);
+		return _processNewSlave;
+	}
+
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), loop, void, VARS(unsigned long, bool));
+	loop_Task _loop;
+	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), loop)
+	{
+		_prevTime = _curTime;
+		_curTime = _system->millis();
+		ASYNC_VAR_INIT(0, lastActivityTime, 0);
+		ASYNC_VAR(1, something);
+		START_ASYNC;
+		for(;;)
+		{
+			if (lastActivityTime == 0 || (_curTime - lastActivityTime > 2000))
+			{
+				checkForNewSlaves();
+				AWAIT(_checkForNewSlaves);
+				something = (_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave);
+				while (something)
+				{
+					processNewSlave(_checkForNewSlaves.result() == badSlave);
+					AWAIT(_processNewSlave);
+					checkForNewSlaves();
+					AWAIT(_checkForNewSlaves);
+					something = (_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave);
+				}
+				lastActivityTime = _curTime;
+			}
+		}
 		END_ASYNC;
 	}
 
@@ -295,41 +337,41 @@ public:
 		_deviceDirectory = deviceDirectory;
 	}
 
-	void init(D *deviceDirectory)
+	bool started = false;
+	void loop()
 	{
+		if (!started)
+		{
+			CREATE_ASSIGN_CLASS_TASK(_loop, ESCAPE(Master<M, S, D>), this, loop);
+			started = true;
+		}
+		_loop();
 	}
 
 	void task()
 	{
-		if (!slaveFound)
-		{
-			auto tsk = checkForNewSlaves_Task(&Master<M, S, D>::checkForNewSlaves, this);
-			while (!tsk());
+		//if (!slaveFound)
+		//{
+		//	auto tsk = checkForNewSlaves_Task(&Master<M, S, D>::checkForNewSlaves, this);
+		//	while (!tsk());
 
-			Serial.print("Task result ");
-			Serial.println(tsk.result());
-			if (tsk.result() == 1)
-			{
-				slaveFound = true;
-				t2 = processNewSlave_Task(&Master<M, S, D>::processNewSlave, this, false);
-				bool done = false;
-				while (!done)
-				{
-					done = t2();
-				}
-			}
-			return;
-		}
-		
-		//_prevTime = _curTime;
-		//_curTime = _system->micros();
-		//if (_prevTime == 0)
+		//	//Serial.print("Task result ");
+		//	//Serial.println(tsk.result());
+		//	if (tsk.result() == 1)
+		//	{
+		//		slaveFound = true;
+		//		t2 = processNewSlave_Task(&Master<M, S, D>::processNewSlave, this, false);
+		//		bool done = false;
+		//		while (!done)
+		//		{
+		//			done = t2();
+		//		}
+		//	}
 		//	return;
+		//}
 	}
 
 	bool slaveFound = false;
-	checkForNewSlaves_Task t1;
-	processNewSlave_Task t2;
 
 	Master() { }
 
