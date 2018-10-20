@@ -80,13 +80,14 @@ public:
 		}
 		END_ASYNC;
 	}
-	virtual ensureTaskNotStarted_Task &ensureTaskNotStarted()
+	ensureTaskNotStarted_Task &ensureTaskNotStarted()
 	{
 		CREATE_ASSIGN_CLASS_TASK(_ensureTaskNotStarted, ESCAPE(Master<M, S, D>), this, ensureTaskNotStarted);
 		return _ensureTaskNotStarted;
 	}
 
 	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), completeModbusReadRegisters, ModbusRequestStatus, VARS(), byte, word, word);
+	completeModbusReadRegisters_Task _completeModbusReadRegisters;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), completeModbusReadRegisters, byte recipientId, word regStart, word regCount)
 	{
 		word* dummy0 = nullptr;
@@ -131,15 +132,20 @@ public:
 		}
 		END_ASYNC;
 	}
+	completeModbusReadRegisters_Task &completeModbusReadRegisters(byte reciptientId, word regStart, word regCount)
+	{
+		CREATE_ASSIGN_CLASS_TASK(_completeModbusReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, reciptientId, regStart, regCount);
+		return _completeModbusReadRegisters;
+	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), completeModbusWriteRegisters, ModbusRequestStatus, VARS(ensureTaskNotStarted_Task), byte, word, word, word*);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), completeModbusWriteRegisters, ModbusRequestStatus, VARS(), byte, word, word, word*);
+	completeModbusWriteRegisters_Task _completeModbusWriteRegisters;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), completeModbusWriteRegisters, byte recipientId, word regStart, word regCount, word *regValues)
 	{
-		ASYNC_VAR(0, taskNotStartedCheck);
 		byte dummy;
 		START_ASYNC;
-		CREATE_ASSIGN_CLASS_TASK(taskNotStartedCheck, ESCAPE(Master<M, S, D>), this, ensureTaskNotStarted);
-		AWAIT(taskNotStartedCheck);
+		ensureTaskNotStarted();
+		AWAIT(_ensureTaskNotStarted);
 		if (regCount == 1)
 		{
 			if (!_modbus->setRequest_WriteRegister(recipientId, regStart, *regValues))
@@ -180,16 +186,20 @@ public:
 		}
 		END_ASYNC;
 	}
+	completeModbusWriteRegisters_Task &completeModbusWriteRegisters(byte recipientId, word regStart, word regCount, word *regValues)
+	{
+		CREATE_ASSIGN_CLASS_TASK(_completeModbusWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, recipientId, regStart, regCount, regValues);
+		return _completeModbusWriteRegisters;
+	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), checkForNewSlaves, SearchResultCode, VARS(completeModbusReadRegisters_Task));
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), checkForNewSlaves, SearchResultCode, VARS());
 	checkForNewSlaves_Task _checkForNewSlaves;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), checkForNewSlaves)
 	{
-		ASYNC_VAR(0, completeReadRegisters);
 		START_ASYNC;
-		CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, 1, 0, 7);
-		AWAIT(completeReadRegisters);
-		switch (completeReadRegisters.result())
+		completeModbusReadRegisters(1, 0, 7);
+		AWAIT(_completeModbusReadRegisters);
+		switch (_completeModbusReadRegisters.result())
 		{
 		case success:
 			RESULT_ASYNC(SearchResultCode, found);
@@ -217,17 +227,15 @@ public:
 		return _checkForNewSlaves;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), processNewSlave, void, VARS(completeModbusReadRegisters_Task, completeModbusWriteRegisters_Task, byte, word, byte, word, word[3]), bool);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), processNewSlave, void, VARS(byte, word, byte, word, word[3]), bool);
 	processNewSlave_Task _processNewSlave;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), processNewSlave, bool justReject)
 	{
-		ASYNC_VAR(0, completeReadRegisters);
-		ASYNC_VAR(1, completeWriteRegisters);
-		ASYNC_VAR(2, slaveId);
-		ASYNC_VAR(3, i);
-		ASYNC_VAR(4, numDevices);
-		ASYNC_VAR(5, deviceNameLength);
-		ASYNC_VAR(6, sentData);
+		ASYNC_VAR(0, slaveId);
+		ASYNC_VAR(1, i);
+		ASYNC_VAR(2, numDevices);
+		ASYNC_VAR(3, deviceNameLength);
+		ASYNC_VAR(4, sentData);
 		START_ASYNC;
 		word regCount;
 		word *regs;
@@ -255,9 +263,9 @@ public:
 			sentData[0] = 1;
 			sentData[1] = 1;
 			sentData[2] = 255;
-			CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
-			AWAIT(completeWriteRegisters);
-			ENSURE_NONMALFUNCTION(completeWriteRegisters);
+			completeModbusWriteRegisters(1, 0, 3, sentData);
+			AWAIT(_completeModbusWriteRegisters);
+			ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 			RETURN_ASYNC;
 		}
 		for (i = 0; i < numDevices; i++)
@@ -265,21 +273,21 @@ public:
 			sentData[0] = 1;
 			sentData[1] = 2;
 			sentData[2] = i;
-			CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
-			AWAIT(completeWriteRegisters);
-			ENSURE_NONMALFUNCTION(completeWriteRegisters);
-			CREATE_ASSIGN_CLASS_TASK(completeReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, 1, 0, 4 + (deviceNameLength + 1) / 2);
-			AWAIT(completeReadRegisters);
-			ENSURE_NONMALFUNCTION(completeReadRegisters);
+			completeModbusWriteRegisters(1, 0, 3, sentData);
+			AWAIT(_completeModbusWriteRegisters);
+			ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+			completeModbusReadRegisters(1, 0, 4 + (deviceNameLength + 1) / 2);
+			AWAIT(_completeModbusReadRegisters);
+			ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
 			_modbus->isReadRegsResponse(regCount, regs);
 			if (_deviceDirectory->addOrReplaceDevice((byte*)(regs + 3), regs[2], slaveId) == -1)
 			{
 				sentData[0] = 1;
 				sentData[1] = 1;
 				sentData[2] = 255;
-				CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
-				AWAIT(completeWriteRegisters);
-				ENSURE_NONMALFUNCTION(completeWriteRegisters);
+				completeModbusWriteRegisters(1, 0, 3, sentData);
+				AWAIT(_completeModbusWriteRegisters);
+				ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 				_deviceDirectory->filterDevicesForSlave(nullptr, 0, slaveId);
 				RETURN_ASYNC;
 			}
@@ -287,9 +295,9 @@ public:
 		sentData[0] = 1;
 		sentData[1] = 1;
 		sentData[2] = slaveId;
-		CREATE_ASSIGN_CLASS_TASK(completeWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, 1, 0, 3, sentData);
-		AWAIT(completeWriteRegisters);
-		ENSURE_NONMALFUNCTION(completeWriteRegisters);
+		completeModbusWriteRegisters(1, 0, 3, sentData);
+		AWAIT(_completeModbusWriteRegisters);
+		ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 		END_ASYNC;
 	}
 	processNewSlave_Task &processNewSlave(bool justReject)
