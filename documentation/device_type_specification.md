@@ -7,7 +7,8 @@ KWH Modbus Devices are individual worker units that communicate with the master 
 | 0 & 1           | Data flow type         |
 | 2               | Data accumulation type |
 | 3 - 5           | Data timescale         |
-| 6-15            | TBD                    |
+| 6-11            | Data size (in bits)    |
+| 12-15           | TBD                    |
 
 | Data flow type | Description                  |
 | -------------- | ---------------------------- |
@@ -17,3 +18,28 @@ KWH Modbus Devices are individual worker units that communicate with the master 
 | 11             | Diagnostic data receiver     |
 
 **Data accumulation type:** 0 = instantaneous (like temperature), 1 = accumulate (like energy usage)
+
+| Data timescale code | Period of data   |
+| ------------------- | ---------------- |
+| 000                 | 200 milliseconds |
+| 001                 | 1 second         |
+| 010                 | 15 seconds       |
+| 011                 | 1 minute         |
+| 100                 | 10 minutes       |
+| 101                 | 30 minutes       |
+| 110                 | 1 hour           |
+| 111                 | 1 day            |
+
+## Optional Statistics
+
+The following statistics may be obtained from the slave (if supported) depending on the accumulation type:
+
+| **Index** | **Metric for Instantaneous** | **Metric for Accumulate** |
+| --------- | ---------------------------- | ------------------------- |
+| 0         | Mean/period                  | Total (Integral)/period   |
+| 1         | Standard deviation/period    | Standard deviation/period |
+| 2         | Lifetime minimum             | Lifetime minimum          |
+| 3         | Lifetime maximum             | Lifetime maximum          |
+| 4         | Minimum mean                 | Minimum total             |
+| 5         | Maximum mean                 | Maximum total             |
+
