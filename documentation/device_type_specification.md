@@ -21,7 +21,7 @@ KWH Modbus Devices are individual worker units that communicate with the master 
 
 | Data timescale code | Period of data   |
 | ------------------- | ---------------- |
-| 000                 | 200 milliseconds |
+| 000                 | 500 milliseconds |
 | 001                 | 1 second         |
 | 010                 | 15 seconds       |
 | 011                 | 1 minute         |

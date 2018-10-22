@@ -53,29 +53,36 @@ Slaves will have the first register always be the current state of the slave. Be
 Here is a listing of each request type:
 
 * 0: Make slave idle/abort request
-	* Sets slave back to idle state, in the case of a botched request or any other instance in which a master may want to ensure the slave is idle.
+  * Sets slave back to idle state, in the case of a botched request or any other instance in which a master may want to ensure the slave is idle.
 * 1: Assign/reassign slave
-	* This request is unique in that register 2 is not a device number, since this only deals with the slave.
-	* Register 2 is the new slave ID that is to be assigned.
-	* Frequently used to assign an inactive slave at address 0 to a proper address.
+  * This request is unique in that register 2 is not a device number, since this only deals with the slave.
+  * Register 2 is the new slave ID that is to be assigned.
+  * Frequently used to assign an inactive slave at address 0 to a proper address.
 * 2: Read device info
-	* This is for reading information about a device, like the name and type.
-	* The response to this will have a state of 2.
-	* The data in this respons will have the following format:
-		* 0: Device type
-		* 1: Data type (first 8 bits)
-		* 1.5: Data length in bytes (last 8 bits)
-		* 2: Number of commands waiting
-		* 3: Number of messages waiting
-		* 4 to 3.5+(L/2): Characters of the device name, where L is the length of the name as defined by the slave
+  * This is for reading information about a device, like the name and type.
+  * The response to this will have a state of 2.
+  * The data in this respons will have the following format:
+  	* 0: Device type
+  	* 1: Data type (first 8 bits)
+  	* 1.5: Data length in bytes (last 8 bits)
+  	* 2: Number of commands waiting
+  	* 3: Number of messages waiting
+  	* 4 to 3.5+(L/2): Characters of the device name, where L is the length of the name as defined by the slave
 * 3: Read device data
-	* This is for reading actual data from a device, such as a power reading value at a particular time.
-	* The response to this will have a state of 2.
-	* The data in this response will have the following format:
-		* 0 to 1: The time for the start of the request
-		* 2: The number of data points being requested
-		* 3 to N: TBD
+  * This is for reading actual data from a device, such as a power reading value at a particular time.
+  * The response to this will have a state of 2.
+  * The data in this response will have the following format:
+  	* 0 to 1: The time for the start of the request
+  	* 2: The number of data points being requested
+  	* 3 to N: TBD
 * 4: Write data
-	* This is for writing data from *any* device, including itself (if supported).
-	* The response to this will have a state of 3.
-	* The data in this 
+  * This is for writing data from *any* device, including itself (if supported).
+  * The response to this will have a state of 3.
+  * Data format TBD
+* 32770 (0x8002): Broadcasts time in unsigned Y2K epoch time that is used by Arduino time library
+  * Goes to all slaves at once
+  * Overflows in 2136
+  * Applies to slave directly and not devices (though all devices have access to the time)
+  * The data (beginning at 2 for broadcasts) contains the following:
+    * 0 to 3: The four bytes in a unsigned 32 bit integer denoting the number of seconds since Jan 1, 2000
+    * 4 to 5: Leap seconds?
