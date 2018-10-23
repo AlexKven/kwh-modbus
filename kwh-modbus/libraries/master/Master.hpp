@@ -168,6 +168,11 @@ public:
 		{
 			RESULT_ASYNC(ModbusRequestStatus, taskFailure);
 		}
+		if (recipientId == 0)
+		{
+			// broadcast, we will not receive a response
+			RESULT_ASYNC(ModbusRequestStatus, success);
+		}
 		word finalRegCount;
 		if ((_modbus->isWriteRegResponse() && regCount == 1) || (_modbus->isWriteRegsResponse() && regCount != 1))
 		{
