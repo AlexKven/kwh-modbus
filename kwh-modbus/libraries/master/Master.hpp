@@ -53,13 +53,27 @@ private_testable:
 	S *_system;
 	M *_modbus;
 
-	unsigned long _curTime = 0;
-	unsigned long _prevTime = 0;
+	uint64_t _curTime = 0;
+	uint64_t _prevTime = 0;
+
+	uint32_t _initialClock = 0;
+	uint64_t _clockSet = 0;
 
 	MasterState _state;
 
-//protected_testable:
 public:
+	uint32_t getClock()
+	{
+		return (uint32_t)((_curTime - _clockSet) / 1000000) + _initialClock;
+	}
+
+	void setClock(uint32_t clock)
+	{
+		_initialClock = clock;
+		_clockSet = _curTime;
+	}
+
+protected_testable:
 	virtual void reportMalfunction(int line)
 	{
 
@@ -317,6 +331,7 @@ public:
 	{
 		_prevTime = _curTime;
 		_curTime = _system->millis();
+
 		ASYNC_VAR_INIT(0, lastActivityTime, 0);
 		ASYNC_VAR(1, something);
 		START_ASYNC;
@@ -342,6 +357,16 @@ public:
 		END_ASYNC;
 	}
 
+	virtual bool broadcastTime()
+	{
+		word data[4];
+		data[0] = 1;
+		data[1] = 32770; // Broadcast time function
+		uint32_t *clock = (uint32_t*)(data + 1);
+		*clock = getClock();
+		return (completeModbusWriteRegisters(0, 0, 6, (word*)data).runSynchronously() == success);
+	}
+
 public:
 	void config(S *system, M *modbus, D *deviceDirectory)
 	{
@@ -359,29 +384,6 @@ public:
 			started = true;
 		}
 		_loop();
-	}
-
-	void task()
-	{
-		//if (!slaveFound)
-		//{
-		//	auto tsk = checkForNewSlaves_Task(&Master<M, S, D>::checkForNewSlaves, this);
-		//	while (!tsk());
-
-		//	//Serial.print("Task result ");
-		//	//Serial.println(tsk.result());
-		//	if (tsk.result() == 1)
-		//	{
-		//		slaveFound = true;
-		//		t2 = processNewSlave_Task(&Master<M, S, D>::processNewSlave, this, false);
-		//		bool done = false;
-		//		while (!done)
-		//		{
-		//			done = t2();
-		//		}
-		//	}
-		//	return;
-		//}
 	}
 
 	bool slaveFound = false;

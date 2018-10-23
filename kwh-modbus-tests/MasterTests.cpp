@@ -918,3 +918,45 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 	if (prevPtr != nullptr)
 		delete[] prevPtr;
 }
+
+TEST_F(MasterTests, broadcastTime_success)
+{
+	MOCK_MODBUS;
+	uint32_t curTime;
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
+	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
+	When(Method(completeWriteRegsMock, func)).AlwaysDo([&curTime](byte slaveId, word start, word count, word* data)
+	{
+		curTime = *(uint32_t*)(data + 1);
+		return true;
+	});
+	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
+
+	master->setClock(537408000);
+	auto result = master->broadcastTime();
+
+	ASSERT_EQ(result, true);
+	ASSERT_EQ(curTime, 537408000);
+}
+
+TEST_F(MasterTests, broadcastTime_failure)
+{
+	MOCK_MODBUS;
+	uint32_t curTime;
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
+	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
+	When(Method(completeWriteRegsMock, func)).AlwaysDo([&curTime](byte slaveId, word start, word count, word* data)
+	{
+		curTime = *(uint32_t*)(data + 1);
+		return true;
+	});
+	When(Method(completeWriteRegsMock, result)).AlwaysReturn(taskFailure);
+
+	master->setClock(537408000);
+	auto result = master->broadcastTime();
+
+	ASSERT_EQ(result, false);
+	ASSERT_EQ(curTime, 537408000);
+}
