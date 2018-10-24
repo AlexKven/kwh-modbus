@@ -219,7 +219,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 {
 	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master);
 	slaveAction = [this]() {
-		slave->task();
+		slave->loop();
 		return masterSuccess;
 	};
 	masterAction = [this, &task]()
@@ -250,7 +250,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master);
 	slaveAction = [this]() {
 		//return true;
-		slave->task();
+		slave->loop();
 		return masterSuccess;
 	};
 	masterAction = [this, &task]()
@@ -280,7 +280,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 	tasks.push(&task0);
 
 	slaveAction = [this]() {
-		slave->task();
+		slave->loop();
 		return masterSuccess;
 	};
 	masterAction = [this, &tasks]()
@@ -323,7 +323,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave_
 	tasks.push(&task0);
 
 	slaveAction = [this]() {
-		slave->task();
+		slave->loop();
 		return masterSuccess;
 	};
 	masterAction = [this, &tasks]()

@@ -24,8 +24,7 @@ enum SlaveState : word
 template<class M, class S>
 class Slave
 {
-//private_testable:
-public:
+private_testable:
 	const byte _majorVersion = 1;
 	const byte _minorVersion = 0;
 	word _deviceNameLength;
@@ -33,10 +32,30 @@ public:
 	byte **_deviceNames = nullptr;
 	Device **_devices = nullptr;
 	SlaveState _state = sIdle;
+	bool displayedStateInvalid = true;
+
+	uint64_t _curTime = 0;
+	uint64_t _prevTime = 0;
+
+	uint32_t _initialClock = 0;
+	uint64_t _clockSet = 0;
 
 	S *_system;
 	M *_modbus;
 
+public:
+	uint32_t getClock()
+	{
+		return (uint32_t)((_curTime - _clockSet) / 1000000) + _initialClock;
+	}
+
+	void setClock(uint32_t clock)
+	{
+		_initialClock = clock;
+		_clockSet = _curTime;
+	}
+
+private_testable:
 	virtual bool setOutgoingState()
 	{
 		ENSURE(_modbus->validRange(0, 10));
@@ -76,6 +95,7 @@ public:
 			ENSURE(_modbus->Hreg(4 + index, 0)); // Messages waiting
 			break;
 		}
+		displayedStateInvalid = false;
 		return true;
 	}
 
@@ -90,16 +110,16 @@ public:
 			{
 			case 0:
 				_state = sIdle;
-				setOutgoingState();
+				displayedStateInvalid = true;
 				break;
 			case 1:
 				_state = sIdle;
 				_modbus->setSlaveId((byte)_modbus->Hreg(2));
-				setOutgoingState();
+				displayedStateInvalid = true;
 				break;
 			case 2:
 				_state = sDisplayDevInfo;
-				setOutgoingState();
+				displayedStateInvalid = true;
 				break;
 			}
 		}
@@ -132,13 +152,18 @@ public:
 	}
 
 	// Basic initial version
-	void task()
+	void loop()
 	{
+		_prevTime = _curTime;
+		_curTime = _system->millis();
+
 		bool processed;
 		bool broadcast;
 		_modbus->task(processed, broadcast);
 		if (processed)
 			processIncomingState(processed);
+		if (displayedStateInvalid)
+			setOutgoingState();
 	}
 
 	void clearDevices()

@@ -63,12 +63,14 @@ public:
 
 TEST_F(SlaveTests, SlaveTests_setOutgoingState_Idle_Success)
 {
+	slave->displayedStateInvalid = true;
 	slave->_state = sIdle;
 	slave->_deviceCount = 4;
 	slave->_deviceNameLength = 703;
 	bool success = slave->setOutgoingState();
 
 	ASSERT_TRUE(success);
+	ASSERT_EQ(slave->displayedStateInvalid, false);
 	ASSERT_EQ(registerArray[0], sIdle);
 	ASSERT_EQ(registerArray[1], 1 << 8);
 	ASSERT_EQ(registerArray[2], 4);
@@ -77,6 +79,7 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_Idle_Success)
 
 TEST_F(SlaveTests, SlaveTests_setOutgoingState_Idle_Failure)
 {
+	slave->displayedStateInvalid = true;
 	SetupOutOfRangeRegisterArray();
 	slave->_state = sIdle;
 	slave->_deviceCount = 4;
@@ -84,11 +87,13 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_Idle_Failure)
 	bool success = slave->setOutgoingState();
 
 	ASSERT_FALSE(success);
+	ASSERT_EQ(slave->displayedStateInvalid, true);
 }
 
 TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
 {
 	slave->_state = sDisplayDevInfo;
+	slave->displayedStateInvalid = true;
 
 	Device **devices = new Device*[3];
 	SetupDevices(devices, 3);
@@ -107,6 +112,7 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
 
 	bool success = slave->setOutgoingState();
 
+	ASSERT_EQ(slave->displayedStateInvalid, false);
 	ASSERT_TRUE(success);
 	assertArrayEq(registerArray,
 		sDisplayDevInfo,
@@ -125,7 +131,7 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
 TEST_F(SlaveTests, SlaveTests_processIncomingState_Idle)
 {
 	MOCK_SLAVE;
-	When(Method(mock, setOutgoingState)).Return(true);
+	mSlave.displayedStateInvalid = false;
 
 	mSlave._state = sIdle;
 
@@ -138,13 +144,13 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_Idle)
 	ASSERT_TRUE(processed);
 	ASSERT_TRUE(success);
 	ASSERT_EQ(mSlave._state, sIdle);
-	Verify(Method(mock, setOutgoingState)).Once();
+	ASSERT_EQ(mSlave.displayedStateInvalid, true);
 }
 
 TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId)
 {
 	MOCK_SLAVE;
-	When(Method(mock, setOutgoingState)).Return(true);
+	mSlave.displayedStateInvalid = false;
 	
 	mSlave._state = sIdle;
 	mSlave._deviceCount = 4;
@@ -162,13 +168,13 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId)
 	ASSERT_TRUE(success);
 	ASSERT_EQ(mSlave._state, sIdle);
 	ASSERT_EQ(mSlave.getSlaveId(), 41);
-	Verify(Method(mock, setOutgoingState)).Once();
+	ASSERT_EQ(mSlave.displayedStateInvalid, true);
 }
 
 TEST_F(SlaveTests, SlaveTests_processIncomingState_Nothing)
 {
 	MOCK_SLAVE;
-	When(Method(mock, setOutgoingState)).Return(true);
+	mSlave.displayedStateInvalid = false;
 
 	mSlave._state = sIdle;
 
@@ -179,14 +185,14 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_Nothing)
 
 	ASSERT_FALSE(processed);
 	ASSERT_TRUE(success);
-	Verify(Method(mock, setOutgoingState)).Never();
+	ASSERT_EQ(mSlave.displayedStateInvalid, false);
 }
 
 TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId_Failure)
 {
 	MOCK_SLAVE;
-	When(Method(mock, setOutgoingState)).Return(true);
 	SetupOutOfRangeRegisterArray();
+	mSlave.displayedStateInvalid = false;
 
 	mSlave._state = sIdle;
 	mSlave._modbus->setSlaveId(14);
@@ -202,7 +208,7 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId_Failure)
 	ASSERT_FALSE(success);
 	ASSERT_EQ(mSlave._state, sIdle);
 	ASSERT_EQ(mSlave._modbus->getSlaveId(), 14);
-	Verify(Method(mock, setOutgoingState)).Never();
+	ASSERT_EQ(mSlave.displayedStateInvalid, false);
 }
 
 TEST_F(SlaveTests, SlaveTests_init)
@@ -257,4 +263,23 @@ TEST_F(SlaveTests, SlaveTests_clearDevices)
 	ASSERT_EQ(slave->getDeviceNameLength(), 5); // Clearing doesn't change name length
 	ASSERT_EQ(slave->_devices, nullptr);
 	ASSERT_EQ(slave->_deviceNames, nullptr);
+}
+
+TEST_F(SlaveTests, getClock)
+{
+	slave->_initialClock = 537408000;
+	slave->_clockSet = 20000000000;
+	slave->_curTime = 22000500000;
+	auto clock = slave->getClock();
+
+	ASSERT_EQ(clock, 537410000);
+}
+
+TEST_F(SlaveTests, setClock)
+{
+	slave->_curTime = 4000000000;
+	slave->setClock(537408000);
+
+	ASSERT_EQ(slave->_initialClock, 537408000);
+	ASSERT_EQ(slave->_clockSet, 4000000000);
 }
