@@ -62,12 +62,12 @@ private_testable:
 	MasterState _state;
 
 public:
-	uint32_t getClock()
+	virtual uint32_t getClock()
 	{
 		return (uint32_t)((_curTime - _clockSet) / 1000000) + _initialClock;
 	}
 
-	void setClock(uint32_t clock)
+	virtual void setClock(uint32_t clock)
 	{
 		_initialClock = clock;
 		_clockSet = _curTime;

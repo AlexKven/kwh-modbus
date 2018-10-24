@@ -151,7 +151,7 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId)
 {
 	MOCK_SLAVE;
 	mSlave.displayedStateInvalid = false;
-	
+
 	mSlave._state = sIdle;
 	mSlave._deviceCount = 4;
 	mSlave._deviceNameLength = 703;
@@ -160,7 +160,7 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId)
 	registerArray[0] = sReceivedRequest;
 	registerArray[1] = 1;
 	registerArray[2] = 41;
-	
+
 	bool processed;
 	bool success = mSlave.processIncomingState(processed);
 
@@ -209,6 +209,32 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId_Failure)
 	ASSERT_EQ(mSlave._state, sIdle);
 	ASSERT_EQ(mSlave._modbus->getSlaveId(), 14);
 	ASSERT_EQ(mSlave.displayedStateInvalid, false);
+}
+
+TEST_F(SlaveTests, SlaveTests_processIncomingState_SetClock)
+{
+	MOCK_SLAVE;
+	Fake(Method(mock, setClock));
+
+	mSlave.displayedStateInvalid = false;
+
+	mSlave._state = sIdle;
+	mSlave._deviceCount = 4;
+	mSlave._deviceNameLength = 703;
+	mSlave._modbus->setSlaveId(14);
+
+	registerArray[0] = sReceivedRequest;
+	registerArray[1] = 32770;
+	*(uint32_t*)(registerArray + 2) = 4000000000;
+
+	bool processed;
+	bool success = mSlave.processIncomingState(processed);
+
+	ASSERT_TRUE(processed);
+	ASSERT_TRUE(success);
+	ASSERT_EQ(mSlave._state, sIdle);
+	Verify(Method(mock, setClock).Using(4000000000)).Once();
+	ASSERT_EQ(mSlave.displayedStateInvalid, true);
 }
 
 TEST_F(SlaveTests, SlaveTests_init)

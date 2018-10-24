@@ -18,7 +18,8 @@ enum SlaveState : word
 	sDisplayDevCommand = 5,
 	sReceivingDevCommand = 6,
 	sDisplayDevMessage = 7,
-	sDisplaySlaveMessage = 8
+	sDisplaySlaveMessage = 8,
+	sSetTime = 32770
 };
 
 template<class M, class S>
@@ -44,12 +45,12 @@ private_testable:
 	M *_modbus;
 
 public:
-	uint32_t getClock()
+	virtual uint32_t getClock()
 	{
 		return (uint32_t)((_curTime - _clockSet) / 1000000) + _initialClock;
 	}
 
-	void setClock(uint32_t clock)
+	virtual void setClock(uint32_t clock)
 	{
 		_initialClock = clock;
 		_clockSet = _curTime;
@@ -119,6 +120,11 @@ private_testable:
 				break;
 			case 2:
 				_state = sDisplayDevInfo;
+				displayedStateInvalid = true;
+				break;
+			case 32770:
+				_state = sIdle;
+				setClock((uint32_t)(_modbus->Hreg(3) << 16) + (uint16_t)_modbus->Hreg(2));
 				displayedStateInvalid = true;
 				break;
 			}
