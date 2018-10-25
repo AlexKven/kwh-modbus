@@ -85,4 +85,3 @@ Here is a listing of each request type:
   * Applies to slave directly and not devices (though all devices have access to the time)
   * The data (beginning at 2 for broadcasts) contains the following:
     * 0 to 1: The four bytes in a unsigned 32 bit integer denoting the number of seconds since Jan 1, 2000
-    * 2 to 3: Leap seconds? TBD
