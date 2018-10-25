@@ -928,7 +928,7 @@ TEST_F(MasterTests, broadcastTime_success)
 	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
 	When(Method(completeWriteRegsMock, func)).AlwaysDo([&curTime](byte slaveId, word start, word count, word* data)
 	{
-		curTime = *(uint32_t*)(data + 1);
+		curTime = *(uint32_t*)(data + 2);
 		return true;
 	});
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
@@ -949,7 +949,7 @@ TEST_F(MasterTests, broadcastTime_failure)
 	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
 	When(Method(completeWriteRegsMock, func)).AlwaysDo([&curTime](byte slaveId, word start, word count, word* data)
 	{
-		curTime = *(uint32_t*)(data + 1);
+		curTime = *(uint32_t*)(data + 2);
 		return true;
 	});
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(taskFailure);

@@ -362,9 +362,9 @@ protected_testable:
 		word data[4];
 		data[0] = 1;
 		data[1] = 32770; // Broadcast time function
-		uint32_t *clock = (uint32_t*)(data + 1);
+		uint32_t *clock = (uint32_t*)(data + 2);
 		*clock = getClock();
-		return (completeModbusWriteRegisters(0, 0, 6, (word*)data).runSynchronously() == success);
+		return (completeModbusWriteRegisters(0, 0, 4, (word*)data).runSynchronously() == success);
 	}
 
 public:

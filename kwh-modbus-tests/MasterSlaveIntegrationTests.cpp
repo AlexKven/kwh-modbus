@@ -344,6 +344,33 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave_
 	ASSERT_EQ(modbusSlave->getSlaveId(), 255);
 }
 
+TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
+{
+	slaveAction = [this]() {
+		slave->loop();
+		return masterSuccess;
+	};
+	masterAction = [this]()
+	{
+		while (!master->broadcastTime());
+		system->delay(100);
+		return slave->getClock() >= 2000000000;
+	};
+
+	modbusSlave->setSlaveId(1);
+	slave->setOutgoingState();
+	master->setClock(2000000000);
+
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+
+	//ASSERT_EQ(modbusSlave->getSlaveId(), 255);
+}
+
 INSTANTIATE_TEST_CASE_P(NoErrors, MasterSlaveIntegrationTests, ::testing::Values(None));
 INSTANTIATE_TEST_CASE_P(InboundError, MasterSlaveIntegrationTests, ::testing::Values(InboundError));
 INSTANTIATE_TEST_CASE_P(OutboundError, MasterSlaveIntegrationTests, ::testing::Values(OutboundError));
