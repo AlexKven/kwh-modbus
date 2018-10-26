@@ -6,6 +6,7 @@
 #endif
 
 #include "../device/Device.h"
+#include "../timeManager/TimeManager.hpp"
 #define ENSURE(statement) if (!(statement)) return false
 
 enum SlaveState : word
@@ -23,7 +24,7 @@ enum SlaveState : word
 };
 
 template<class M, class S>
-class Slave
+class Slave : public TimeManager
 {
 private_testable:
 	const byte _majorVersion = 1;
@@ -35,26 +36,8 @@ private_testable:
 	SlaveState _state = sIdle;
 	bool displayedStateInvalid = true;
 
-	uint64_t _curTime = 0;
-	uint64_t _prevTime = 0;
-
-	uint32_t _initialClock = 0;
-	uint64_t _clockSet = 0;
-
 	S *_system;
 	M *_modbus;
-
-public:
-	virtual uint32_t getClock()
-	{
-		return (uint32_t)((_curTime - _clockSet) / 1000000) + _initialClock;
-	}
-
-	virtual void setClock(uint32_t clock)
-	{
-		_initialClock = clock;
-		_clockSet = _curTime;
-	}
 
 private_testable:
 	virtual bool setOutgoingState()
@@ -160,8 +143,7 @@ public:
 	// Basic initial version
 	void loop()
 	{
-		_prevTime = _curTime;
-		_curTime = _system->millis();
+		tick(_system->millis());
 
 		bool processed;
 		bool broadcast;

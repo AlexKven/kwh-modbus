@@ -7,6 +7,7 @@
 
 #include "../device/Device.h"
 #include "../asyncAwait/AsyncAwait.hpp"
+#include "../timeManager/TimeManager.hpp"
 
 #define ENSURE(statement) if (!(statement)) return false
 #define ENSURE_NONMALFUNCTION(modbus_task) if (modbus_task.result() != success) \
@@ -43,7 +44,7 @@ enum MasterState : byte
 };
 
 template<class M, class S, class D>
-class Master
+class Master : public TimeManager
 {
 private_testable:
 	const byte _majorVersion = 1;
@@ -53,25 +54,7 @@ private_testable:
 	S *_system;
 	M *_modbus;
 
-	uint64_t _curTime = 0;
-	uint64_t _prevTime = 0;
-
-	uint32_t _initialClock = 0;
-	uint64_t _clockSet = 0;
-
 	MasterState _state;
-
-public:
-	virtual uint32_t getClock()
-	{
-		return (uint32_t)((_curTime - _clockSet) / 1000000) + _initialClock;
-	}
-
-	virtual void setClock(uint32_t clock)
-	{
-		_initialClock = clock;
-		_clockSet = _curTime;
-	}
 
 protected_testable:
 	virtual void reportMalfunction(int line)
@@ -329,15 +312,14 @@ protected_testable:
 	loop_Task _loop;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), loop)
 	{
-		_prevTime = _curTime;
-		_curTime = _system->millis();
+		tick(_system->millis());
 
 		ASYNC_VAR_INIT(0, lastActivityTime, 0);
 		ASYNC_VAR(1, something);
 		START_ASYNC;
 		for(;;)
 		{
-			if (lastActivityTime == 0 || (_curTime - lastActivityTime > 2000))
+			if (lastActivityTime == 0 || (getCurTime() - lastActivityTime > 2000))
 			{
 				checkForNewSlaves();
 				AWAIT(_checkForNewSlaves);
@@ -350,7 +332,7 @@ protected_testable:
 					AWAIT(_checkForNewSlaves);
 					something = (_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave);
 				}
-				lastActivityTime = _curTime;
+				lastActivityTime = getCurTime();
 			}
 			YIELD_ASYNC;
 		}

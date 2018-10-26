@@ -960,22 +960,3 @@ TEST_F(MasterTests, broadcastTime_failure)
 	ASSERT_EQ(result, false);
 	ASSERT_EQ(curTime, 537408000);
 }
-
-TEST_F(MasterTests, getClock)
-{
-	master->_initialClock = 537408000;
-	master->_clockSet = 20000000000;
-	master->_curTime = 22000500000;
-	auto clock = master->getClock();
-
-	ASSERT_EQ(clock, 537410000);
-}
-
-TEST_F(MasterTests, setClock)
-{
-	master->_curTime = 4000000000;
-	master->setClock(537408000);
-
-	ASSERT_EQ(master->_initialClock, 537408000);
-	ASSERT_EQ(master->_clockSet, 4000000000);
-}

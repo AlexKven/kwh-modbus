@@ -20,6 +20,7 @@
     <ClCompile Include="AsyncAwaitTests.cpp" />
     <ClCompile Include="MasterTests.cpp" />
     <ClCompile Include="MasterSlaveIntegrationTests.cpp" />
+    <ClCompile Include="TimeManagerTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

@@ -290,22 +290,3 @@ TEST_F(SlaveTests, SlaveTests_clearDevices)
 	ASSERT_EQ(slave->_devices, nullptr);
 	ASSERT_EQ(slave->_deviceNames, nullptr);
 }
-
-TEST_F(SlaveTests, getClock)
-{
-	slave->_initialClock = 537408000;
-	slave->_clockSet = 20000000000;
-	slave->_curTime = 22000500000;
-	auto clock = slave->getClock();
-
-	ASSERT_EQ(clock, 537410000);
-}
-
-TEST_F(SlaveTests, setClock)
-{
-	slave->_curTime = 4000000000;
-	slave->setClock(537408000);
-
-	ASSERT_EQ(slave->_initialClock, 537408000);
-	ASSERT_EQ(slave->_clockSet, 4000000000);
-}
