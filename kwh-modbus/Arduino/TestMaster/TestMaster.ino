@@ -44,8 +44,8 @@ public:
 };
 
 word *registers = new word[20];
-typedef ResilientModbusMaster<SoftwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
-typedef Master<ResilientModbusMaster<SoftwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions, DeviceDirectory<byte*>> T_Master;
+typedef ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
+typedef Master<ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions, DeviceDirectory<byte*>> T_Master;
 
 T_Modbus modbus;
 T_Master master;
@@ -62,11 +62,11 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting...");
 
-  modbus.config(&mySerial, &functions, 9600, 4);
+  modbus.config(&Serial1, &functions, 9600, 4);
   modbus.init(registers, 0, 20, 30);
   modbus.setMaxTimePerTryMicros(300000);
   modbus.setMaxTries(15);
-  directory.init(8, 5);
+  directory.init(8, 20);
   master.config(&functions, &modbus, &directory);
   Serial.println("Master initialized");
   Serial.print("Initial Memory: ");

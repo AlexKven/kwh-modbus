@@ -81,8 +81,8 @@ void setup() {
   devices[1] = new RealDevice();
 
   byte* names[2];
-  names[0] = (byte*)"device00";
-  names[1] = (byte*)"device01";
+  names[0] = (byte*)"device04";
+  names[1] = (byte*)"device05";
 
   slave.init(2, 8, devices, names);
 }
