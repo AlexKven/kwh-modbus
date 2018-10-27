@@ -7,7 +7,7 @@
 #include "ResilientModbusMaster.hpp"
 #include "Master.hpp"
 #include "DeviceDirectory.hpp"
-
+#include "SoftwareSerial.h"
 
 class ArduinoFunctions
 {
@@ -44,13 +44,14 @@ public:
 };
 
 word *registers = new word[20];
-typedef ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
-typedef Master<ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions, DeviceDirectory<byte*>> T_Master;
+typedef ResilientModbusMaster<SoftwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
+typedef Master<ResilientModbusMaster<SoftwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions, DeviceDirectory<byte*>> T_Master;
 
 T_Modbus modbus;
 T_Master master;
 ArduinoFunctions functions;
 DeviceDirectory<byte*> directory;
+SoftwareSerial mySerial(10, 11);
 
 void setup() {
   for (int i = 0; i < 20; i++)
@@ -61,11 +62,11 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting...");
 
-  modbus.config(&Serial1, &functions, 9600, 4);
+  modbus.config(&mySerial, &functions, 9600, 4);
   modbus.init(registers, 0, 20, 30);
   modbus.setMaxTimePerTryMicros(300000);
   modbus.setMaxTries(15);
-  directory.init(8, 20);
+  directory.init(8, 5);
   master.config(&functions, &modbus, &directory);
   Serial.println("Master initialized");
   Serial.print("Initial Memory: ");

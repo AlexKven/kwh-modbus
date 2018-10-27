@@ -5,7 +5,7 @@
 #include "ModbusSlave.hpp"
 #include "Slave.hpp"
 #include "HardwareSerial.h"
-
+#include "SoftwareSerial.h"
 
 class ArduinoFunctions
 {
@@ -29,6 +29,16 @@ public:
   {
     ::pinMode(pin, mode);
   }
+
+  long micros()
+  {
+    return ::micros();
+  }
+
+  long millis()
+  {
+    return ::millis();
+  }
 };
 
 class RealDevice : public Device
@@ -41,10 +51,11 @@ class RealDevice : public Device
 };
 
 word *registers = new word[20];
-typedef ModbusSlave<HardwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
-typedef Slave<ModbusSlave<HardwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions> T_Slave;
+typedef ModbusSlave<SoftwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
+typedef Slave<ModbusSlave<SoftwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions> T_Slave;
 T_Modbus modbus;
 T_Slave slave;
+SoftwareSerial mySerial(10, 11);
 
 ArduinoFunctions functions;
 
@@ -59,7 +70,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting...");
   
-  modbus.config(&Serial1, &functions, 9600, 4);
+  modbus.config(&mySerial, &functions, 9600, 4);
   Serial.println("Slave initialized");
   modbus.init(registers, 0, 20, 30);
   modbus.setSlaveId(1);
@@ -74,7 +85,6 @@ void setup() {
   names[1] = (byte*)"device01";
 
   slave.init(2, 8, devices, names);
-  slave.setOutgoingState();
 }
 
 void loop() {
@@ -89,7 +99,7 @@ void loop() {
 
 for (int i = 0; i < 1000; i++)
 {
-  slave.task();
+  slave.loop();
 //  
 //  delay(5);
 }
