@@ -6,7 +6,7 @@
 #endif
 
 #include "../device/Device.h"
-#include "../timeManager/TimeManager.hpp"
+#include "../timeManager/TimeManager.h"
 #define ENSURE(statement) if (!(statement)) return false
 
 enum SlaveState : word

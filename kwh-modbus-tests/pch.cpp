@@ -10,3 +10,4 @@
 #include "../kwh-modbus/noArduino/ModbusMemory.cpp"
 #include "../kwh-modbus/mock/MockSerialStream.cpp"
 #include "../kwh-modbus/libraries/device/Device.cpp"
+#include "../kwh-modbus/libraries/timeManager/TimeManager.cpp"

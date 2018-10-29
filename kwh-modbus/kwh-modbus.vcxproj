@@ -70,6 +70,7 @@
     <ClCompile Include="libraries\modbus\Modbus.cpp" />
     <ClCompile Include="libraries\modbus\ModbusArray.cpp" />
     <ClCompile Include="libraries\random\Random.cpp" />
+    <ClCompile Include="libraries\timeManager\TimeManager.cpp" />
     <ClCompile Include="mock\MockSerialStream.cpp" />
     <ClCompile Include="noArduino\ModbusMemory.cpp" />
     <ClCompile Include="noArduino\SystemFunctions.cpp" />
@@ -94,7 +95,7 @@
     <ClInclude Include="libraries\resilientModbusMaster\ResilientModbusMaster.hpp" />
     <ClInclude Include="libraries\resilientTask\ResilientTask.hpp" />
     <ClInclude Include="libraries\slave\Slave.hpp" />
-    <ClInclude Include="libraries\timeManager\TimeManager.hpp" />
+    <ClInclude Include="libraries\timeManager\TimeManager.h" />
     <ClInclude Include="libraries\tuple\Tuple.hpp" />
     <ClInclude Include="mock\MockableResilientModbusMaster.hpp" />
     <ClInclude Include="mock\MockSerialStream.h" />

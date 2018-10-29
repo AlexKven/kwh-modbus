@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "fakeit.hpp"
-#include "../kwh-modbus/libraries/timeManager/TimeManager.hpp"
+#include "../kwh-modbus/libraries/timeManager/TimeManager.h"
 #include "test_helpers.h"
 
 using namespace fakeit;

@@ -7,7 +7,7 @@
 
 #include "../device/Device.h"
 #include "../asyncAwait/AsyncAwait.hpp"
-#include "../timeManager/TimeManager.hpp"
+#include "../timeManager/TimeManager.h"
 
 #define ENSURE(statement) if (!(statement)) return false
 #define ENSURE_NONMALFUNCTION(modbus_task) if (modbus_task.result() != success) \

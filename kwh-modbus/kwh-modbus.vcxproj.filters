@@ -29,6 +29,9 @@
     <ClCompile Include="libraries\device\Device.cpp">
       <Filter>libraries\device</Filter>
     </ClCompile>
+    <ClCompile Include="libraries\timeManager\TimeManager.cpp">
+      <Filter>libraries\timeManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\modbus\Modbus.h">
@@ -106,7 +109,7 @@
     <ClInclude Include="mock\MockableResilientModbusMaster.hpp">
       <Filter>mock</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\timeManager\TimeManager.hpp">
+    <ClInclude Include="libraries\timeManager\TimeManager.h">
       <Filter>libraries\timeManager</Filter>
     </ClInclude>
   </ItemGroup>
