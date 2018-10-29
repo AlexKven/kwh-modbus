@@ -628,6 +628,7 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
+	ASSERT_TRUE(master->_timeUpdatePending);
 
 	// Three requests for device data, plus write new slave ID
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Exactly(4);
@@ -685,6 +686,7 @@ TEST_F(MasterTests, processNewSlave_Reject_ByRequest)
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, true);
 	ASSERT_TRUE(task());
+	ASSERT_FALSE(master->_timeUpdatePending);
 
 	// Three requests for device data, plus write new slave ID
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Once();
@@ -737,6 +739,7 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryAlreadyFull)
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
+	ASSERT_FALSE(master->_timeUpdatePending);
 
 	// Three requests for device data, plus write new slave ID
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Once();
@@ -789,6 +792,7 @@ TEST_F(MasterTests, processNewSlave_Reject_SlaveVersionMismatch)
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
+	ASSERT_FALSE(master->_timeUpdatePending);
 
 	// Three requests for device data, plus write new slave ID
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Once();
@@ -841,6 +845,7 @@ TEST_F(MasterTests, processNewSlave_Reject_ZeroDevices)
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
+	ASSERT_FALSE(master->_timeUpdatePending);
 
 	// Three requests for device data, plus write new slave ID
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Once();
@@ -900,6 +905,7 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
+	ASSERT_FALSE(master->_timeUpdatePending);
 
 	// Two requests for device data, plus write new slave ID
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Exactly(3);
@@ -959,4 +965,11 @@ TEST_F(MasterTests, broadcastTime_failure)
 
 	ASSERT_EQ(result, false);
 	ASSERT_EQ(curTime, 537408000);
+}
+
+TEST_F(MasterTests, setClock_SetsTimeUpdatePending)
+{
+	master->setClock(0);
+
+	ASSERT_TRUE(master->_timeUpdatePending);
 }

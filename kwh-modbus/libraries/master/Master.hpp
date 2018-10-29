@@ -49,6 +49,7 @@ class Master : public TimeManager
 private_testable:
 	const byte _majorVersion = 1;
 	const byte _minorVersion = 0;
+	bool _timeUpdatePending = false;
 
 	D *_deviceDirectory;
 	S *_system;
@@ -300,6 +301,7 @@ protected_testable:
 		completeModbusWriteRegisters(1, 0, 3, sentData);
 		AWAIT(_completeModbusWriteRegisters);
 		ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+		_timeUpdatePending = true;
 		END_ASYNC;
 	}
 	processNewSlave_Task &processNewSlave(bool justReject)
@@ -319,6 +321,11 @@ protected_testable:
 		START_ASYNC;
 		for(;;)
 		{
+			if (_timeUpdatePending)
+			{
+				_timeUpdatePending = false;
+				broadcastTime();
+			}
 			if (lastActivityTime == 0 || (getCurTime() - lastActivityTime > 2000))
 			{
 				checkForNewSlaves();
@@ -366,6 +373,12 @@ public:
 			started = true;
 		}
 		_loop();
+	}
+
+	virtual void setClock(uint32_t clock)
+	{
+		TimeManager::setClock(clock);
+		_timeUpdatePending = true;
 	}
 
 	bool slaveFound = false;
