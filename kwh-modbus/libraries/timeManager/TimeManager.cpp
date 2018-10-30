@@ -16,13 +16,51 @@ uint64_t TimeManager::getTimeSincePenultimateTick()
 	return _curTime - _prevTime;
 }
 
-uint32_t TimeManager::getTimeCodeForTime(TimeScale timeScale, uint32_t clock) // 0 for current time
+uint32_t TimeManager::getTimeCodeForClock(TimeScale timeScale, uint32_t clock) // 0 for current time
 {
 	if (clock == 0)
 		clock = getClock();
 	auto period = getPeriodFromTimeScale(timeScale); // this is milliseconds
 	auto periodsElapsed = (uint32_t)((uint64_t)clock * 1000 / period);
 	return periodsElapsed;
+}
+
+uint32_t TimeManager::getClockForTimeCode(TimeScale timeScale, uint32_t timeCode, uint32_t referenceClock)
+{
+	if (referenceClock == 0)
+		referenceClock = getClock();
+	auto period = getPeriodFromTimeScale(timeScale); // this is milliseconds
+
+	auto clock = (uint32_t)((uint64_t)timeCode * (uint64_t)period / 1000);
+
+	if (period < 1000)
+	{
+		auto overflowDivisions = 1000 / period;
+		if (1000 % period != 0)
+			overflowDivisions++;
+		auto overflowWindow = (uint32_t)(0x0100000000 / (uint64_t)overflowDivisions);
+		int numOverflows = 0;
+		bool edge = false;
+		while (referenceClock > overflowWindow)
+		{
+			referenceClock -= overflowWindow;
+			numOverflows++;
+		}
+		if (referenceClock < overflowWindow / 4)
+		{
+			edge = true;
+			if (numOverflows == 0)
+				edge = false;
+			else
+				numOverflows--;
+		}
+		else if (referenceClock > overflowWindow / 4 + overflowWindow / 2) // 3/4 overflow window
+			edge = true;
+		if (edge && clock < overflowWindow / 2)
+			numOverflows++;
+		clock += overflowWindow * numOverflows;
+	}
+	return clock;
 }
 
 // not tested because it is very trivial

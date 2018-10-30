@@ -31,7 +31,9 @@ protected_testable:
 	virtual uint64_t getCurTime();
 	virtual uint64_t getTimeSincePenultimateTick();
 
-	virtual uint32_t getTimeCodeForTime(TimeScale timeScale, uint32_t clock = 0);
+	virtual uint32_t getTimeCodeForClock(TimeScale timeScale, uint32_t clock = 0);
+	virtual uint32_t getClockForTimeCode(TimeScale timeScale, uint32_t timeCode, uint32_t referenceClock = 0);
+
 	static uint32_t getPeriodFromTimeScale(TimeScale timeScale);
 
 public:
