@@ -2,6 +2,12 @@
 #include <stdarg.h>
 #include "pch.h"
 
+template<class T>
+T maxOfUnsigned()
+{
+	return (T)-1;
+}
+
 template<class A>
 void setArray(void* arr, A head)
 {

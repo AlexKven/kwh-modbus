@@ -5,6 +5,18 @@
 #include "../../noArduino/ArduinoMacros.h"
 #endif
 
+enum class TimeScale
+{
+	ms250 = 0,
+	sec1,
+	sec15,
+	min1,
+	min10,
+	min30,
+	hr1,
+	hr24
+};
+
 class TimeManager
 {
 private_testable:
@@ -18,6 +30,9 @@ protected_testable:
 	virtual void tick(uint64_t curTime);
 	virtual uint64_t getCurTime();
 	virtual uint64_t getTimeSincePenultimateTick();
+
+	virtual uint32_t getTimeCodeForTime(TimeScale timeScale, uint32_t clock = 0);
+	static uint32_t getPeriodFromTimeScale(TimeScale timeScale);
 
 public:
 	virtual uint32_t getClock();
