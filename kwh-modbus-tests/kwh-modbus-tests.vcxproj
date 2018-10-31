@@ -39,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AsyncAwaitTests.cpp" />
+    <ClCompile Include="DataCollectorDeviceTests.cpp" />
     <ClCompile Include="DeviceDirectoryTests.cpp" />
     <ClCompile Include="MasterSlaveIntegrationTests.cpp" />
     <ClCompile Include="MasterTests.cpp" />

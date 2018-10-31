@@ -9,5 +9,5 @@
 #include "../kwh-modbus/libraries/random/Random.cpp"
 #include "../kwh-modbus/noArduino/ModbusMemory.cpp"
 #include "../kwh-modbus/mock/MockSerialStream.cpp"
-#include "../kwh-modbus/libraries/device/Device.cpp"
 #include "../kwh-modbus/libraries/timeManager/TimeManager.cpp"
+#include "../kwh-modbus/libraries/device/DataCollectorDevice.cpp"

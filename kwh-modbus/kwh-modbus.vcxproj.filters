@@ -26,11 +26,11 @@
     <ClCompile Include="libraries\random\Random.cpp">
       <Filter>libraries\random</Filter>
     </ClCompile>
-    <ClCompile Include="libraries\device\Device.cpp">
-      <Filter>libraries\device</Filter>
-    </ClCompile>
     <ClCompile Include="libraries\timeManager\TimeManager.cpp">
       <Filter>libraries\timeManager</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\device\DataCollectorDevice.cpp">
+      <Filter>libraries\device</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -111,6 +111,9 @@
     </ClInclude>
     <ClInclude Include="libraries\timeManager\TimeManager.h">
       <Filter>libraries\timeManager</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\device\DataCollectorDevice.h">
+      <Filter>libraries\device</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
