@@ -35,6 +35,7 @@ private_testable:
 	Device **_devices = nullptr;
 	SlaveState _state = sIdle;
 	bool displayedStateInvalid = true;
+	word _hregCount;
 
 	S *_system;
 	M *_modbus;
@@ -42,7 +43,7 @@ private_testable:
 private_testable:
 	virtual bool setOutgoingState()
 	{
-		ENSURE(_modbus->validRange(0, 10));
+		ENSURE(_modbus->validRange(0, _hregCount));
 		ENSURE(_modbus->Hreg(0, _state));
 		switch (_state)
 		{
@@ -50,10 +51,11 @@ private_testable:
 			ENSURE(_modbus->Hreg(1, _majorVersion << 8 | _minorVersion));
 			ENSURE(_modbus->Hreg(2, _deviceCount));
 			ENSURE(_modbus->Hreg(3, _deviceNameLength));
+			ENSURE(_modbus->Hreg(4, _hregCount));
 			// Keep these 0 until I implement this
-			ENSURE(_modbus->Hreg(4, 0));
 			ENSURE(_modbus->Hreg(5, 0));
 			ENSURE(_modbus->Hreg(6, 0));
+			ENSURE(_modbus->Hreg(7, 0));
 			break;
 		case sReceivedRequest:
 			// Why would we do this?
@@ -86,7 +88,7 @@ private_testable:
 	virtual bool processIncomingState(bool &requestProcessed)
 	{
 		requestProcessed = false;
-		ENSURE(_modbus->validRange(0, 10));
+		ENSURE(_modbus->validRange(0, _hregCount));
 		if (_modbus->Hreg(0) == sReceivedRequest)
 		{
 			requestProcessed = true;
@@ -122,11 +124,12 @@ public:
 		_modbus = modbus;
 	}
 
-	void init(word deviceCount, word deviceNameLength, Device **devices, byte **deviceNames)
+	void init(word deviceCount, word deviceNameLength, word hregCount, Device **devices, byte **deviceNames)
 	{
 		clearDevices();
 		_deviceCount = deviceCount;
 		_deviceNameLength = deviceNameLength;
+		_hregCount = hregCount;
 		_deviceNames = new byte*[_deviceNameLength];
 		_devices = new Device*[_deviceCount];
 		for (int i = 0; i < _deviceCount; i++)
@@ -189,5 +192,10 @@ public:
 	byte getSlaveId()
 	{
 		return _modbus->getSlaveId();
+	}
+
+	word getHregCount()
+	{
+		return _hregCount;
 	}
 };

@@ -50,6 +50,7 @@ public:
 		registerArray = new word[12];
 		modbus->init(registerArray, 0, 12, 20);
 		slave->config(system, modbus);
+		slave->_hregCount = 12;
 	}
 
 	void TearDown()
@@ -102,7 +103,7 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
 	names[1] = (byte*)"dev02";
 	names[2] = (byte*)"dev03";
 
-	slave->init(3, 5, devices, names);
+	slave->init(3, 5, 12, devices, names);
 
 	// Select device #1
 	registerArray[2] = 1;
@@ -249,12 +250,13 @@ TEST_F(SlaveTests, SlaveTests_init)
 	names[1] = (byte*)"dev02";
 	names[2] = (byte*)"dev03";
 
-	slave->init(3, 5, devices, names);
+	slave->init(3, 5, 20, devices, names);
 
 	delete[] names;
 
 	ASSERT_EQ(slave->getDeviceCount(), 3);
 	ASSERT_EQ(slave->getDeviceNameLength(), 5);
+	ASSERT_EQ(slave->getHregCount(), 20);
 	assertArrayEq(slave->_devices,
 		devices[0],
 		devices[1],
@@ -279,7 +281,7 @@ TEST_F(SlaveTests, SlaveTests_clearDevices)
 	names[1] = (byte*)"dev02";
 	names[2] = (byte*)"dev03";
 
-	slave->init(3, 5, devices, names);
+	slave->init(3, 5, 20, devices, names);
 	slave->clearDevices();
 
 	delete[] devices;

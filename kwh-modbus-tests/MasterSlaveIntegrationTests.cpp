@@ -136,7 +136,7 @@ public:
 		names[0] = (byte*)"dev00";
 		names[1] = (byte*)"dev01";
 
-		slave->init(2, 5, devices, names);
+		slave->init(2, 5, 20, devices, names);
 
 		if (contains(errorType, InboundError))
 		{

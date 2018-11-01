@@ -41,7 +41,7 @@ void ModbusArray::init(word * registerArray, word registerStart, word registerCo
 bool ModbusArray::validRange(word startReg, word numReg)
 {
 	return (startReg >= _registerStart &&
-		numReg < _registerCount - startReg + _registerStart);
+		numReg <= _registerCount - startReg + _registerStart);
 }
 
 
