@@ -15,5 +15,5 @@ public:
 	bool init(bool accumulateData, TimeScale timeScale, byte dataPacketSize);
 
 	static bool getDataCollectorDeviceTypeFromParameters(bool accumulateData, TimeScale timeScale, byte dataPacketSize, word &deviceType);
-	static bool getParametersFromDataCollectorDeviceType(bool &accumulateData, TimeScale &timeScale, byte &dataPacketSize, word deviceType);
+	static bool getParametersFromDataCollectorDeviceType(word deviceType, bool &accumulateData, TimeScale &timeScale, byte &dataPacketSize);
 };

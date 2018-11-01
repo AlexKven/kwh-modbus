@@ -4,7 +4,7 @@ inline bool DataCollectorDevice::verifyTimeScaleAndSize(TimeScale timeScale, byt
 {
 	if ((byte)timeScale > 7)
 		return false;
-	if (dataPacketSize > 127 || dataPacketSize == 0)
+	if (dataPacketSize > 63 || dataPacketSize == 0)
 		return false;
 	return true;
 }
@@ -39,7 +39,18 @@ bool DataCollectorDevice::getDataCollectorDeviceTypeFromParameters(bool accumula
 	return true;
 }
 
-bool DataCollectorDevice::getParametersFromDataCollectorDeviceType(bool & accumulateData, TimeScale & timeScale, byte & dataPacketSize, word deviceType)
+bool DataCollectorDevice::getParametersFromDataCollectorDeviceType(word deviceType, bool & accumulateData, TimeScale & timeScale, byte & dataPacketSize)
 {
-	return false;
+	if (deviceType & 0xFF != 0)
+		// device type is not padded with zeros
+		return false;
+	deviceType >>= 4;
+	dataPacketSize = deviceType & 0x3F;
+	deviceType >>= 6;
+	timeScale = (TimeScale)(deviceType & 0x07);
+	deviceType >>= 3;
+	accumulateData = deviceType & 0x01;
+	deviceType >>= 1;
+	// device type is not fundamentally a data collector if it doesn't start with 01
+	return deviceType == 0x01;
 }
