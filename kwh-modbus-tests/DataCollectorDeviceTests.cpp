@@ -180,3 +180,39 @@ TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Failur
 
 	ASSERT_FALSE(success);
 }
+
+TEST_F(DataCollectorDeviceTests, init_failure)
+{
+	device->_accumulateData = false;
+	device->_dataPacketSize = 1;
+	device->_timeScale = TimeScale::min10;
+
+	bool success = device->init(true, TimeScale::ms250, 255);
+
+	ASSERT_FALSE(success);
+	ASSERT_FALSE(device->_accumulateData);
+	ASSERT_EQ(device->_dataPacketSize, 1);
+	ASSERT_EQ(device->_timeScale, TimeScale::min10);
+}
+
+TEST_F(DataCollectorDeviceTests, init_success)
+{
+	device->_accumulateData = false;
+	device->_dataPacketSize = 1;
+	device->_timeScale = TimeScale::min10;
+
+	bool success = device->init(true, TimeScale::ms250, 5);
+
+	ASSERT_TRUE(success);
+	ASSERT_TRUE(device->_accumulateData);
+	ASSERT_EQ(device->_dataPacketSize, 5);
+	ASSERT_EQ(device->_timeScale, TimeScale::ms250);
+}
+
+TEST_F(DataCollectorDeviceTests, getType_itworks)
+{
+	bool success = device->init(false, TimeScale::min10, 63);
+
+	ASSERT_TRUE(success);
+	ASSERT_EQ(device->getType(), 0x53F0);
+}

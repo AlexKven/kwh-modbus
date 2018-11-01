@@ -11,7 +11,9 @@ inline bool DataCollectorDevice::verifyTimeScaleAndSize(TimeScale timeScale, byt
 
 word DataCollectorDevice::getType()
 {
-	return word();
+	word result;
+	getDataCollectorDeviceTypeFromParameters(_accumulateData, _timeScale, _dataPacketSize, result);
+	return result;
 }
 
 bool DataCollectorDevice::init(bool accumulateData, TimeScale timeScale, byte dataPacketSize)
