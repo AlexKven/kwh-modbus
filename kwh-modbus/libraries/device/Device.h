@@ -10,4 +10,5 @@ class Device
 {
 public:
 	virtual word getType() = 0;
+	
 };

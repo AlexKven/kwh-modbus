@@ -26,9 +26,10 @@ Slaves will have the first register always be the current state of the slave. Be
 | 1.5 |KWH Modbus minor version number | 0-255 ||
 | 2 | Number of devices | 1-65535 | Realistically 1-10ish |
 | 3 | Length of device names | 1-65535 | Reastically 4-12ish|
-| 4 | Number of commands pending from devices ||
-| 5 | Number of messages pending from devices ||
-| 6 | Number of messages pending from slave ||
+| 4 | Number of Modbus holding registers on slave | up to 65535 | |
+| 5 | Number of commands pending from devices |||
+| 6 | Number of messages pending from devices |||
+| 7 | Number of messages pending from slave |||
 
 ### 1: Slave Received Request from Master ###
 
@@ -48,7 +49,20 @@ Slaves will have the first register always be the current state of the slave. Be
 | 3+(L/2) to 4+(L/2) | \# of Commands Pending | 0-65535                            | Use next whole number for L/2                                |
 | 4+(L/2) to 5+(L/2) |                        |                                    |                                                              |
 
-### 
+### 3: Master is reading data from a device
+
+| Register # | Value               | Range         | Notes                                                        |
+| ---------- | ------------------- | ------------- | ------------------------------------------------------------ |
+| 1 to 2     | Data Start Time     | 0 to 2^32 - 1 | Applies to this page only and not necessarily the same as the request that the slave received. |
+| 3          | Request Status      | 0 or 1        | 0 = success, 1 = error: time not set                         |
+| 3.5        | Num Data Points     | 0 to 255      | Number of data points in this page                           |
+| 4          | Current page        | 0 to 255      |                                                              |
+| 4.5        | Num Remaining Pages | 0 to 255      |                                                              |
+| 5 to X     | Data Points         | Anything      | Binary data containing sent data points, each point composed of an integer number of *bits* according to the device type |
+
+
+
+###
 
 Here is a listing of each request type:
 
@@ -61,7 +75,7 @@ Here is a listing of each request type:
 * 2: Read device info
   * This is for reading information about a device, like the name and type.
   * The response to this will have a state of 2.
-  * The data in this respons will have the following format:
+  * The data in this response will have the following format:
   	* 0: Device type
   	* 1: Data type (first 8 bits)
   	* 1.5: Data length in bytes (last 8 bits)
@@ -70,14 +84,15 @@ Here is a listing of each request type:
   	* 4 to 3.5+(L/2): Characters of the device name, where L is the length of the name as defined by the slave
 * 3: Read device data
   * This is for reading actual data from a device, such as a power reading value at a particular time.
-  * The response to this will have a state of 2.
+  * The response to this will have a state of 3.
   * The data in this response will have the following format:
-  	* 0 to 1: The time for the start of the request
-  	* 2: The number of data points being requested
-  	* 3 to N: TBD
+    * 0 to 1: The time for the start of the request
+    * 2: The number of data points being requested
+    * 3: The page (0-255) requested (0 if first request)
+    * 3.5: Max data points requested (0 if we don't request a max). Data points beyond this is guaranteed to be paginated by the slave
 * 4: Write data
   * This is for writing data from *any* device, including itself (if supported).
-  * The response to this will have a state of 3.
+  * The response to this will have a state of 4.
   * Data format TBD
 * 32770 (0x8002): Broadcasts time in unsigned Y2K epoch time that is used by Arduino time library
   * Goes to all slaves at once
