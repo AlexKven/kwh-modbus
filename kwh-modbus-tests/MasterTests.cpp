@@ -518,7 +518,7 @@ TEST_F(MasterTests, checkForNewSlaves_Found)
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
-	Verify(Method(completeReadRegsMock, func).Using(1, 0, 7)).Once();
+	Verify(Method(completeReadRegsMock, func).Using(1, 0, 8)).Once();
 	ASSERT_EQ(task.result(), found);
 }
 
@@ -533,7 +533,7 @@ TEST_F(MasterTests, checkForNewSlaves_NotFound)
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
-	Verify(Method(completeReadRegsMock, func).Using(1, 0, 7)).Once();
+	Verify(Method(completeReadRegsMock, func).Using(1, 0, 8)).Once();
 	ASSERT_EQ(task.result(), notFound);
 }
 
@@ -550,7 +550,7 @@ TEST_F(MasterTests, checkForNewSlaves_Error_TaskFailure)
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
-	Verify(Method(completeReadRegsMock, func).Using(1, 0, 7)).Once();
+	Verify(Method(completeReadRegsMock, func).Using(1, 0, 8)).Once();
 	ASSERT_EQ(task.result(), error);
 	Verify(Method(masterMock, reportMalfunction)).Once();
 }
@@ -566,7 +566,7 @@ TEST_F(MasterTests, checkForNewSlaves_Error_MasterFailure)
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
-	Verify(Method(completeReadRegsMock, func).Using(1, 0, 7)).Once();
+	Verify(Method(completeReadRegsMock, func).Using(1, 0, 8)).Once();
 	ASSERT_EQ(task.result(), error);
 	Verify(Method(masterMock, reportMalfunction)).Once();
 }
@@ -580,7 +580,7 @@ TEST_F(MasterTests, checkForNewSlaves_BadSlave)
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
-	Verify(Method(completeReadRegsMock, func).Using(1, 0, 7)).Once();
+	Verify(Method(completeReadRegsMock, func).Using(1, 0, 8)).Once();
 	ASSERT_EQ(task.result(), badSlave);
 }
 

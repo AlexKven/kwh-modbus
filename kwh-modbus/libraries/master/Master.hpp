@@ -200,7 +200,7 @@ protected_testable:
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), checkForNewSlaves)
 	{
 		START_ASYNC;
-		completeModbusReadRegisters(1, 0, 7);
+		completeModbusReadRegisters(1, 0, 8);
 		AWAIT(_completeModbusReadRegisters);
 		switch (_completeModbusReadRegisters.result())
 		{

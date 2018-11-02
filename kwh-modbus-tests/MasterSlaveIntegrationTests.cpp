@@ -136,7 +136,7 @@ public:
 		names[0] = (byte*)"dev00";
 		names[1] = (byte*)"dev01";
 
-		slave->init(2, 5, 20, devices, names);
+		slave->init(2, 5, 13, devices, names);
 
 		if (contains(errorType, InboundError))
 		{
@@ -237,9 +237,9 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 	word count;
 	word *regs;
 	ASSERT_TRUE(modbusMaster->isReadRegsResponse(count, regs));
-	ASSERT_EQ(count, 7);
-	assertArrayEq<word, byte, byte, word, word, word, word, word>(regs,
-		sIdle, 0, 1, 2, 5, 0, 0, 0);
+	ASSERT_EQ(count, 8);
+	assertArrayEq<word, byte, byte, word, word, word, word, word, word>(regs,
+		sIdle, 0, 1, 2, 5, 13, 0, 0, 0);
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
 	ASSERT_EQ(task.result(), found);
