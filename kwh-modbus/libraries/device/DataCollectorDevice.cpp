@@ -32,11 +32,49 @@ bool DataCollectorDevice::init(bool accumulateData, TimeScale timeScale, byte da
 	_accumulateData = accumulateData;
 	_timeScale = timeScale;
 	_dataPacketSize = dataPacketSize;
+	if (_dataBuffer != nullptr)
+		delete[] _dataBuffer;
+	_dataBuffer = new byte(bitsToBytes(_dataPacketSize));
 }
 
 bool DataCollectorDevice::readData(uint32_t startTime, word numPoints, byte page, byte * buffer, word bufferSize, byte & outDataPointsCount, byte & outPagesRemaining)
 {
-	return false;
+	uint32_t period = TimeManager::getPeriodFromTimeScale(_timeScale) / 1000; // Seconds
+	auto numPointsPerPage = (bufferSize * 8) / (numPoints * _dataPacketSize);
+	auto startPoint = page * numPointsPerPage;
+	outPagesRemaining = (numPoints - startPoint - 1) / numPointsPerPage;
+	auto curNumPoints = numPointsPerPage < numPoints ? numPointsPerPage : numPoints;
+	if (outPagesRemaining == 0)
+		curNumPoints = numPoints - startPoint;
+
+	uint32_t curTime;
+	byte quarterSecondOffset = 0;
+
+	if (_timeScale == TimeScale::ms250)
+	{
+		curTime = startTime + startPoint / 4;
+		quarterSecondOffset = startPoint % 4;
+	}
+	else
+	{
+		curTime = startTime + startPoint * period;
+	}
+
+	for (int i = 0; i < curNumPoints; i++)
+	{
+
+		if (_timeScale == TimeScale::ms250)
+		{
+			quarterSecondOffset = (quarterSecondOffset + 1) % 4;
+			if (quarterSecondOffset == 0)
+				curTime++;
+		}
+		else
+		{
+			curTime += period;
+		}
+	}
+	return true;
 }
 
 bool DataCollectorDevice::getDataCollectorDeviceTypeFromParameters(bool accumulateData, TimeScale timeScale, byte dataPacketSize, word & deviceType)

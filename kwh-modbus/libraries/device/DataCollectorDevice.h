@@ -7,7 +7,7 @@ private_testable:
 	bool _accumulateData;
 	TimeScale _timeScale;
 	byte _dataPacketSize;
-	byte *_dataBuffer;
+	byte *_dataBuffer = nullptr;
 
 	static inline bool verifyTimeScaleAndSize(TimeScale timeScale, byte dataPacketSize);
 	static inline byte bitsToBytes(byte bits);

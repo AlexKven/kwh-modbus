@@ -192,6 +192,54 @@ TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Failur
 	ASSERT_FALSE(success);
 }
 
+TEST_F(DataCollectorDeviceTests, bitsToBytes_1)
+{
+	auto bytes = DataCollectorDevice::bitsToBytes(1);
+	ASSERT_EQ(bytes, 1);
+}
+
+TEST_F(DataCollectorDeviceTests, bitsToBytes_8)
+{
+	auto bytes = DataCollectorDevice::bitsToBytes(8);
+	ASSERT_EQ(bytes, 1);
+}
+
+TEST_F(DataCollectorDeviceTests, bitsToBytes_9)
+{
+	auto bytes = DataCollectorDevice::bitsToBytes(9);
+	ASSERT_EQ(bytes, 2);
+}
+
+TEST_F(DataCollectorDeviceTests, bitsToBytes_12)
+{
+	auto bytes = DataCollectorDevice::bitsToBytes(12);
+	ASSERT_EQ(bytes, 2);
+}
+
+TEST_F(DataCollectorDeviceTests, bitsToBytes_16)
+{
+	auto bytes = DataCollectorDevice::bitsToBytes(16);
+	ASSERT_EQ(bytes, 2);
+}
+
+TEST_F(DataCollectorDeviceTests, bitsToBytes_17)
+{
+	auto bytes = DataCollectorDevice::bitsToBytes(17);
+	ASSERT_EQ(bytes, 3);
+}
+
+TEST_F(DataCollectorDeviceTests, bitsToBytes_63)
+{
+	auto bytes = DataCollectorDevice::bitsToBytes(63);
+	ASSERT_EQ(bytes, 8);
+}
+
+TEST_F(DataCollectorDeviceTests, bitsToBytes_65)
+{
+	auto bytes = DataCollectorDevice::bitsToBytes(65);
+	ASSERT_EQ(bytes, 9);
+}
+
 TEST_F(DataCollectorDeviceTests, init_failure)
 {
 	device->_accumulateData = false;
