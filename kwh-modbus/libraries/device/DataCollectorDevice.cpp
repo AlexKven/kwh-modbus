@@ -9,6 +9,15 @@ inline bool DataCollectorDevice::verifyTimeScaleAndSize(TimeScale timeScale, byt
 	return true;
 }
 
+inline byte DataCollectorDevice::bitsToBytes(byte bits)
+{
+	byte result = bits / 8;
+	if (bits % 8 == 0)
+		return result;
+	else
+		return result + 1;
+}
+
 word DataCollectorDevice::getType()
 {
 	word result;
@@ -23,6 +32,11 @@ bool DataCollectorDevice::init(bool accumulateData, TimeScale timeScale, byte da
 	_accumulateData = accumulateData;
 	_timeScale = timeScale;
 	_dataPacketSize = dataPacketSize;
+}
+
+bool DataCollectorDevice::readData(uint32_t startTime, word numPoints, byte page, byte * buffer, word bufferSize, byte & outDataPointsCount, byte & outPagesRemaining)
+{
+	return false;
 }
 
 bool DataCollectorDevice::getDataCollectorDeviceTypeFromParameters(bool accumulateData, TimeScale timeScale, byte dataPacketSize, word & deviceType)

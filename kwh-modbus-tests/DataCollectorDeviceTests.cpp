@@ -5,15 +5,26 @@
 
 using namespace fakeit;
 
+#define USE_MOCK Mock<_DataCollectorDevice> mock(*device);
+
+class _DataCollectorDevice : public DataCollectorDevice
+{
+public:
+	virtual bool readDataPoint(uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte bufferSizeBits)
+	{
+		return false;
+	}
+};
+
 class DataCollectorDeviceTests : public ::testing::Test
 {
 protected:
-	DataCollectorDevice *device;
+	_DataCollectorDevice *device;
 
 public:
 	void SetUp()
 	{
-		device = new DataCollectorDevice();
+		device = new _DataCollectorDevice();
 	}
 
 	void TearDown()
