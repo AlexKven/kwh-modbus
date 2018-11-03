@@ -32,6 +32,9 @@
     <ClCompile Include="libraries\device\DataCollectorDevice.cpp">
       <Filter>libraries\device</Filter>
     </ClCompile>
+    <ClCompile Include="libraries\device\Device.cpp">
+      <Filter>libraries\device</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\modbus\Modbus.h">

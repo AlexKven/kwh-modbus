@@ -67,6 +67,7 @@
     <ClCompile Include="libraries\arduinoClasses\ArduinoSerial.cpp" />
     <ClCompile Include="libraries\arduinoClasses\ArduinoSystem.cpp" />
     <ClCompile Include="libraries\device\DataCollectorDevice.cpp" />
+    <ClCompile Include="libraries\device\Device.cpp" />
     <ClCompile Include="libraries\modbus\Modbus.cpp" />
     <ClCompile Include="libraries\modbus\ModbusArray.cpp" />
     <ClCompile Include="libraries\random\Random.cpp" />

@@ -11,3 +11,4 @@
 #include "../kwh-modbus/mock/MockSerialStream.cpp"
 #include "../kwh-modbus/libraries/timeManager/TimeManager.cpp"
 #include "../kwh-modbus/libraries/device/DataCollectorDevice.cpp"
+#include "../kwh-modbus/libraries/device/Device.cpp"

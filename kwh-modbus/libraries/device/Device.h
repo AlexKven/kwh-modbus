@@ -10,5 +10,6 @@ class Device
 {
 public:
 	virtual word getType() = 0;
-	
+	virtual bool readData(uint32_t startTime, word numPoints, byte page,
+		byte* buffer, word bufferSize,byte &outDataPointsCount, byte &outPagesRemaining);
 };
