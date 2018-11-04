@@ -1,4 +1,5 @@
 #include "DataCollectorDevice.h"
+#include "../bitFunctions/bitFunctions.h"
 
 inline bool DataCollectorDevice::verifyTimeScaleAndSize(TimeScale timeScale, byte dataPacketSize)
 {
@@ -7,15 +8,6 @@ inline bool DataCollectorDevice::verifyTimeScaleAndSize(TimeScale timeScale, byt
 	if (dataPacketSize > 63 || dataPacketSize == 0)
 		return false;
 	return true;
-}
-
-inline byte DataCollectorDevice::bitsToBytes(byte bits)
-{
-	byte result = bits / 8;
-	if (bits % 8 == 0)
-		return result;
-	else
-		return result + 1;
 }
 
 word DataCollectorDevice::getType()
@@ -34,7 +26,7 @@ bool DataCollectorDevice::init(bool accumulateData, TimeScale timeScale, byte da
 	_dataPacketSize = dataPacketSize;
 	if (_dataBuffer != nullptr)
 		delete[] _dataBuffer;
-	_dataBuffer = new byte(bitsToBytes(_dataPacketSize));
+	_dataBuffer = new byte(BitFunctions::bitsToBytes(_dataPacketSize));
 }
 
 bool DataCollectorDevice::readData(uint32_t startTime, word numPoints, byte page, byte * buffer, word bufferSize, byte & outDataPointsCount, byte & outPagesRemaining)
@@ -60,9 +52,12 @@ bool DataCollectorDevice::readData(uint32_t startTime, word numPoints, byte page
 		curTime = startTime + startPoint * period;
 	}
 
+	word bufferBit = 0;
 	for (int i = 0; i < curNumPoints; i++)
 	{
-
+		if (!readDataPoint(curTime, quarterSecondOffset, _dataBuffer, _dataPacketSize))
+		{
+		}
 		if (_timeScale == TimeScale::ms250)
 		{
 			quarterSecondOffset = (quarterSecondOffset + 1) % 4;

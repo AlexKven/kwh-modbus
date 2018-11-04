@@ -12,3 +12,4 @@
 #include "../kwh-modbus/libraries/timeManager/TimeManager.cpp"
 #include "../kwh-modbus/libraries/device/DataCollectorDevice.cpp"
 #include "../kwh-modbus/libraries/device/Device.cpp"
+#include "../kwh-modbus/libraries/bitFunctions/bitFunctions.cpp"

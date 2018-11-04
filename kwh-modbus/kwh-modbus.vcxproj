@@ -66,6 +66,7 @@
   <ItemGroup>
     <ClCompile Include="libraries\arduinoClasses\ArduinoSerial.cpp" />
     <ClCompile Include="libraries\arduinoClasses\ArduinoSystem.cpp" />
+    <ClCompile Include="libraries\bitFunctions\bitFunctions.cpp" />
     <ClCompile Include="libraries\device\DataCollectorDevice.cpp" />
     <ClCompile Include="libraries\device\Device.cpp" />
     <ClCompile Include="libraries\modbus\Modbus.cpp" />
@@ -83,6 +84,7 @@
     <ClInclude Include="libraries\arduinoClasses\ArduinoSerial.h" />
     <ClInclude Include="libraries\arduinoClasses\ArduinoSystem.h" />
     <ClInclude Include="libraries\asyncAwait\AsyncAwait.hpp" />
+    <ClInclude Include="libraries\bitFunctions\bitFunctions.h" />
     <ClInclude Include="libraries\communicator\SystemParameters.h" />
     <ClInclude Include="libraries\deviceDirectory\DeviceDirectory.hpp" />
     <ClInclude Include="libraries\device\DataCollectorDevice.h" />

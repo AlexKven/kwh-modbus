@@ -22,6 +22,7 @@
     <ClCompile Include="MasterSlaveIntegrationTests.cpp" />
     <ClCompile Include="TimeManagerTests.cpp" />
     <ClCompile Include="DataCollectorDeviceTests.cpp" />
+    <ClCompile Include="BitFunctionsTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

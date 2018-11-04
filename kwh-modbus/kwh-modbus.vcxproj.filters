@@ -35,6 +35,9 @@
     <ClCompile Include="libraries\device\Device.cpp">
       <Filter>libraries\device</Filter>
     </ClCompile>
+    <ClCompile Include="libraries\bitFunctions\bitFunctions.cpp">
+      <Filter>libraries\bitFunctions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\modbus\Modbus.h">
@@ -118,6 +121,9 @@
     <ClInclude Include="libraries\device\DataCollectorDevice.h">
       <Filter>libraries\device</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\bitFunctions\bitFunctions.h">
+      <Filter>libraries\bitFunctions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -185,6 +191,9 @@
     </Filter>
     <Filter Include="libraries\timeManager">
       <UniqueIdentifier>{c51af149-c9bf-412f-8913-74bb8804bd90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\bitFunctions">
+      <UniqueIdentifier>{d721da3a-2911-4828-afad-057f7e926566}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

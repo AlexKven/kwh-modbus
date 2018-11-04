@@ -10,10 +10,9 @@ private_testable:
 	byte *_dataBuffer = nullptr;
 
 	static inline bool verifyTimeScaleAndSize(TimeScale timeScale, byte dataPacketSize);
-	static inline byte bitsToBytes(byte bits);
 
 protected_testable:
-	virtual bool readDataPoint(uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte bufferSizeBits) = 0;
+	virtual bool readDataPoint(uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) = 0;
 
 public:
 	word getType();
