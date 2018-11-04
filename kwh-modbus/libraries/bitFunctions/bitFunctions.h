@@ -21,9 +21,9 @@ public:
 	{
 		for (N i = 0; i < count; i++)
 		{
-			N byteOffset = (bit + i) / (__CHAR_BIT__ * sizeof(T));
-			N bitOffset = (bit + i) % (__CHAR_BIT__ * sizeof(T));
-			*(ptr + byteOffset) &= 1 << bitOffset;
+			N byteOffset = (bit + i) / (CHAR_BIT * sizeof(T));
+			N bitOffset = (bit + i) % (CHAR_BIT * sizeof(T));
+			*(ptr + byteOffset) &= ~(1 << bitOffset);
 		}
 	}
 };
