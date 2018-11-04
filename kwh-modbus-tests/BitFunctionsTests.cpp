@@ -2,6 +2,7 @@
 #include "fakeit.hpp"
 #include "../kwh-modbus/libraries/bitFunctions/bitFunctions.h"
 #include "test_helpers.h"
+#include "../kwh-modbus/noArduino/ArduinoMacros.h"
 
 using namespace fakeit;
 
@@ -51,4 +52,40 @@ TEST(BitFunctionTests, bitsToBytes_65)
 {
 	auto bytes = BitFunctions::bitsToBytes(65);
 	ASSERT_EQ(bytes, 9);
+}
+
+TEST(BitFunctionTests, setBits_Byte_28)
+{
+	byte bte = 0;
+	BitFunctions::setBits(&bte, 2, 3);
+
+	ASSERT_EQ(bte, 28);
+}
+
+TEST(BitFunctionTests, setBits_SignedInt_28)
+{
+	int num = 0;
+	BitFunctions::setBits(&num, 7, 8);
+
+	ASSERT_EQ(num, 32640);
+}
+
+TEST(BitFunctionTests, setBits_SignedInt_2sComp)
+{
+	int num = 0;
+	BitFunctions::setBits(&num, 1, 31);
+
+	ASSERT_EQ(num, -2);
+}
+
+TEST(BitFunctionTests, setBits_TwoBytes_192_7)
+{
+	byte *bte = new byte[2];
+	bte[0] = 0;
+	bte[1] = 0;
+	BitFunctions::setBits(bte, 6, 5);
+
+	ASSERT_EQ(bte[0], 192);
+	ASSERT_EQ(bte[1], 7);
+	delete[] bte;
 }
