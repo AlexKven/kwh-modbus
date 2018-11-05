@@ -1,11 +1,12 @@
 #include "pch.h"
 #include "fakeit.hpp"
 #include "../kwh-modbus/libraries/device/DataCollectorDevice.h"
+#include "../kwh-modbus/libraries/bitFunctions/bitFunctions.h"
 #include "test_helpers.h"
 
 using namespace fakeit;
 
-#define USE_MOCK Mock<_DataCollectorDevice> mock(*device);
+#define USE_MOCK Mock<_DataCollectorDevice> mock(*device)
 
 class _DataCollectorDevice : public DataCollectorDevice
 {
@@ -226,4 +227,30 @@ TEST_F(DataCollectorDeviceTests, getType_itworks)
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(device->getType(), 0x53F0);
+}
+
+TEST_F(DataCollectorDeviceTests, readData_Success_Case0)
+{
+	USE_MOCK;
+	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
+		byte src = (byte)time;
+		BitFunctions::copyBits(&src, dataBuffer, (byte)0, (byte)0, dataSizeBits);
+		return (src > 0);
+	});
+
+	device->init(false, TimeScale::sec1, 8);
+	byte* buffer = new byte[6];
+	byte dummy;
+
+	bool success = device->readData(0, 6, 0, buffer, 6, dummy, dummy);
+
+	ASSERT_TRUE(success);
+	ASSERT_EQ(buffer[0], 255);
+	ASSERT_EQ(buffer[1], 1);
+	ASSERT_EQ(buffer[2], 2);
+	ASSERT_EQ(buffer[3], 3);
+	ASSERT_EQ(buffer[4], 4);
+	ASSERT_EQ(buffer[5], 5);
+
+	delete[] buffer;
 }

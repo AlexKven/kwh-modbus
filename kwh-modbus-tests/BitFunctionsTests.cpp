@@ -153,3 +153,66 @@ TEST(BitFunctionTests, clearBits_ThreeShorts)
 	ASSERT_EQ(num[2], 4);
 	delete[] num;
 }
+
+TEST(BitFunctionTests, copyBits_Bytes_36)
+{
+	byte dest = 89;
+	byte src = 166;
+	BitFunctions::copyBits(&src, &dest, 2, 2, 4);
+
+	ASSERT_EQ(dest, 101);
+}
+
+TEST(BitFunctionTests, copyBits_ShortToBytes_Middle14)
+{
+	byte *dest = new byte[2];
+	dest[0] = 1;
+	dest[1] = 128;
+	short src = 5000;
+	BitFunctions::copyBits(&src, dest, 1, 1, 14);
+
+	ASSERT_EQ(dest[0], 137);
+	ASSERT_EQ(dest[1], 147);
+}
+
+TEST(BitFunctionTests, copyBits_ShortToBytes_EndToEnd)
+{
+	byte *dest = new byte[2];
+	dest[0] = 1;
+	dest[1] = 128;
+	short src = 5000;
+	BitFunctions::copyBits(&src, dest, 0, 0, 16);
+
+	ASSERT_EQ(dest[0], 136);
+	ASSERT_EQ(dest[1], 19);
+}
+
+TEST(BitFunctionTests, copyBits_IntToByte_2sCompliment)
+{
+	byte *dest = new byte[4];
+	int src = -4;
+	BitFunctions::copyBits(&src, dest, 0, 0, 32);
+
+	ASSERT_EQ(dest[0], 252);
+	ASSERT_EQ(dest[1], 255);
+	ASSERT_EQ(dest[2], 255);
+	ASSERT_EQ(dest[3], 255);
+}
+
+TEST(BitFunctionTests, copyBits_byteToShort_LeftShift)
+{
+	short dest = 1;
+	byte src = 20;
+	BitFunctions::copyBits(&src, &dest, 0, 7, 8);
+
+	ASSERT_EQ(dest, 2561);
+}
+
+TEST(BitFunctionTests, copyBits_byteToShort_RightShift)
+{
+	byte dest = 1;
+	short src = 2592;
+	BitFunctions::copyBits(&src, &dest, 7, 0, 8);
+
+	ASSERT_EQ(dest, 20);
+}

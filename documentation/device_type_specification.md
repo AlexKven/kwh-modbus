@@ -2,13 +2,13 @@
 
 KWH Modbus Devices are individual worker units that communicate with the master mediated by the slave logic, and communicate with other devices mediated by the master and slave logic. The device type is a word (16 bits). From the most significant bits to the least significant bits, the following specifies how device types are allocated:
 
-| Bits (from MSB) | Description            |
-| --------------- | ---------------------- |
-| 0 & 1           | Data flow type         |
-| 2               | Data accumulation type |
-| 3 - 5           | Data timescale         |
-| 6-11            | Data size (in bits)    |
-| 12-15           | TBD                    |
+| Bits (from MSB) | Description                                  |
+| --------------- | -------------------------------------------- |
+| 0 & 1           | Data flow type                               |
+| 2               | Data accumulation type (data collector only) |
+| 3 - 5           | Data timescale (data collector only)         |
+| 6-11            | Data size (in bits) (data collector only)    |
+| 12-15           | TBD                                          |
 
 | Data flow type | Description                  |
 | -------------- | ---------------------------- |
@@ -21,7 +21,7 @@ KWH Modbus Devices are individual worker units that communicate with the master 
 
 | Data timescale code | Period of data   |
 | ------------------- | ---------------- |
-| 000                 | 500 milliseconds |
+| 000                 | 250 milliseconds |
 | 001                 | 1 second         |
 | 010                 | 15 seconds       |
 | 011                 | 1 minute         |
