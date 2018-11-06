@@ -503,7 +503,37 @@ TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page0)
 	delete[] buffer;
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_2page_24hr_5bits_page0)
+TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page1)
+{
+	USE_MOCK;
+	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
+		byte src = (byte)time;
+		BitFunctions::copyBits(&src, dataBuffer, (byte)0, (byte)0, dataSizeBits);
+		return true;
+	});
+
+	device->init(false, TimeScale::sec1, 3);
+	byte* buffer = new byte[2];
+	buffer[0] = 0;
+	buffer[1] = 0;
+	byte dummy;
+	byte numDataPointsInPage;
+	byte pagesRemaining;
+
+
+	bool success = device->readData(0, 7, 1, buffer, 2, numDataPointsInPage, pagesRemaining);
+
+	ASSERT_TRUE(success);
+	ASSERT_EQ(numDataPointsInPage, 2);
+	ASSERT_EQ(pagesRemaining, 0);
+	Verify(Method(mock, readDataPoint)).Exactly(2);
+	ASSERT_EQ(buffer[0], 53);
+	ASSERT_EQ(buffer[1], 0);
+
+	delete[] buffer;
+}
+
+TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page0)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -535,7 +565,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_2page_24hr_5bits_page0)
 	delete[] buffer;
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_2page_24hr_5bits_page1)
+TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page1)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -567,69 +597,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_2page_24hr_5bits_page1)
 	delete[] buffer;
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page0)
-{
-	USE_MOCK;
-	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
-		byte src = (byte)time;
-		BitFunctions::copyBits(&src, dataBuffer, (byte)0, (byte)0, dataSizeBits);
-		return true;
-	});
-
-	device->init(false, TimeScale::sec1, 3);
-	byte* buffer = new byte[2];
-	buffer[0] = 0;
-	buffer[1] = 0;
-	byte dummy;
-	byte numDataPointsInPage;
-	byte pagesRemaining;
-
-
-	bool success = device->readData(0, 7, 0, buffer, 2, numDataPointsInPage, pagesRemaining);
-
-	ASSERT_TRUE(success);
-	ASSERT_EQ(numDataPointsInPage, 5);
-	ASSERT_EQ(pagesRemaining, 1);
-	Verify(Method(mock, readDataPoint)).Exactly(5);
-	ASSERT_EQ(buffer[0], 136);
-	ASSERT_EQ(buffer[1], 70);
-
-	delete[] buffer;
-}
-
-TEST_F(DataCollectorDeviceTests, readData_Success_2page_24hr_5bits_page0)
-{
-	USE_MOCK;
-	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
-		byte src = (byte)(time / 43200);
-		BitFunctions::copyBits(&src, dataBuffer, (byte)0, (byte)0, dataSizeBits);
-		return (src != 4);
-	});
-
-	device->init(false, TimeScale::hr24, 5);
-	byte* buffer = new byte[3];
-	buffer[0] = 0;
-	buffer[1] = 0;
-	buffer[2] = 0;
-	byte dummy;
-	byte numDataPointsInPage;
-	byte pagesRemaining;
-
-
-	bool success = device->readData(0, 10, 0, buffer, 3, numDataPointsInPage, pagesRemaining);
-
-	ASSERT_TRUE(success);
-	ASSERT_EQ(numDataPointsInPage, 4);
-	ASSERT_EQ(pagesRemaining, 2);
-	Verify(Method(mock, readDataPoint)).Exactly(4);
-	ASSERT_EQ(buffer[0], 0x40);
-	ASSERT_EQ(buffer[1], 0x7C);
-	ASSERT_EQ(buffer[2], 3);
-
-	delete[] buffer;
-}
-
-TEST_F(DataCollectorDeviceTests, readData_Success_2page_24hr_5bits_page2)
+TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page2)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -653,7 +621,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_2page_24hr_5bits_page2)
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 2);
 	ASSERT_EQ(pagesRemaining, 0);
-	Verify(Method(mock, readDataPoint)).Exactly(4);
+	Verify(Method(mock, readDataPoint)).Exactly(2);
 	ASSERT_EQ(buffer[0], 0x50);
 	ASSERT_EQ(buffer[1], 2);
 	ASSERT_EQ(buffer[2], 0);
@@ -661,34 +629,35 @@ TEST_F(DataCollectorDeviceTests, readData_Success_2page_24hr_5bits_page2)
 	delete[] buffer;
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_2page_24hr_5bits_page1)
+TEST_F(DataCollectorDeviceTests, readData_Success_1page_1min_8bits_timeOffset)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
-		byte src = (byte)(time / 43200);
+		byte src = (byte)time;
 		BitFunctions::copyBits(&src, dataBuffer, (byte)0, (byte)0, dataSizeBits);
-		return (src != 4);
+		return true;
 	});
 
-	device->init(false, TimeScale::hr24, 5);
-	byte* buffer = new byte[3];
-	buffer[0] = 0;
-	buffer[1] = 0;
-	buffer[2] = 0;
+	device->init(false, TimeScale::min1, 8);
+	byte* buffer = new byte[20];
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
 
 
-	bool success = device->readData(0, 10, 1, buffer, 3, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(70, 8, 0, buffer, 20, numDataPointsInPage, pagesRemaining);
 
 	ASSERT_TRUE(success);
-	ASSERT_EQ(numDataPointsInPage, 4);
-	ASSERT_EQ(pagesRemaining, 1);
-	Verify(Method(mock, readDataPoint)).Exactly(4);
-	ASSERT_EQ(buffer[0], 0x48);
-	ASSERT_EQ(buffer[1], 0x31);
-	ASSERT_EQ(buffer[2], 7);
+	ASSERT_EQ(numDataPointsInPage, 8);
+	ASSERT_EQ(pagesRemaining, 0);
+	ASSERT_EQ(buffer[0], 70);
+	ASSERT_EQ(buffer[1], 130);
+	ASSERT_EQ(buffer[2], 190);
+	ASSERT_EQ(buffer[3], 250);
+	ASSERT_EQ(buffer[4], 54);
+	ASSERT_EQ(buffer[5], 114);
+	ASSERT_EQ(buffer[6], 174);
+	ASSERT_EQ(buffer[7], 234);
 
 	delete[] buffer;
 }
