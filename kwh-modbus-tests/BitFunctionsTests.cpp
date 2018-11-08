@@ -54,6 +54,74 @@ TEST(BitFunctionTests, bitsToBytes_65)
 	ASSERT_EQ(bytes, 9);
 }
 
+
+
+
+
+
+
+
+
+TEST(BitFunctionTests, bitsToStructs_uint16_t_1)
+{
+	auto result = BitFunctions::bitsToStructs<uint16_t, byte>(1);
+	ASSERT_EQ(result, 1);
+}
+
+TEST(BitFunctionTests, bitsToStructs_uint16_t_16)
+{
+	auto result = BitFunctions::bitsToStructs<uint16_t, byte>(16);
+	ASSERT_EQ(result, 2);
+}
+
+TEST(BitFunctionTests, bitsToStructs_int_33)
+{
+	auto result = BitFunctions::bitsToStructs<uint16_t, byte>(33);
+	ASSERT_EQ(result, 3);
+}
+
+TEST(BitFunctionTests, bitsToStructs_uint64_t_96)
+{
+	auto result = BitFunctions::bitsToStructs<uint64_t, byte>(96);
+	ASSERT_EQ(result, 2);
+}
+
+TEST(BitFunctionTests, bitsToStructs_int_64)
+{
+	auto result = BitFunctions::bitsToStructs<int, byte>(64);
+	ASSERT_EQ(result, 2);
+}
+
+TEST(BitFunctionTests, bitsToStructs_int_65)
+{
+	auto result = BitFunctions::bitsToStructs<int, byte>(65);
+	ASSERT_EQ(result, 3);
+}
+
+TEST(BitFunctionTests, bitsToStructs_int_95)
+{
+	auto result = BitFunctions::bitsToStructs<int, byte>(95);
+	ASSERT_EQ(result, 3);
+}
+
+TEST(BitFunctionTests, bitsToStructs_int_96)
+{
+	auto result = BitFunctions::bitsToStructs<int, byte>(96);
+	ASSERT_EQ(result, 3);
+}
+
+TEST(BitFunctionTests, bitsToStructs_int_97)
+{
+	auto result = BitFunctions::bitsToStructs<int, byte>(97);
+	ASSERT_EQ(result, 4);
+}
+
+TEST(BitFunctionTests, bitsToStructs_string_0)
+{
+	auto result = BitFunctions::bitsToStructs<std::string, byte>(0);
+	ASSERT_EQ(result, 0);
+}
+
 TEST(BitFunctionTests, setBits_Byte_28)
 {
 	byte bte = 0;
@@ -90,7 +158,7 @@ TEST(BitFunctionTests, setBits_TwoBytes_192_7)
 	delete[] bte;
 }
 
-TEST(BitFunctionTests, setBits_ThreeShorts)
+TEST(BitFunctionTests, setBits_Threeuint16_ts)
 {
 	word *num = new word[3];
 	num[0] = 0;
@@ -140,7 +208,7 @@ TEST(BitFunctionTests, clearBits_TwoBytes_192_7)
 	delete[] bte;
 }
 
-TEST(BitFunctionTests, clearBits_ThreeShorts)
+TEST(BitFunctionTests, clearBits_Threeuint16_ts)
 {
 	word *num = new word[3];
 	num[0] = 49152;
@@ -163,24 +231,24 @@ TEST(BitFunctionTests, copyBits_Bytes_36)
 	ASSERT_EQ(dest, 101);
 }
 
-TEST(BitFunctionTests, copyBits_ShortToBytes_Middle14)
+TEST(BitFunctionTests, copyBits_uint16_tToBytes_Middle14)
 {
 	byte *dest = new byte[2];
 	dest[0] = 1;
 	dest[1] = 128;
-	short src = 5000;
+	uint16_t src = 5000;
 	BitFunctions::copyBits(&src, dest, 1, 1, 14);
 
 	ASSERT_EQ(dest[0], 137);
 	ASSERT_EQ(dest[1], 147);
 }
 
-TEST(BitFunctionTests, copyBits_ShortToBytes_EndToEnd)
+TEST(BitFunctionTests, copyBits_uint16_tToBytes_EndToEnd)
 {
 	byte *dest = new byte[2];
 	dest[0] = 1;
 	dest[1] = 128;
-	short src = 5000;
+	uint16_t src = 5000;
 	BitFunctions::copyBits(&src, dest, 0, 0, 16);
 
 	ASSERT_EQ(dest[0], 136);
@@ -199,19 +267,19 @@ TEST(BitFunctionTests, copyBits_IntToByte_2sCompliment)
 	ASSERT_EQ(dest[3], 255);
 }
 
-TEST(BitFunctionTests, copyBits_byteToShort_LeftShift)
+TEST(BitFunctionTests, copyBits_byteTouint16_t_LeftShift)
 {
-	short dest = 1;
+	uint16_t dest = 1;
 	byte src = 20;
 	BitFunctions::copyBits(&src, &dest, 0, 7, 8);
 
 	ASSERT_EQ(dest, 2561);
 }
 
-TEST(BitFunctionTests, copyBits_byteToShort_RightShift)
+TEST(BitFunctionTests, copyBits_byteTouint16_t_RightShift)
 {
 	byte dest = 1;
-	short src = 2592;
+	uint16_t src = 2592;
 	BitFunctions::copyBits(&src, &dest, 7, 0, 8);
 
 	ASSERT_EQ(dest, 20);

@@ -29,7 +29,8 @@ bool DataCollectorDevice::init(bool accumulateData, TimeScale timeScale, byte da
 	_dataBuffer = new byte(BitFunctions::bitsToBytes(_dataPacketSize));
 }
 
-bool DataCollectorDevice::readData(uint32_t startTime, word numPoints, byte page, byte * buffer, word bufferSize, byte & outDataPointsCount, byte & outPagesRemaining)
+bool DataCollectorDevice::readData(uint32_t startTime, word numPoints, byte page, byte * buffer, word bufferSize,
+	byte maxPoints, byte & outDataPointsCount, byte & outPagesRemaining)
 {
 	uint32_t period = TimeManager::getPeriodFromTimeScale(_timeScale) / 1000; // Seconds
 	auto numPointsPerPage = (bufferSize * 8) / (_dataPacketSize);

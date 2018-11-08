@@ -19,7 +19,7 @@ public:
 	bool init(bool accumulateData, TimeScale timeScale, byte dataPacketSize);
 
 	virtual bool readData(uint32_t startTime, word numPoints, byte page,
-		byte* buffer, word bufferSize, byte &outDataPointsCount, byte &outPagesRemaining);
+		byte* buffer, word bufferSize, byte maxPoints, byte &outDataPointsCount, byte &outPagesRemaining);
 
 	static bool getDataCollectorDeviceTypeFromParameters(bool accumulateData, TimeScale timeScale, byte dataPacketSize, word &deviceType);
 	static bool getParametersFromDataCollectorDeviceType(word deviceType, bool &accumulateData, TimeScale &timeScale, byte &dataPacketSize);

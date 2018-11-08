@@ -47,4 +47,14 @@ public:
 			}
 		}
 	}
+
+	template<class T, class N>
+	static inline N bitsToStructs(unsigned char bits)
+	{
+		unsigned char result = bits / (CHAR_BIT * sizeof(T));
+		if (bits % (CHAR_BIT * sizeof(T)) == 0)
+			return result;
+		else
+			return result + 1;
+	}
 };
