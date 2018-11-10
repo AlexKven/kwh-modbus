@@ -54,14 +54,6 @@ TEST(BitFunctionTests, bitsToBytes_65)
 	ASSERT_EQ(bytes, 9);
 }
 
-
-
-
-
-
-
-
-
 TEST(BitFunctionTests, bitsToStructs_uint16_t_1)
 {
 	auto result = BitFunctions::bitsToStructs<uint16_t, byte>(1);
@@ -71,7 +63,7 @@ TEST(BitFunctionTests, bitsToStructs_uint16_t_1)
 TEST(BitFunctionTests, bitsToStructs_uint16_t_16)
 {
 	auto result = BitFunctions::bitsToStructs<uint16_t, byte>(16);
-	ASSERT_EQ(result, 2);
+	ASSERT_EQ(result, 1);
 }
 
 TEST(BitFunctionTests, bitsToStructs_int_33)
