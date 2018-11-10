@@ -389,3 +389,14 @@ TEST_F(TimeManagerTests, timeCodeRoundTrip_QuarterSecondWrongWindowCorrected)
 
 	ASSERT_EQ(result, clock);
 }
+
+TEST_F(TimeManagerTests, wasNeverSet_true)
+{
+	ASSERT_TRUE(timeManager->wasNeverSet());
+}
+
+TEST_F(TimeManagerTests, wasNeverSet_false)
+{
+	timeManager->_clockSet = 5;
+	ASSERT_FALSE(timeManager->wasNeverSet());
+}

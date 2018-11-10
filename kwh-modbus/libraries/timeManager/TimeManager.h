@@ -33,6 +33,7 @@ protected_testable:
 
 	virtual uint32_t getTimeCodeForClock(TimeScale timeScale, uint32_t clock = 0);
 	virtual uint32_t getClockForTimeCode(TimeScale timeScale, uint32_t timeCode, uint32_t referenceClock = 0);
+	virtual bool wasNeverSet();
 
 public:
 	virtual uint32_t getClock();

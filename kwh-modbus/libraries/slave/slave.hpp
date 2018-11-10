@@ -37,7 +37,7 @@ private_testable:
 	bool displayedStateInvalid = true;
 	word _hregCount;
 
-	byte* _dataBuffer;
+	byte* _dataBuffer = nullptr;
 	byte _dataBufferSize;
 
 	S *_system;
@@ -48,6 +48,9 @@ private_testable:
 	{
 		ENSURE(_modbus->validRange(0, _hregCount));
 		ENSURE(_modbus->Hreg(0, _state));
+		byte* name;
+		word deviceNum;
+		word index = 0;
 		switch (_state)
 		{
 		case sIdle:
@@ -64,11 +67,10 @@ private_testable:
 			// Why would we do this?
 			break;
 		case sDisplayDevInfo:
-			word deviceNum = _modbus->Hreg(2);
+			deviceNum = _modbus->Hreg(2);
 			ENSURE(_modbus->Hreg(1, deviceNum));
 			ENSURE(_modbus->Hreg(2, _devices[deviceNum]->getType()));
-			byte* name = _deviceNames[deviceNum];
-			word index = 0;
+			name = _deviceNames[deviceNum];
 			for (int i = 0; i < _deviceNameLength; i += 2)
 			{
 				word reg = name[i];
@@ -83,18 +85,20 @@ private_testable:
 			ENSURE(_modbus->Hreg(3 + index, 0)); // Commands waiting
 			ENSURE(_modbus->Hreg(4 + index, 0)); // Messages waiting
 			break;
-		//case sDisplayDevData:
-		//	word deviceNum = _modbus->Hreg(2);
-		//	uint32_t startTime = _modbus->Hreg(3) + (_modbus->Hreg(4) << 16);
-		//	word numDataPointsRequested = _modbus->Hreg(5);
-		//	byte curPage = (byte)(_modbus->Hreg(6) & 0x00FF);
-		//	byte maxPoints = (byte)((_modbus->Hreg(6) >> 8) & 0x00FF);
-		//	Device &device = _devices[deviceNum];
-		//	device.readData(startTime, numDataPointsRequested, curPage,
-		//		_dataBuffer, _dataBufferSize, byte &outDataPointsCount, byte &outPagesRemaining);
-		//	ENSURE(_modbus->Hreg(1, deviceNum));
-		//	ENSURE(_modbus->Hreg(2, _devices[deviceNum]->getType()));
-		//	break;
+		case sDisplayDevData:
+			deviceNum = _modbus->Hreg(2);
+			uint32_t startTime = _modbus->Hreg(3) + (_modbus->Hreg(4) << 16);
+			word numDataPointsRequested = _modbus->Hreg(5);
+			byte curPage = (byte)(_modbus->Hreg(6) & 0x00FF);
+			byte maxPoints = (byte)((_modbus->Hreg(6) >> 8) & 0x00FF);
+			Device *device = _devices[deviceNum];
+			byte dataPointsCount;
+			byte pagesRemaining;
+			device->readData(startTime, numDataPointsRequested, curPage,
+				_dataBuffer, _dataBufferSize, maxPoints, dataPointsCount, pagesRemaining);
+			ENSURE(_modbus->Hreg(1, deviceNum));
+			ENSURE(_modbus->Hreg(2, _devices[deviceNum]->getType()));
+			break;
 		}
 		displayedStateInvalid = false;
 		return true;

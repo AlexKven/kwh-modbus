@@ -63,6 +63,11 @@ uint32_t TimeManager::getClockForTimeCode(TimeScale timeScale, uint32_t timeCode
 	return clock;
 }
 
+bool TimeManager::wasNeverSet()
+{
+	return (_clockSet == 0);
+}
+
 // not tested because it is very trivial
 uint32_t TimeManager::getPeriodFromTimeScale(TimeScale timeScale)
 {

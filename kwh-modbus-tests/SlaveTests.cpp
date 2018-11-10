@@ -250,7 +250,7 @@ TEST_F(SlaveTests, SlaveTests_init)
 	names[1] = (byte*)"dev02";
 	names[2] = (byte*)"dev03";
 
-	slave->init(3, 5, 20, 1, devices, names);
+	slave->init(3, 5, 20, 30, devices, names);
 
 	delete[] names;
 
@@ -267,6 +267,8 @@ TEST_F(SlaveTests, SlaveTests_init)
 		assertArrayEq(slave->_deviceNames[i],
 			'd', 'e', 'v', '0', (byte)('0' + i + 1));
 	}
+	ASSERT_TRUE(slave->_dataBuffer != nullptr);
+	ASSERT_EQ(slave->_dataBufferSize, 30);
 }
 
 TEST_F(SlaveTests, SlaveTests_clearDevices)
