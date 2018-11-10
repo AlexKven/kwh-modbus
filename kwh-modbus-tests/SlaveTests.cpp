@@ -103,7 +103,7 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
 	names[1] = (byte*)"dev02";
 	names[2] = (byte*)"dev03";
 
-	slave->init(3, 5, 12, devices, names);
+	slave->init(3, 5, 12, 1, devices, names);
 
 	// Select device #1
 	registerArray[2] = 1;
@@ -250,7 +250,7 @@ TEST_F(SlaveTests, SlaveTests_init)
 	names[1] = (byte*)"dev02";
 	names[2] = (byte*)"dev03";
 
-	slave->init(3, 5, 20, devices, names);
+	slave->init(3, 5, 20, 1, devices, names);
 
 	delete[] names;
 
@@ -281,7 +281,7 @@ TEST_F(SlaveTests, SlaveTests_clearDevices)
 	names[1] = (byte*)"dev02";
 	names[2] = (byte*)"dev03";
 
-	slave->init(3, 5, 20, devices, names);
+	slave->init(3, 5, 20, 1, devices, names);
 	slave->clearDevices();
 
 	delete[] devices;

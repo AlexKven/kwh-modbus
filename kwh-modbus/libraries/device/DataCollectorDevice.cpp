@@ -34,6 +34,8 @@ bool DataCollectorDevice::readData(uint32_t startTime, word numPoints, byte page
 {
 	uint32_t period = TimeManager::getPeriodFromTimeScale(_timeScale) / 1000; // Seconds
 	auto numPointsPerPage = (bufferSize * 8) / (_dataPacketSize);
+	if (numPointsPerPage > maxPoints && maxPoints > 0)
+		numPointsPerPage = maxPoints;
 	auto startPoint = page * numPointsPerPage;
 	outPagesRemaining = (numPoints - startPoint - 1) / numPointsPerPage;
 	auto curNumPoints = numPointsPerPage < numPoints ? numPointsPerPage : numPoints;
