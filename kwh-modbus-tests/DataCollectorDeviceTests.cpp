@@ -243,13 +243,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(0, 6, 0, buffer, 6, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 6, 0, buffer, 6, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 6);
 	ASSERT_EQ(pagesRemaining, 0);
+	ASSERT_EQ(dataPointSize, 8);
 	ASSERT_EQ(buffer[0], 255);
 	ASSERT_EQ(buffer[1], 1);
 	ASSERT_EQ(buffer[2], 2);
@@ -274,13 +275,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_15sec_8bits)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(0, 6, 0, buffer, 6, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 6, 0, buffer, 6, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 6);
 	ASSERT_EQ(pagesRemaining, 0);
+	ASSERT_EQ(dataPointSize, 8);
 	ASSERT_EQ(buffer[0], 255);
 	ASSERT_EQ(buffer[1], 15);
 	ASSERT_EQ(buffer[2], 30);
@@ -305,13 +307,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_250ms_8bits)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(0, 6, 0, buffer, 6, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 6, 0, buffer, 6, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 6);
 	ASSERT_EQ(pagesRemaining, 0);
+	ASSERT_EQ(dataPointSize, 8);
 	ASSERT_EQ(buffer[0], 255);
 	ASSERT_EQ(buffer[1], 1);
 	ASSERT_EQ(buffer[2], 2);
@@ -336,13 +339,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits_largeBuffer)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(0, 6, 0, buffer, 9, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 6, 0, buffer, 9, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 6);
 	ASSERT_EQ(pagesRemaining, 0);
+	ASSERT_EQ(dataPointSize, 8);
 	ASSERT_EQ(buffer[0], 255);
 	ASSERT_EQ(buffer[1], 1);
 	ASSERT_EQ(buffer[2], 2);
@@ -367,13 +371,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page0)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(0, 18, 0, buffer, 6, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 18, 0, buffer, 6, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 6);
 	ASSERT_EQ(pagesRemaining, 2);
+	ASSERT_EQ(dataPointSize, 8);
 	ASSERT_EQ(buffer[0], 255);
 	ASSERT_EQ(buffer[1], 1);
 	ASSERT_EQ(buffer[2], 2);
@@ -398,13 +403,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page1)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(0, 18, 1, buffer, 6, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 18, 1, buffer, 6, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 6);
 	ASSERT_EQ(pagesRemaining, 1);
+	ASSERT_EQ(dataPointSize, 8);
 	ASSERT_EQ(buffer[0], 6);
 	ASSERT_EQ(buffer[1], 7);
 	ASSERT_EQ(buffer[2], 8);
@@ -429,13 +435,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page2)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(0, 18, 2, buffer, 6, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 18, 2, buffer, 6, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 6);
 	ASSERT_EQ(pagesRemaining, 0);
+	ASSERT_EQ(dataPointSize, 8);
 	ASSERT_EQ(buffer[0], 12);
 	ASSERT_EQ(buffer[1], 13);
 	ASSERT_EQ(buffer[2], 14);
@@ -460,13 +467,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_partialPage)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(0, 14, 2, buffer, 6, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 14, 2, buffer, 6, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 2);
 	ASSERT_EQ(pagesRemaining, 0);
+	ASSERT_EQ(dataPointSize, 8);
 	ASSERT_EQ(buffer[0], 12);
 	ASSERT_EQ(buffer[1], 13);
 
@@ -489,13 +497,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page0)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(0, 7, 0, buffer, 2, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 7, 0, buffer, 2, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 5);
 	ASSERT_EQ(pagesRemaining, 1);
+	ASSERT_EQ(dataPointSize, 3);
 	Verify(Method(mock, readDataPoint)).Exactly(5);
 	ASSERT_EQ(buffer[0], 136);
 	ASSERT_EQ(buffer[1], 70);
@@ -519,13 +528,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page1)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(0, 7, 1, buffer, 2, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 7, 1, buffer, 2, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 2);
 	ASSERT_EQ(pagesRemaining, 0);
+	ASSERT_EQ(dataPointSize, 3);
 	Verify(Method(mock, readDataPoint)).Exactly(2);
 	ASSERT_EQ(buffer[0], 53);
 	ASSERT_EQ(buffer[1], 0);
@@ -550,13 +560,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page0)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(0, 10, 0, buffer, 3, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 10, 0, buffer, 3, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 4);
 	ASSERT_EQ(pagesRemaining, 2);
+	ASSERT_EQ(dataPointSize, 5);
 	Verify(Method(mock, readDataPoint)).Exactly(4);
 	ASSERT_EQ(buffer[0], 0x40);
 	ASSERT_EQ(buffer[1], 0x7C);
@@ -582,13 +593,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page1)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(0, 10, 1, buffer, 3, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 10, 1, buffer, 3, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 4);
 	ASSERT_EQ(pagesRemaining, 1);
+	ASSERT_EQ(dataPointSize, 5);
 	Verify(Method(mock, readDataPoint)).Exactly(4);
 	ASSERT_EQ(buffer[0], 0x48);
 	ASSERT_EQ(buffer[1], 0x31);
@@ -614,13 +626,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page2)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(0, 10, 2, buffer, 3, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 10, 2, buffer, 3, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 2);
 	ASSERT_EQ(pagesRemaining, 0);
+	ASSERT_EQ(dataPointSize, 5);
 	Verify(Method(mock, readDataPoint)).Exactly(2);
 	ASSERT_EQ(buffer[0], 0x50);
 	ASSERT_EQ(buffer[1], 2);
@@ -643,13 +656,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_1min_8bits_timeOffset)
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-
-	bool success = device->readData(70, 8, 0, buffer, 20, 0, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(70, 8, 0, buffer, 20, 0, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 8);
 	ASSERT_EQ(pagesRemaining, 0);
+	ASSERT_EQ(dataPointSize, 8);
 	ASSERT_EQ(buffer[0], 70);
 	ASSERT_EQ(buffer[1], 130);
 	ASSERT_EQ(buffer[2], 190);
@@ -678,12 +692,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-	bool success = device->readData(0, 7, 0, buffer, 2, 3, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 7, 0, buffer, 2, 3, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 3);
 	ASSERT_EQ(pagesRemaining, 2);
+	ASSERT_EQ(dataPointSize, 3);
 	Verify(Method(mock, readDataPoint)).Exactly(3);
 	ASSERT_EQ(buffer[0], 136);
 	ASSERT_EQ(buffer[1], 0);
@@ -707,12 +723,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-	bool success = device->readData(0, 7, 1, buffer, 2, 3, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 7, 1, buffer, 2, 3, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 3);
 	ASSERT_EQ(pagesRemaining, 1);
+	ASSERT_EQ(dataPointSize, 3);
 	Verify(Method(mock, readDataPoint)).Exactly(3);
 	ASSERT_EQ(buffer[0], 0x63);
 	ASSERT_EQ(buffer[1], 1);
@@ -736,12 +754,14 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
+	byte dataPointSize;
 
-	bool success = device->readData(0, 7, 2, buffer, 2, 3, numDataPointsInPage, pagesRemaining);
+	bool success = device->readData(0, 7, 2, buffer, 2, 3, numDataPointsInPage, pagesRemaining, dataPointSize);
 
 	ASSERT_TRUE(success);
 	ASSERT_EQ(numDataPointsInPage, 1);
 	ASSERT_EQ(pagesRemaining, 0);
+	ASSERT_EQ(dataPointSize, 3);
 	Verify(Method(mock, readDataPoint)).Exactly(1);
 	ASSERT_EQ(buffer[0], 6);
 	ASSERT_EQ(buffer[1], 0);

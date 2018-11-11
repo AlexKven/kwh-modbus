@@ -30,7 +30,7 @@ bool DataCollectorDevice::init(bool accumulateData, TimeScale timeScale, byte da
 }
 
 bool DataCollectorDevice::readData(uint32_t startTime, word numPoints, byte page, byte * buffer, word bufferSize,
-	byte maxPoints, byte & outDataPointsCount, byte & outPagesRemaining)
+	byte maxPoints, byte & outDataPointsCount, byte & outPagesRemaining, byte &outDataPointSize)
 {
 	uint32_t period = TimeManager::getPeriodFromTimeScale(_timeScale) / 1000; // Seconds
 	auto numPointsPerPage = (bufferSize * 8) / (_dataPacketSize);
@@ -42,6 +42,7 @@ bool DataCollectorDevice::readData(uint32_t startTime, word numPoints, byte page
 	if (outPagesRemaining == 0)
 		curNumPoints = numPoints - startPoint;
 	outDataPointsCount = curNumPoints;
+	outDataPointSize = _dataPacketSize;
 
 	uint32_t curTime;
 	byte quarterSecondOffset = 0;

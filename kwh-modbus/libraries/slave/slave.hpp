@@ -86,18 +86,39 @@ private_testable:
 			ENSURE(_modbus->Hreg(4 + index, 0)); // Messages waiting
 			break;
 		case sDisplayDevData:
-			deviceNum = _modbus->Hreg(2);
-			uint32_t startTime = _modbus->Hreg(3) + (_modbus->Hreg(4) << 16);
-			word numDataPointsRequested = _modbus->Hreg(5);
-			byte curPage = (byte)(_modbus->Hreg(6) & 0x00FF);
-			byte maxPoints = (byte)((_modbus->Hreg(6) >> 8) & 0x00FF);
-			Device *device = _devices[deviceNum];
-			byte dataPointsCount;
-			byte pagesRemaining;
-			device->readData(startTime, numDataPointsRequested, curPage,
-				_dataBuffer, _dataBufferSize, maxPoints, dataPointsCount, pagesRemaining);
-			ENSURE(_modbus->Hreg(1, deviceNum));
-			ENSURE(_modbus->Hreg(2, _devices[deviceNum]->getType()));
+			if (wasNeverSet())
+			{
+				// need the time
+				ENSURE(_modbus->Hreg(1, 1));
+			}
+			else
+			{
+				deviceNum = _modbus->Hreg(2);
+				uint32_t startTime = _modbus->Hreg(3) + (_modbus->Hreg(4) << 16);
+				word numDataPointsRequested = _modbus->Hreg(5);
+				byte curPage = (byte)(_modbus->Hreg(6) & 0x00FF);
+				byte maxPoints = (byte)((_modbus->Hreg(6) >> 8) & 0x00FF);
+				Device *device = _devices[deviceNum];
+				byte dataPointsCount;
+				byte pagesRemaining;
+				byte dataPointSize;
+				if (device->readData(startTime, numDataPointsRequested, curPage,
+					_dataBuffer, _dataBufferSize, maxPoints, dataPointsCount, pagesRemaining, dataPointSize))
+				{
+					// success
+					ENSURE(_modbus->Hreg(1, 0));
+					ENSURE(_modbus->Hreg(2, (word)(startTime & 0xFFFF)));
+					ENSURE(_modbus->Hreg(3, (word)((startTime >> 16) & 0xFFFF)));
+					ENSURE(_modbus->Hreg(4, (word)(curPage + ((word)(dataPointSize << 8)))));
+				}
+				else
+				{
+					// device does not send data
+					ENSURE(_modbus->Hreg(1, 2));
+				}
+				//ENSURE(_modbus->Hreg(1, deviceNum));
+				//ENSURE(_modbus->Hreg(2, _devices[deviceNum]->getType()));
+			}
 			break;
 		}
 		displayedStateInvalid = false;
