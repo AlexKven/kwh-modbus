@@ -129,6 +129,44 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
 		(word)0);
 }
 
+TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_TimeNotSet)
+{
+	slave->_state = sDisplayDevData;
+	slave->displayedStateInvalid = true;
+
+	Device **devices = new Device*[3];
+	SetupDevices(devices, 3);
+	byte **names = new byte*[3];
+	names[0] = (byte*)"dev01";
+	names[1] = (byte*)"dev02";
+	names[2] = (byte*)"dev03";
+
+	slave->init(3, 5, 12, 1, devices, names);
+
+	// Select device #1
+	registerArray[2] = 1;
+
+	// Select 435 as the requested start time
+	registerArray[3] = 179;
+	registerArray[4] = 1;
+
+	// Request 16 data points
+	registerArray[5] = 16;
+
+	// Page 0, and no limit to how many data points we can process
+	registerArray[6] = 0;
+
+	delete[] devices;
+	delete[] names;
+
+	bool success = slave->setOutgoingState();
+
+	ASSERT_EQ(slave->displayedStateInvalid, false);
+	ASSERT_TRUE(success);
+	assertArrayEq(registerArray,
+		sDisplayDevData, (word)1);
+}
+
 TEST_F(SlaveTests, SlaveTests_processIncomingState_Idle)
 {
 	MOCK_SLAVE;

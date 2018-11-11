@@ -7,6 +7,7 @@
 
 #include "../device/Device.h"
 #include "../timeManager/TimeManager.h"
+#include "../bitFunctions/bitFunctions.h"
 #define ENSURE(statement) if (!(statement)) return false
 
 enum SlaveState : word
@@ -109,7 +110,22 @@ private_testable:
 					ENSURE(_modbus->Hreg(1, 0));
 					ENSURE(_modbus->Hreg(2, (word)(startTime & 0xFFFF)));
 					ENSURE(_modbus->Hreg(3, (word)((startTime >> 16) & 0xFFFF)));
-					ENSURE(_modbus->Hreg(4, (word)(curPage + ((word)(dataPointSize << 8)))));
+					ENSURE(_modbus->Hreg(4, (word)(dataPointsCount + ((word)(dataPointSize << 8)))));
+					ENSURE(_modbus->Hreg(5, (word)(curPage + ((word)(pagesRemaining << 8)))));
+					word totalBits = numDataPointsRequested * dataPointSize;
+					byte numRegs = BitFunctions::bitsToStructs<word, word>(totalBits);
+					word curReg;
+					for (int i = 0; i < numRegs; i++)
+					{
+						if (i < numRegs - 1)
+						{
+							BitFunctions::copyBits(_dataBuffer, &curReg, i * 16, 0, 16);
+						}
+						else
+						{
+							BitFunctions::copyBits(_dataBuffer, &curReg, i * 16, 0, totalBits % 16);
+						}
+					}
 				}
 				else
 				{
