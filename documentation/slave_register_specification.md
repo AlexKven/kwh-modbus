@@ -51,14 +51,15 @@ Slaves will have the first register always be the current state of the slave. Be
 
 ### 3: Master is reading data from a device
 
-| Register # | Value               | Range         | Notes                                                        |
-| ---------- | ------------------- | ------------- | ------------------------------------------------------------ |
-| 1 to 2     | Data Start Time     | 0 to 2^32 - 1 | Applies to this page only and not necessarily the same as the request that the slave received. |
-| 3          | Request Status      | 0 or 1        | 0 = success, 1 = error: time not set                         |
-| 3.5        | Num Data Points     | 0 to 255      | Number of data points in this page                           |
-| 4          | Current page        | 0 to 255      |                                                              |
-| 4.5        | Num Remaining Pages | 0 to 255      |                                                              |
-| 5 to X     | Data Points         | Anything      | Binary data containing sent data points, each point composed of an integer number of *bits* according to the device type |
+| Register # | Value                     | Range         | Notes                                                        |
+| ---------- | ------------------------- | ------------- | ------------------------------------------------------------ |
+| 1          | Request Status            | 0 to 2        | 0 = success, 1 = error: time not set, 2 = device doesn't send data |
+| 2 to 3     | Data Start Time           | 0 to 2^32 - 1 | Applies to this page only and not necessarily the same as the request that the slave received. |
+| 4          | Num Data Points this page | 0 to 255      | Number of data points in this page                           |
+| 4.5        | data point size (bits)    | 0 to 63       |                                                              |
+| 5          | Current page              | 0 to 255      |                                                              |
+| 5.5        | Num Remaining Pages       | 0 to 255      |                                                              |
+| 6 to X     | Data Points               | Anything      | Binary data containing sent data points, each point composed of an integer number of *bits* according to the device type |
 
 
 
@@ -85,7 +86,7 @@ Here is a listing of each request type:
 * 3: Read device data
   * This is for reading actual data from a device, such as a power reading value at a particular time.
   * The response to this will have a state of 3.
-  * The data in this response will have the following format:
+  * The data in this request will have the following format:
     * 0 to 1: The time for the start of the request
     * 2: The number of data points being requested
     * 3: The page (0-255) requested (0 if first request)

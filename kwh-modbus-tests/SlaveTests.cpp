@@ -45,6 +45,18 @@ protected:
 			devices[i] = &mockDevices[i].get();
 		}
 	}
+
+	void ZeroRegisterArray()
+	{
+		for (int i = 0; i < 12; i++)
+			registerArray[i] = 0;
+	}
+
+	void ZeroDataBuffer()
+	{
+		for (int i = 0; i < slave->_dataBufferSize; i++)
+			slave->_dataBuffer[i] = 0;
+	}
 public:
 	void SetUp()
 	{
@@ -177,12 +189,14 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_DeviceDoesntSendDa
 	names[0] = (byte*)"dev00";
 
 	slave->init(1, 5, 12, 1, devices, names);
+	ZeroRegisterArray();
+	ZeroDataBuffer();
 	slave->_clockSet = 1; // Time is no longer "never set"
 
 	// Select device #0
 	registerArray[2] = 0;
 
-	// Select 435 as the requested start time
+	// Select 65715 as the requested start time
 	registerArray[3] = 179;
 	registerArray[4] = 1;
 
@@ -203,10 +217,11 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_DeviceDoesntSendDa
 		sDisplayDevData, (word)2);
 }
 
-TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success)
+TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_4bitData)
 {
 	slave->_state = sDisplayDevData;
 	slave->displayedStateInvalid = true;
+
 	uint32_t passedStartTime;
 	word passedNumPoints;
 	byte passedPage;
@@ -236,12 +251,14 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success)
 	names[0] = (byte*)"dev00";
 
 	slave->init(1, 5, 12, 10, devices, names);
+	ZeroRegisterArray();
+	ZeroDataBuffer();
 	slave->_clockSet = 1; // Time is no longer "never set"
 
 	// Select device #0
 	registerArray[2] = 0;
 
-	// Select 435 as the requested start time
+	// Select 65715 as the requested start time
 	registerArray[3] = 179;
 	registerArray[4] = 1;
 
@@ -258,6 +275,10 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success)
 
 	ASSERT_EQ(slave->displayedStateInvalid, false);
 	ASSERT_TRUE(success);
+	ASSERT_EQ(passedStartTime, 65715);
+	ASSERT_EQ(passedPage, 0);
+	ASSERT_EQ(passedBufferSize, 10);
+	ASSERT_EQ(passedMaxPoints, 0);
 	assertArrayEq(registerArray,
 		sDisplayDevData,
 		(word)0,
@@ -267,6 +288,79 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success)
 		(word)0x0100,
 		(word)0x3210,
 		(word)0x7654);
+}
+
+TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_5bitData)
+{
+	slave->_state = sDisplayDevData;
+	slave->displayedStateInvalid = true;
+
+	uint32_t passedStartTime;
+	word passedNumPoints;
+	byte passedPage;
+	word passedBufferSize;
+	byte passedMaxPoints;
+
+	Device **devices = new Device*[1];
+	SetupDevices(devices, 1);
+	When(Method(mockDevices[0], readData)).AlwaysDo([&](uint32_t startTime, word numPoints, byte page, byte * buffer, word bufferSize,
+		byte maxPoints, byte & outDataPointsCount, byte & outPagesRemaining, byte &outDataPointSize)
+	{
+		passedStartTime = startTime;
+		passedNumPoints = numPoints;
+		passedPage = page;
+		passedBufferSize = bufferSize;
+		passedMaxPoints = maxPoints;
+		for (int i = 0; i < 6; i++)
+		{
+			BitFunctions::copyBits(&i, buffer, 0, 5 * i, 5);
+		}
+		outDataPointsCount = 6;
+		outPagesRemaining = 2;
+		outDataPointSize = 5;
+		return true;
+	});
+	byte **names = new byte*[1];
+	names[0] = (byte*)"dev00";
+
+	slave->init(1, 5, 12, 10, devices, names);
+	ZeroRegisterArray();
+	ZeroDataBuffer();
+	slave->_clockSet = 1; // Time is no longer "never set"
+
+	// Select device #0
+	registerArray[2] = 0;
+
+	// Select 65715 as the requested start time
+	registerArray[3] = 179;
+	registerArray[4] = 1;
+
+	// Request 16 data points
+	registerArray[5] = 16;
+
+	// Page 1, and no limit to how many data points we can process
+	registerArray[6] = 1;
+
+	delete[] devices;
+	delete[] names;
+
+	bool success = slave->setOutgoingState();
+
+	ASSERT_EQ(slave->displayedStateInvalid, false);
+	ASSERT_TRUE(success);
+	ASSERT_EQ(passedStartTime, 65715);
+	ASSERT_EQ(passedPage, 1);
+	ASSERT_EQ(passedBufferSize, 10);
+	ASSERT_EQ(passedMaxPoints, 0);
+	assertArrayEq(registerArray,
+		sDisplayDevData,
+		(word)0,
+		(word)179,
+		(word)1,
+		(word)0x0506,
+		(word)0x0201,
+		(word)0x8820,
+		(word)0x0A41);
 }
 
 TEST_F(SlaveTests, SlaveTests_processIncomingState_Idle)

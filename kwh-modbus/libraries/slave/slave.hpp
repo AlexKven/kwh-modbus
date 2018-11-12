@@ -117,6 +117,7 @@ private_testable:
 					word curReg;
 					for (int i = 0; i < numRegs; i++)
 					{
+						curReg = 0;
 						if (i < numRegs - 1)
 						{
 							BitFunctions::copyBits(_dataBuffer, &curReg, i * 16, 0, 16);
