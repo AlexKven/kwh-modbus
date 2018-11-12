@@ -37,7 +37,7 @@ public:
 			N byteOffsetDest = (destBit + i) / (CHAR_BIT * sizeof(U));
 			N bitOffsetDest = (destBit + i) % (CHAR_BIT * sizeof(U));
 
-			if ((*srcPtr + byteOffsetSrc) & (1 << bitOffsetSrc))
+			if (*(srcPtr + byteOffsetSrc) & (1 << bitOffsetSrc))
 			{
 				*(destPtr + byteOffsetDest) |= 1 << bitOffsetDest;
 			}

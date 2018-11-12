@@ -112,7 +112,7 @@ private_testable:
 					ENSURE(_modbus->Hreg(3, (word)((startTime >> 16) & 0xFFFF)));
 					ENSURE(_modbus->Hreg(4, (word)(dataPointsCount + ((word)(dataPointSize << 8)))));
 					ENSURE(_modbus->Hreg(5, (word)(curPage + ((word)(pagesRemaining << 8)))));
-					word totalBits = numDataPointsRequested * dataPointSize;
+					word totalBits = dataPointsCount * dataPointSize;
 					byte numRegs = BitFunctions::bitsToStructs<word, word>(totalBits);
 					word curReg;
 					for (int i = 0; i < numRegs; i++)
@@ -123,8 +123,9 @@ private_testable:
 						}
 						else
 						{
-							BitFunctions::copyBits(_dataBuffer, &curReg, i * 16, 0, totalBits % 16);
+							BitFunctions::copyBits(_dataBuffer, &curReg, i * 16, 0, (totalBits - 1) % 16 + 1);
 						}
+						ENSURE(_modbus->Hreg(6 + i, curReg));
 					}
 				}
 				else

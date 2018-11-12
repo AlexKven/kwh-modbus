@@ -203,6 +203,72 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_DeviceDoesntSendDa
 		sDisplayDevData, (word)2);
 }
 
+TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success)
+{
+	slave->_state = sDisplayDevData;
+	slave->displayedStateInvalid = true;
+	uint32_t passedStartTime;
+	word passedNumPoints;
+	byte passedPage;
+	word passedBufferSize;
+	byte passedMaxPoints;
+
+	Device **devices = new Device*[1];
+	SetupDevices(devices, 1);
+	When(Method(mockDevices[0], readData)).AlwaysDo([&](uint32_t startTime, word numPoints, byte page, byte * buffer, word bufferSize,
+		byte maxPoints, byte & outDataPointsCount, byte & outPagesRemaining, byte &outDataPointSize)
+	{
+		passedStartTime = startTime;
+		passedNumPoints = numPoints;
+		passedPage = page;
+		passedBufferSize = bufferSize;
+		passedMaxPoints = maxPoints;
+		for (int i = 0; i < 8; i++)
+		{
+			BitFunctions::copyBits(&i, buffer, 0, 4 * i, 4);
+		}
+		outDataPointsCount = 8;
+		outPagesRemaining = 1;
+		outDataPointSize = 4;
+		return true;
+	});
+	byte **names = new byte*[1];
+	names[0] = (byte*)"dev00";
+
+	slave->init(1, 5, 12, 10, devices, names);
+	slave->_clockSet = 1; // Time is no longer "never set"
+
+	// Select device #0
+	registerArray[2] = 0;
+
+	// Select 435 as the requested start time
+	registerArray[3] = 179;
+	registerArray[4] = 1;
+
+	// Request 16 data points
+	registerArray[5] = 16;
+
+	// Page 0, and no limit to how many data points we can process
+	registerArray[6] = 0;
+
+	delete[] devices;
+	delete[] names;
+
+	bool success = slave->setOutgoingState();
+
+	ASSERT_EQ(slave->displayedStateInvalid, false);
+	ASSERT_TRUE(success);
+	assertArrayEq(registerArray,
+		sDisplayDevData,
+		(word)0,
+		(word)179,
+		(word)1,
+		(word)0x0408,
+		(word)0x0100,
+		(word)0x3210,
+		(word)0x7654);
+}
+
 TEST_F(SlaveTests, SlaveTests_processIncomingState_Idle)
 {
 	MOCK_SLAVE;
