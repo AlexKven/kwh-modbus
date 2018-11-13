@@ -157,8 +157,8 @@ TEST_F(DeviceDirectoryTests, init_maxMemory)
 	word numDevices;
 	deviceDirectory->init(500, 11, numDevices);
 
-	ASSERT_EQ(numDevices, 35);
-	Verify(OverloadedMethod(mock, init, void(word, word, byte**)).Using(11, 35, nullptr)).Once();
+	ASSERT_EQ(numDevices, 31);
+	Verify(OverloadedMethod(mock, init, void(word, word, byte**)).Using(11, 31, nullptr)).Once();
 }
 
 TEST_F(DeviceDirectoryTests, findDeviceForName_empty)

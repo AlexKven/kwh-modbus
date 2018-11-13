@@ -14,6 +14,7 @@ private_testable:
 	byte* _slaveIds = nullptr;
 	word* _deviceTypes = nullptr;
 	byte* _deviceNames = nullptr;
+	word* _deviceRegs = nullptr;
 	T* _persistentStore;
 
 	virtual byte* getDeviceName(word deviceIndex)
@@ -46,16 +47,18 @@ public:
 		_slaveIds = new byte[_maxDevices];
 		_deviceTypes = new word[_maxDevices];
 		_deviceNames = new byte[_deviceNameLength * _maxDevices];
+		_deviceRegs = new word[_maxDevices];
 		for (int i = 0; i < _maxDevices; i++)
 		{
 			_slaveIds[i] = 0;
 			_deviceTypes[i] = 0;
+			_deviceRegs[i] = 0;
 		}
 	}
 
 	virtual void init(int maxMemory, word deviceNameLength, word &maxDevicesOut, T *persistentStore = nullptr)
 	{
-		maxDevicesOut = maxMemory / (sizeof(byte) + sizeof(word) + deviceNameLength * sizeof(byte));
+		maxDevicesOut = maxMemory / (sizeof(byte) + sizeof(word) + sizeof(word) + deviceNameLength * sizeof(byte));
 		init(deviceNameLength, maxDevicesOut, persistentStore);
 	}
 
