@@ -61,7 +61,11 @@ Slaves will have the first register always be the current state of the slave. Be
 | 5.5        | Num Remaining Pages       | 0 to 255      |                                                              |
 | 6 to X     | Data Points               | Anything      | Binary data containing sent data points, each point composed of an integer number of *bits* according to the device type |
 
+### 4: Master is writing data to device
 
+| Register # | Value  | Range  | Notes         |
+| ---------- | ------ | ------ | ------------- |
+| 1          | Status | 0 or 1 | 1 is failure. |
 
 ###
 
@@ -76,7 +80,7 @@ Here is a listing of each request type:
 * 2: Read device info
   * This is for reading information about a device, like the name and type.
   * The response to this will have a state of 2.
-  * The data in this response will have the following format:
+  * The data in this request will have the following format:
   	* 0: Device type
   	* 1: Data type (first 8 bits)
   	* 1.5: Data length in bytes (last 8 bits)
@@ -94,7 +98,15 @@ Here is a listing of each request type:
 * 4: Write data
   * This is for writing data from *any* device, including itself (if supported).
   * The response to this will have a state of 4.
-  * Data format TBD
+  * The data in this request will have the following format:
+    * 0: Length of name of originating device (L)
+    * 1 to 0.5+(L/2): Name of originating device
+    * 1 after name to 2 after name: Start time
+    * 3 after name: data point size (8 bits)
+    * 3.5 after name: data point timescale (8 bits)
+    * 4 after name: data points offset
+    * 5 after name: data points count
+    * 6 to end: data points
 * 32770 (0x8002): Broadcasts time in unsigned Y2K epoch time that is used by Arduino time library
   * Goes to all slaves at once
   * Overflows in 2136
