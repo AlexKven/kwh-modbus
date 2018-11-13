@@ -4,3 +4,7 @@ bool Device::readData(uint32_t startTime, word numPoints, byte page, byte * buff
 {
 	return false;
 }
+
+void Device::setClock(uint32_t clock)
+{
+}

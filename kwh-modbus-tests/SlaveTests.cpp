@@ -449,14 +449,23 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId_Failure)
 TEST_F(SlaveTests, SlaveTests_processIncomingState_SetClock)
 {
 	MOCK_SLAVE;
-	Fake(Method(mock, setClock));
+	Spy(Method(mock, setClock));
+	Mock<Device> mDevice0;
+	Mock<Device> mDevice1;
+	Device **deviceArray = new Device*[2];
+	deviceArray[0] = &mDevice0.get();
+	deviceArray[1] = &mDevice1.get();
+
+	Fake(Method(mDevice0, setClock));
+	Fake(Method(mDevice1, setClock));
 
 	mSlave.displayedStateInvalid = false;
 
 	mSlave._state = sIdle;
-	mSlave._deviceCount = 4;
+	mSlave._deviceCount = 2;
 	mSlave._deviceNameLength = 703;
 	mSlave._modbus->setSlaveId(14);
+	mSlave._devices = deviceArray;
 
 	registerArray[0] = sReceivedRequest;
 	registerArray[1] = 32770;
@@ -469,6 +478,8 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_SetClock)
 	ASSERT_TRUE(success);
 	ASSERT_EQ(mSlave._state, sIdle);
 	Verify(Method(mock, setClock).Using(4000000000)).Once();
+	Verify(Method(mDevice0, setClock).Using(4000000000)).Once();
+	Verify(Method(mDevice1, setClock).Using(4000000000)).Once();
 	ASSERT_EQ(mSlave.displayedStateInvalid, true);
 }
 

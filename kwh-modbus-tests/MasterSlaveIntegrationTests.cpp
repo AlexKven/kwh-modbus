@@ -360,6 +360,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
 	modbusSlave->setSlaveId(1);
 	slave->setOutgoingState();
 	master->setClock(2000000000);
+	Fake(Method(device0, setClock));
+	Fake(Method(device1, setClock));
 
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);
@@ -367,8 +369,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
 
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
-
-	//ASSERT_EQ(modbusSlave->getSlaveId(), 255);
+	Verify(Method(device0, setClock).Using(2000000000)).Once();
+	Verify(Method(device1, setClock).Using(2000000000)).Once();
 }
 
 INSTANTIATE_TEST_CASE_P(NoErrors, MasterSlaveIntegrationTests, ::testing::Values(None));

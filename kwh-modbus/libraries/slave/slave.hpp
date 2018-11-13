@@ -203,6 +203,15 @@ public:
 		}
 	}
 
+	void setClock(uint32_t clock)
+	{
+		TimeManager::setClock(clock);
+		for (int i = 0; i < _deviceCount; i++)
+		{
+			_devices[i]->setClock(clock);
+		}
+	}
+
 	// Basic initial version
 	void loop()
 	{
