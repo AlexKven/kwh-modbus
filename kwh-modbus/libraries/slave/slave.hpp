@@ -175,7 +175,6 @@ private_testable:
 					Device *device = _devices[_modbus->Hreg(2)];
 					word nameLength = _modbus->Hreg(3);
 					word nameOffset = nameLength / 2 + nameLength % 2;
-
 					uint32_t startTime = _modbus->Hreg(4 + nameOffset) + (_modbus->Hreg(5 + nameOffset) << 16);
 
 					displayedStateInvalid = true;
