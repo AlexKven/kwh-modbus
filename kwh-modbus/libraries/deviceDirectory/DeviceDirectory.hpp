@@ -101,16 +101,17 @@ public:
 	//		EEPROM[index + EEPROM_OFFSET] = value;
 	//}
 
-	virtual void insertIntoRow(int row, byte* devName, byte devType, byte slaveId)
+	virtual void insertIntoRow(int row, byte* devName, word devType, word devRegs, byte slaveId)
 	{
 		byte* name = getDeviceName(row);
 		for (int i = 0; i < _deviceNameLength; i++)
 			name[i] = devName[i];
 		_deviceTypes[row] = devType;
 		_slaveIds[row] = slaveId;
+		_deviceRegs[row] = devRegs;
 	}
 
-	virtual bool updateItemInDeviceDirectory(byte* devName, word devType, byte slaveId)
+	virtual bool updateItemInDeviceDirectory(byte* devName, word devType, word devRegs, byte slaveId)
 	{
 		word curType;
 		byte curID;
@@ -119,7 +120,7 @@ public:
 		findDeviceForName(devName, curType, curID, curRegs, row);
 		if (row >= 0 && (curType != devType || curID != slaveId))
 		{
-			insertIntoRow(row, devName, devType, slaveId);
+			insertIntoRow(row, devName, devType, devRegs, slaveId);
 			return true;
 		}
 		return false;
@@ -209,12 +210,12 @@ public:
 		return slaveId;
 	}
 
-	virtual int addDevice(byte* devName, word devType, byte slaveId)
+	virtual int addDevice(byte* devName, word devType, word devRegs, byte slaveId)
 	{
 		int row = findFreeRow();
 		if (row == -1)
 			return -1;
-		insertIntoRow(row, devName, devType, slaveId);
+		insertIntoRow(row, devName, devType, devRegs, slaveId);
 		return row;
 	}
 
@@ -246,22 +247,22 @@ public:
 		return numDeleted;
 	}
 	
-	virtual int addOrReplaceDevice(byte* devName, word devType, byte slaveId)
+	virtual int addOrReplaceDevice(byte* devName, word devType, word devRegs, byte slaveId)
 	{
 		int row;
 		word dummyType;
 		byte dummySlave;
 		if (findDeviceForName(devName, dummyType, dummySlave, dummyType, row))
 		{
-			insertIntoRow(row, devName, devType, slaveId);
+			insertIntoRow(row, devName, devType, devRegs, slaveId);
 			return row;
 		}
 		else
-			return addDevice(devName, devType, slaveId);
+			return addDevice(devName, devType, devRegs, slaveId);
 	}
 
 	// Untested
-	int findNextDevice(byte* devName, byte &slaveIdOut, word &devTypeOut, int startRow = 0)
+	int findNextDevice(byte* devName, byte &slaveIdOut, word &devTypeOut, word &devRegsOut, int startRow = 0)
 	{
 		int row = startRow;
 		while (_slaveIds[row] == 0)
@@ -277,6 +278,7 @@ public:
 		}
 		devTypeOut = _deviceTypes[row];
 		slaveIdOut = _slaveIds[row];
+		devRegsOut = _deviceRegs[row];
 		return row + 1;
 	}
 

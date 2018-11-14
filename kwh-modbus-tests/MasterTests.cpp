@@ -614,7 +614,7 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 9, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('C' << 8), 0 }));
 	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 8, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('B' << 8), 0 }));
 	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 7, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('A' << 8), 0 }));
-	regsStack.push(make_tuple(7, new word[7]{ 0, 1 << 8, 3, 6, 0, 0, 0 }));
+	regsStack.push(make_tuple(7, new word[8]{ 0, 1 << 8, 3, 6, 22, 0, 0, 0 }));
 	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&prevPtr, &regsStack](word &regCount, word *&regs) {
 		if (prevPtr != nullptr)
 			delete[] prevPtr;
@@ -634,9 +634,9 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Exactly(4);
 
 	// Add three new devices to device directory
-	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 7, 13)).Once();
-	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 8, 13)).Once();
-	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 9, 13)).Once();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 7, 22, 13)).Once();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 8, 22, 13)).Once();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 9, 22, 13)).Once();
 
 	// Slave ID set to 13
 	ASSERT_EQ(curSlaveId, 13);
@@ -891,7 +891,7 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 9, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('C' << 8), 0 }));
 	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 8, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('B' << 8), 0 }));
 	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 7, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('A' << 8), 0 }));
-	regsStack.push(make_tuple(7, new word[7]{ 0, 1 << 8, 3, 6, 0, 0, 0 }));
+	regsStack.push(make_tuple(7, new word[8]{ 0, 1 << 8, 3, 6, 47, 0, 0, 0 }));
 	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&prevPtr, &regsStack](word &regCount, word *&regs) {
 		if (prevPtr != nullptr)
 			delete[] prevPtr;
@@ -911,9 +911,9 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Exactly(3);
 
 	// Add two new devices to device directory, failed one never gets added
-	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 7, 13)).Once();
-	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 8, 13)).Once();
-	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 9, 13)).Never();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 7, 47, 13)).Once();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 8, 47, 13)).Once();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 9, 47, 13)).Never();
 
 	Verify(Method(mockDeviceDirectory, filterDevicesForSlave).Using(nullptr, 0, 13)).Once();
 

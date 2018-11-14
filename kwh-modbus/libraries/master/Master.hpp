@@ -230,7 +230,7 @@ protected_testable:
 		return _checkForNewSlaves;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), processNewSlave, void, VARS(byte, word, byte, word, word[3]), bool);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), processNewSlave, void, VARS(byte, word, byte, word, word[3], word), bool);
 	processNewSlave_Task _processNewSlave;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), processNewSlave, bool justReject)
 	{
@@ -239,15 +239,19 @@ protected_testable:
 		ASYNC_VAR(2, numDevices);
 		ASYNC_VAR(3, deviceNameLength);
 		ASYNC_VAR(4, sentData);
+		ASYNC_VAR(5, slaveRegisters)
 		START_ASYNC;
 		word regCount;
 		word *regs;
 		numDevices = 0;
-		if (_modbus->isReadRegsResponse(regCount, regs))
+		if (!_modbus->isReadRegsResponse(regCount, regs))
 		{
-			numDevices = regs[2];
+			reportMalfunction(__LINE__);
+			RETURN_ASYNC;
 		}
+		numDevices = regs[2];
 		deviceNameLength = regs[3];
+		slaveRegisters = regs[4];
 		slaveId = _deviceDirectory->findFreeSlaveID();
 		if ((regs[1] >> 8 < 1) ||
 			(numDevices == 0) ||
@@ -283,7 +287,7 @@ protected_testable:
 			AWAIT(_completeModbusReadRegisters);
 			ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
 			_modbus->isReadRegsResponse(regCount, regs);
-			if (_deviceDirectory->addOrReplaceDevice((byte*)(regs + 3), regs[2], slaveId) == -1)
+			if (_deviceDirectory->addOrReplaceDevice((byte*)(regs + 3), regs[2], slaveRegisters, slaveId) == -1)
 			{
 				sentData[0] = 1;
 				sentData[1] = 1;

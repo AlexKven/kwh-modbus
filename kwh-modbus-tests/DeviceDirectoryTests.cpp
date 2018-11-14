@@ -268,14 +268,16 @@ TEST_F(DeviceDirectoryTests, insertIntoRow)
 	deviceDirectory->_deviceNameLength = 5;
 	deviceDirectory->_deviceTypes = new word[6];
 	deviceDirectory->_slaveIds = new byte[6];
+	deviceDirectory->_deviceRegs = new word[6];
 
 	byte *name = new byte[5];
 	When(Method(mock, getDeviceName).Using((word)3)).Return(name);
 
-	deviceDirectory->insertIntoRow(3, (byte*)"Aleah", 29, 31);
+	deviceDirectory->insertIntoRow(3, (byte*)"Aleah", 29, 10, 31);
 
 	ASSERT_EQ(deviceDirectory->_deviceTypes[3], 29);
 	ASSERT_EQ(deviceDirectory->_slaveIds[3], 31);
+	ASSERT_EQ(deviceDirectory->_deviceRegs[3], 10);
 	assertArrayEq<byte, byte, byte, byte, byte>(name,
 		'A', 'l', 'e', 'a', 'h');
 }
@@ -296,7 +298,7 @@ TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_notFound)
 	});
 	Fake(Method(mock, insertIntoRow));
 
-	bool success = deviceDirectory->updateItemInDeviceDirectory((byte*)"Aleah", 29, 31);
+	bool success = deviceDirectory->updateItemInDeviceDirectory((byte*)"Aleah", 29, 10, 31);
 
 	ASSERT_FALSE(success);
 	Verify(Method(mock, insertIntoRow)).Never();
@@ -321,7 +323,7 @@ TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_foundButSame)
 	});
 	Fake(Method(mock, insertIntoRow));
 
-	bool success = deviceDirectory->updateItemInDeviceDirectory((byte*)"Aleah", 29, 31);
+	bool success = deviceDirectory->updateItemInDeviceDirectory((byte*)"Aleah", 29, 10, 31);
 
 	ASSERT_FALSE(success);
 	Verify(Method(mock, insertIntoRow)).Never();
@@ -346,10 +348,10 @@ TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_foundAndChanged)
 	});
 	Fake(Method(mock, insertIntoRow));
 
-	bool success = deviceDirectory->updateItemInDeviceDirectory((byte*)"Aleah", 29, 31);
+	bool success = deviceDirectory->updateItemInDeviceDirectory((byte*)"Aleah", 29, 10, 31);
 
 	ASSERT_TRUE(success);
-	Verify(Method(mock, insertIntoRow).Using(5, Any<byte*>(), 29, 31)).Once();
+	Verify(Method(mock, insertIntoRow).Using(5, Any<byte*>(), 29, 10, 31)).Once();
 }
 
 TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_topDevice)
@@ -558,10 +560,10 @@ TEST_F(DeviceDirectoryTests, addDevice_success)
 	Fake(Method(mock, insertIntoRow));
 
 	byte* name = (byte*)"Aleah";
-	int row = deviceDirectory->addDevice(name, 5, 1);
+	int row = deviceDirectory->addDevice(name, 5, 9, 1);
 
 	ASSERT_EQ(row, 6);
-	Verify(Method(mock, insertIntoRow).Using(6, name, 5, 1)).Once();
+	Verify(Method(mock, insertIntoRow).Using(6, name, 5, 9, 1)).Once();
 }
 
 TEST_F(DeviceDirectoryTests, addDevice_failure)
@@ -571,7 +573,7 @@ TEST_F(DeviceDirectoryTests, addDevice_failure)
 	Fake(Method(mock, insertIntoRow));
 	
 	byte* name = (byte*)"Aleah";
-	int row = deviceDirectory->addDevice(name, 5, 1);
+	int row = deviceDirectory->addDevice(name, 5, 9, 1);
 
 	ASSERT_EQ(row, -1);
 	Verify(Method(mock, insertIntoRow)).Never();
@@ -588,10 +590,10 @@ TEST_F(DeviceDirectoryTests, addOrReplaceDevice_deviceAdded)
 	When(Method(mock, addDevice)).Return(703);
 
 	byte* name = (byte*)"Aleah";
-	int row = deviceDirectory->addOrReplaceDevice(name, 5, 1);
+	int row = deviceDirectory->addOrReplaceDevice(name, 5, 9, 1);
 
 	ASSERT_EQ(row, 703);
-	Verify(Method(mock, addDevice).Using(name, 5, 1)).Once();
+	Verify(Method(mock, addDevice).Using(name, 5, 9, 1)).Once();
 }
 
 TEST_F(DeviceDirectoryTests, addOrReplaceDevice_deviceReplaced)
@@ -607,10 +609,10 @@ TEST_F(DeviceDirectoryTests, addOrReplaceDevice_deviceReplaced)
 	Fake(Method(mock, insertIntoRow));
 
 	byte* name = (byte*)"Aleah";
-	int row = deviceDirectory->addOrReplaceDevice(name, 5, 1);
+	int row = deviceDirectory->addOrReplaceDevice(name, 5, 9, 1);
 
 	ASSERT_EQ(row, 23);
-	Verify(Method(mock, insertIntoRow).Using(23, name, 5, 1)).Once();
+	Verify(Method(mock, insertIntoRow).Using(23, name, 5, 9, 1)).Once();
 }
 
 TEST_F(DeviceDirectoryTests, filterDevicesForSlave_empty)
