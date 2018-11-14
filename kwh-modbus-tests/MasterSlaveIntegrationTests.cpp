@@ -302,12 +302,13 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 
 	word tpe;
 	byte slv;
+	word regs;
 	int row;
-	ASSERT_TRUE(deviceDirectory->findDeviceForName((byte*)"dev00", tpe, slv, row));
+	ASSERT_TRUE(deviceDirectory->findDeviceForName((byte*)"dev00", tpe, slv, regs, row));
 	ASSERT_EQ(tpe, 1);
 	ASSERT_EQ(slv, 2);
 	ASSERT_EQ(row, 0);
-	ASSERT_TRUE(deviceDirectory->findDeviceForName((byte*)"dev01", tpe, slv, row));
+	ASSERT_TRUE(deviceDirectory->findDeviceForName((byte*)"dev01", tpe, slv, regs, row));
 	ASSERT_EQ(tpe, 2);
 	ASSERT_EQ(slv, 2);
 	ASSERT_EQ(row, 1);

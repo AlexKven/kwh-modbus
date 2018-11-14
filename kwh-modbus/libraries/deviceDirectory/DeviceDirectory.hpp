@@ -66,10 +66,11 @@ public:
 	//If empty, DeviceType = 0, and SlaveID = 0 unless there's
 	//device entries after that row, then DeviceType = 1
 
-	virtual bool findDeviceForName(byte* devName, word &devTypeOut, byte &slaveIdOut, int &rowOut = 0)
+	virtual bool findDeviceForName(byte* devName, word &devTypeOut, byte &slaveIdOut, word &devRegsOut, int &rowOut = 0)
 	{
 		devTypeOut = 0;
 		slaveIdOut = 0;
+		devRegsOut = 0;
 		rowOut = -1;
 		for (int i = 0; i < _maxDevices; i++)
 		{
@@ -84,6 +85,7 @@ public:
 				{
 					devTypeOut = _deviceTypes[i];
 					slaveIdOut = _slaveIds[i];
+					devRegsOut = _deviceRegs[i];
 					rowOut = i;
 					return true;
 				}
@@ -112,8 +114,9 @@ public:
 	{
 		word curType;
 		byte curID;
+		word curRegs;
 		int row;
-		findDeviceForName(devName, curType, curID, row);
+		findDeviceForName(devName, curType, curID, curRegs, row);
 		if (row >= 0 && (curType != devType || curID != slaveId))
 		{
 			insertIntoRow(row, devName, devType, slaveId);
@@ -248,7 +251,7 @@ public:
 		int row;
 		word dummyType;
 		byte dummySlave;
-		if (findDeviceForName(devName, dummyType, dummySlave, row))
+		if (findDeviceForName(devName, dummyType, dummySlave, dummyType, row))
 		{
 			insertIntoRow(row, devName, devType, slaveId);
 			return row;

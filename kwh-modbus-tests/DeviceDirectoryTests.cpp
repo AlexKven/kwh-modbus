@@ -173,11 +173,13 @@ TEST_F(DeviceDirectoryTests, findDeviceForName_empty)
 	word devType;
 	byte slaveId;
 	int row;
-	bool found = deviceDirectory->findDeviceForName((byte*)"fiver", devType, slaveId, row);
+	word devRegs;
+	bool found = deviceDirectory->findDeviceForName((byte*)"fiver", devType, slaveId, devRegs, row);
 
 	ASSERT_FALSE(found);
 	ASSERT_EQ(slaveId, 0);
 	ASSERT_EQ(devType, 0);
+	ASSERT_EQ(devRegs, 0);
 	ASSERT_EQ(row, -1);
 	Verify(Method(mock, compareName).Using(Any<word>(), Any<byte*>())).Never();
 }
@@ -190,15 +192,18 @@ TEST_F(DeviceDirectoryTests, findDeviceForName_emptyish)
 	deviceDirectory->_deviceNameLength = 5;
 	deviceDirectory->_deviceTypes = new word[2]{ 1, 0 };
 	deviceDirectory->_slaveIds = new byte[2]{ 0, 0 };
+	deviceDirectory->_deviceRegs = new word[2]{ 0, 0 };
 
 	word devType;
 	byte slaveId;
+	word devRegs;
 	int row;
-	bool found = deviceDirectory->findDeviceForName((byte*)"fiver", devType, slaveId, row);
+	bool found = deviceDirectory->findDeviceForName((byte*)"fiver", devType, slaveId, devRegs, row);
 
 	ASSERT_FALSE(found);
 	ASSERT_EQ(slaveId, 0);
 	ASSERT_EQ(devType, 0);
+	ASSERT_EQ(devRegs, 0);
 	ASSERT_EQ(row, -1);
 	Verify(Method(mock, compareName).Using(Any<word>(), Any<byte*>())).Never();
 }
@@ -211,15 +216,18 @@ TEST_F(DeviceDirectoryTests, findDeviceForName_exhaustedList)
 	deviceDirectory->_deviceNameLength = 5;
 	deviceDirectory->_deviceTypes = new word[6]{ 1, 4, 7, 10, 13, 16 };
 	deviceDirectory->_slaveIds = new byte[6]{ 0, 3, 6, 9, 12, 15 };
+	deviceDirectory->_deviceRegs = new word[6]{ 1, 1, 2, 3, 5, 8 };
 
 	word devType;
 	byte slaveId;
+	word devRegs;
 	int row;
-	bool found = deviceDirectory->findDeviceForName((byte*)"fiver", devType, slaveId, row);
+	bool found = deviceDirectory->findDeviceForName((byte*)"fiver", devType, slaveId, devRegs, row);
 
 	ASSERT_FALSE(found);
 	ASSERT_EQ(slaveId, 0);
 	ASSERT_EQ(devType, 0);
+	ASSERT_EQ(devRegs, 0);
 	ASSERT_EQ(row, -1);
 	Verify(Method(mock, compareName).Using(0, Any<byte*>())).Never();
 	Verify(Method(mock, compareName).Using(1, Any<byte*>())).Once();
@@ -234,15 +242,18 @@ TEST_F(DeviceDirectoryTests, findDeviceForName_found)
 	deviceDirectory->_deviceNameLength = 5;
 	deviceDirectory->_deviceTypes = new word[6] { 1, 4, 7, 10, 13, 16 };
 	deviceDirectory->_slaveIds = new byte[6] { 0, 3, 6, 9, 12, 15 };
+	deviceDirectory->_deviceRegs = new word[6]{ 1, 1, 2, 3, 5, 8 };
 
 	word devType;
 	byte slaveId;
+	word devRegs;
 	int row;
-	bool found = deviceDirectory->findDeviceForName((byte*)"fiver", devType, slaveId, row);
+	bool found = deviceDirectory->findDeviceForName((byte*)"fiver", devType, slaveId, devRegs, row);
 
 	ASSERT_TRUE(found);
 	ASSERT_EQ(slaveId, 9);
 	ASSERT_EQ(devType, 10);
+	ASSERT_EQ(devRegs, 3);
 	ASSERT_EQ(row, 3);
 	Verify(Method(mock, compareName).Using(0, Any<byte*>())).Never();
 	Verify(Method(mock, compareName).Using(1, Any<byte*>())).Once();
@@ -278,7 +289,7 @@ TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_notFound)
 	deviceDirectory->_deviceTypes = new word[6];
 	deviceDirectory->_slaveIds = new byte[6];
 
-	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, int &row)
+	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, word &devRegs, int &row)
 	{
 		row = -1;
 		return false;
@@ -300,11 +311,12 @@ TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_foundButSame)
 	deviceDirectory->_deviceTypes = new word[6];
 	deviceDirectory->_slaveIds = new byte[6];
 
-	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, int &row)
+	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, word &devRegs, int &row)
 	{
 		row = 5;
 		type = 29;
 		slave = 31;
+		devRegs = 703;
 		return true;
 	});
 	Fake(Method(mock, insertIntoRow));
@@ -324,11 +336,12 @@ TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_foundAndChanged)
 	deviceDirectory->_deviceTypes = new word[6];
 	deviceDirectory->_slaveIds = new byte[6];
 
-	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, int &row)
+	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, word &devRegs, int &row)
 	{
 		row = 5;
 		type = 29;
 		slave = 37;
+		devRegs = 429;
 		return true;
 	});
 	Fake(Method(mock, insertIntoRow));
@@ -567,7 +580,7 @@ TEST_F(DeviceDirectoryTests, addDevice_failure)
 TEST_F(DeviceDirectoryTests, addOrReplaceDevice_deviceAdded)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
-	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, int &row)
+	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, word &devRegs, int &row)
 	{
 		row = -1;
 		return false;
@@ -584,7 +597,7 @@ TEST_F(DeviceDirectoryTests, addOrReplaceDevice_deviceAdded)
 TEST_F(DeviceDirectoryTests, addOrReplaceDevice_deviceReplaced)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
-	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, int &row)
+	When(Method(mock, findDeviceForName)).Do([](byte* name, word &type, byte &slave, word &devRegs, int &row)
 	{
 		type = 41;
 		slave = 42;
