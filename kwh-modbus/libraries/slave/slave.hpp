@@ -165,6 +165,22 @@ private_testable:
 				_state = sDisplayDevInfo;
 				displayedStateInvalid = true;
 				break;
+			case 3:
+				_state = sDisplayDevData;
+				displayedStateInvalid = true;
+				break;
+			case 4:
+				{
+					_state = sReceivingDevData;
+					Device *device = _devices[_modbus->Hreg(2)];
+					word nameLength = _modbus->Hreg(3);
+					word nameOffset = nameLength / 2 + nameLength % 2;
+
+					uint32_t startTime = _modbus->Hreg(4 + nameOffset) + (_modbus->Hreg(5 + nameOffset) << 16);
+
+					displayedStateInvalid = true;
+				}
+				break;
 			case 32770:
 				_state = sIdle;
 				setClock((uint32_t)(_modbus->Hreg(3) << 16) + (uint16_t)_modbus->Hreg(2));
