@@ -172,11 +172,29 @@ private_testable:
 			case 4:
 				{
 					_state = sReceivingDevData;
+					RecieveDataStatus status;
 					Device *device = _devices[_modbus->Hreg(2)];
 					word nameLength = _modbus->Hreg(3);
 					word nameOffset = nameLength / 2 + nameLength % 2;
 					uint32_t startTime = _modbus->Hreg(4 + nameOffset) + (_modbus->Hreg(5 + nameOffset) << 16);
-
+					if (nameLength > _dataBufferSize)
+					{
+						// Error: name too long
+					}
+					word curReg;
+					for (int i = 0; i < nameLength; i++)
+					{
+						if (i % 2 == 0)
+							curReg = _modbus->Hreg(4 + i / 2);
+						else
+							curReg >>= 8;
+						_dataBuffer[i] = (byte)(curReg & 0xFF);
+					}
+					status = device->receiveDeviceName(nameLength, _dataBuffer);
+					if (status != RecieveDataStatus::success)
+					{
+						// failure
+					}
 					displayedStateInvalid = true;
 				}
 				break;

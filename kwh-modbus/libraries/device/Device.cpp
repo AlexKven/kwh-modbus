@@ -9,10 +9,12 @@ void Device::setClock(uint32_t clock)
 {
 }
 
-void Device::receiveDeviceName(word nameLength, byte * name)
+RecieveDataStatus Device::receiveDeviceName(word nameLength, byte * name)
 {
+	return RecieveDataStatus::notSupported;
 }
 
-void Device::receiveDeviceData(uint32_t startTime, TimeScale timeScale, byte dataPointSize, word startOffset, word pointCount, byte * dataPoints)
+RecieveDataStatus Device::receiveDeviceData(uint32_t startTime, TimeScale timeScale, byte dataPointSize, word startOffset, word pointCount, byte * dataPoints)
 {
+	return RecieveDataStatus::notSupported;
 }

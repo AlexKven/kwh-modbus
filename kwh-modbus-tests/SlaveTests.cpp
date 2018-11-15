@@ -483,6 +483,48 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_SetClock)
 	ASSERT_EQ(mSlave.displayedStateInvalid, true);
 }
 
+TEST_F(SlaveTests, SlaveTests_processIncomingState_ReceiveData)
+{
+	MOCK_SLAVE;
+	Mock<Device> mDevice0;
+	Mock<Device> mDevice1;
+	Device **deviceArray = new Device*[2];
+	deviceArray[0] = &mDevice0.get();
+	deviceArray[1] = &mDevice1.get();
+
+	When(Method(mDevice1, receiveDeviceName)).Return(RecieveDataStatus::success);
+
+	mSlave.displayedStateInvalid = false;
+
+	mSlave._state = sIdle;
+	mSlave._deviceCount = 2;
+	mSlave._deviceNameLength = 703;
+	mSlave._modbus->setSlaveId(14);
+	mSlave._devices = deviceArray;
+	mSlave._dataBuffer = new byte[15];
+	mSlave._dataBufferSize = 15;
+
+	registerArray[0] = sReceivedRequest;
+	registerArray[1] = 4;
+	registerArray[2] = 1;
+	registerArray[3] = 7;
+	registerArray[4] = (word)'D' + ((word)'e' << 8);
+	registerArray[5] = (word)'v' + ((word)'i' << 8);
+	registerArray[6] = (word)'c' + ((word)'e' << 8);
+	registerArray[7] = (word)'0';
+
+	bool processed;
+	bool success = mSlave.processIncomingState(processed);
+
+	ASSERT_TRUE(processed);
+	ASSERT_TRUE(success);
+	ASSERT_EQ(mSlave._state, sIdle);
+	Verify(Method(mock, setClock).Using(4000000000)).Once();
+	Verify(Method(mDevice0, setClock).Using(4000000000)).Once();
+	Verify(Method(mDevice1, setClock).Using(4000000000)).Once();
+	ASSERT_EQ(mSlave.displayedStateInvalid, true);
+}
+
 TEST_F(SlaveTests, SlaveTests_init)
 {
 	slave->_state = sIdle;
