@@ -29,7 +29,7 @@ protected:
 	{
 		delete modbus;
 		modbus = new T_MODBUS();
-		modbus->init(registerArray, 20, 12, 20);
+		modbus->init(registerArray, 20, 15, 20);
 		slave->config(system, modbus);
 	}
 
@@ -60,10 +60,10 @@ protected:
 public:
 	void SetUp()
 	{
-		registerArray = new word[12];
-		modbus->init(registerArray, 0, 12, 20);
+		registerArray = new word[15];
+		modbus->init(registerArray, 0, 15, 20);
 		slave->config(system, modbus);
-		slave->_hregCount = 12;
+		slave->_hregCount = 15;
 	}
 
 	void TearDown()
@@ -491,8 +491,21 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ReceiveData)
 	Device **deviceArray = new Device*[2];
 	deviceArray[0] = &mDevice0.get();
 	deviceArray[1] = &mDevice1.get();
+	string actualName;
+	byte actualData[4];
+	actualData[3] = 0;
 
-	When(Method(mDevice1, receiveDeviceName)).Return(RecieveDataStatus::success);
+	When(Method(mDevice1, receiveDeviceName)).Do([&actualName](word length, byte* name)
+	{
+		actualName = stringifyCharArray(length, (char*)name);
+		return RecieveDataStatus::success;
+	});
+	When(Method(mDevice1, receiveDeviceData)).Do([&actualData](uint32_t startTime, TimeScale timeScale,
+		byte dataPointSize, word startOffset, word pointCount, byte* dataPoints)
+	{
+		BitFunctions::copyBits(dataPoints, actualData, 0, 0, 30);
+		return RecieveDataStatus::success;
+	});
 
 	mSlave.displayedStateInvalid = false;
 
@@ -512,6 +525,11 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ReceiveData)
 	registerArray[5] = (word)'v' + ((word)'i' << 8);
 	registerArray[6] = (word)'c' + ((word)'e' << 8);
 	registerArray[7] = (word)'0';
+	registerArray[8] = 200;
+	registerArray[9] = 15;
+	registerArray[10] = 6 + ((word)TimeScale::sec15 << 8);
+	registerArray[11] = 21;
+	registerArray[12] = 5;
 
 	bool processed;
 	bool success = mSlave.processIncomingState(processed);
@@ -519,9 +537,9 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ReceiveData)
 	ASSERT_TRUE(processed);
 	ASSERT_TRUE(success);
 	ASSERT_EQ(mSlave._state, sIdle);
-	Verify(Method(mock, setClock).Using(4000000000)).Once();
-	Verify(Method(mDevice0, setClock).Using(4000000000)).Once();
-	Verify(Method(mDevice1, setClock).Using(4000000000)).Once();
+	Verify(Method(mDevice1, receiveDeviceName).Using(7, Any<byte*>())).Once();
+	Verify(Method(mDevice1, receiveDeviceData).Using(983240, TimeScale::sec15, 6, 21, 5, Any<byte*>())).Once();
+	ASSERT_EQ(actualName, "Device0");
 	ASSERT_EQ(mSlave.displayedStateInvalid, true);
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <stdarg.h>
 #include "pch.h"
+#include <string>
 
 template<class T>
 T maxOfUnsigned()
@@ -79,3 +80,5 @@ void assertArrayEq(void* arr, A head, B... args)
 	ASSERT_EQ(headArr[0], head);
 	assertArrayEq(headArr + 1, args...);
 }
+
+std::string stringifyCharArray(int length, char* chars);

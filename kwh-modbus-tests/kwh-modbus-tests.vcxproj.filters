@@ -23,6 +23,7 @@
     <ClCompile Include="TimeManagerTests.cpp" />
     <ClCompile Include="DataCollectorDeviceTests.cpp" />
     <ClCompile Include="BitFunctionsTests.cpp" />
+    <ClCompile Include="test_helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
