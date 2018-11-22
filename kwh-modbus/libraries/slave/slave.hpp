@@ -9,7 +9,7 @@
 
 #include "../device/Device.h"
 #include "../timeManager/TimeManager.h"
-#include "../bitFunctions/bitFunctions.h"
+#include "../bitFunctions/BitFunctions.hpp"
 #define ENSURE(statement) if (!(statement)) return false
 
 enum SlaveState : word

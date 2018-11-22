@@ -1,5 +1,5 @@
 #include "DataCollectorDevice.h"
-#include "../bitFunctions/bitFunctions.h"
+#include "../bitFunctions/BitFunctions.hpp"
 
 inline bool DataCollectorDevice::verifyTimeScaleAndSize(TimeScale timeScale, byte dataPacketSize)
 {

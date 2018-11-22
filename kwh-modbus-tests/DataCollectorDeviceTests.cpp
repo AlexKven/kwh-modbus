@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "fakeit.hpp"
 #include "../kwh-modbus/libraries/device/DataCollectorDevice.h"
-#include "../kwh-modbus/libraries/bitFunctions/bitFunctions.h"
+#include "../kwh-modbus/libraries/bitFunctions/BitFunctions.hpp"
 #include "test_helpers.h"
 
 using namespace fakeit;

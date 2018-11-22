@@ -1,5 +1,5 @@
 #include "Arduino.h"
-#include "bitFunctions.h"
+#include "BitFunctions.hpp"
 #include "Modbus.h"
 #include "ModbusArray.h"
 #include "ModbusSerial.hpp"
