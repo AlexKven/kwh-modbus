@@ -1,8 +1,11 @@
 #include "Arduino.h"
+#include "bitFunctions.h"
 #include "Modbus.h"
 #include "ModbusArray.h"
 #include "ModbusSerial.hpp"
 #include "ModbusSlave.hpp"
+#include "TimeManager.h"
+#include "Device.h"
 #include "Slave.hpp"
 #include "HardwareSerial.h"
 #include "SoftwareSerial.h"
@@ -84,7 +87,7 @@ void setup() {
   names[0] = (byte*)"device00";
   names[1] = (byte*)"device01";
 
-  slave.init(2, 8, devices, names);
+  slave.init(2, 8, 15, 20, devices, names);
 }
 
 void loop() {

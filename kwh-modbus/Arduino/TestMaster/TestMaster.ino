@@ -5,6 +5,7 @@
 #include "ModbusMaster.hpp"
 #include "HardwareSerial.h"
 #include "ResilientModbusMaster.hpp"
+#include "TimeManager.h"
 #include "Master.hpp"
 #include "DeviceDirectory.hpp"
 #include "SoftwareSerial.h"
@@ -110,24 +111,24 @@ void loop() {
       byte devName[8];
       byte devSlaveId;
       word devType;
-      int row = directory.findNextDevice(devName, devSlaveId, devType, 0);
+//      int row = directory.findNextDevice(devName, devSlaveId, devType, 0);
 //        Serial.print("Row: ");
 //        Serial.println(row);
-      while (row != -1)
-      {
-        Serial.println("");
-        Serial.print("Device ");
-        for (int i = 0; i < 8; i++)
-          Serial.write(devName[i]);
-        Serial.println(":");
-        Serial.print("Slave ID: ");
-        Serial.println(devSlaveId);
-        Serial.print("Device type: ");
-        Serial.println(devType);
-        Serial.print("Row: ");
-        Serial.println(row);
-        row = directory.findNextDevice(devName, devSlaveId, devType, row);
-      } 
+//      while (row != -1)
+//      {
+//        Serial.println("");
+//        Serial.print("Device ");
+//        for (int i = 0; i < 8; i++)
+//          Serial.write(devName[i]);
+//        Serial.println(":");
+//        Serial.print("Slave ID: ");
+//        Serial.println(devSlaveId);
+//        Serial.print("Device type: ");
+//        Serial.println(devType);
+//        Serial.print("Row: ");
+//        Serial.println(row);
+//        row = directory.findNextDevice(devName, devSlaveId, devType, row);
+//      } 
     }
   }
 }

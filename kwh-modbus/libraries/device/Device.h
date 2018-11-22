@@ -2,8 +2,11 @@
 #ifdef NO_ARDUINO
 #include "../../noArduino/TestHelpers.h"
 #include "../../noArduino/ArduinoMacros.h"
-#include "../timeManager/TimeManager.h"
+#else
+#include "../arduinoMacros/arduinoMacros.h"
 #endif
+
+#include "../timeManager/TimeManager.h"
 
 enum class RecieveDataStatus
 {

@@ -3,6 +3,8 @@
 #ifdef NO_ARDUINO
 #include "../../noArduino/ArduinoMacros.h"
 #include "../../noArduino/TestHelpers.h"
+#else
+#include "../arduinoMacros/arduinoMacros.h"
 #endif
 
 #include "../device/Device.h"
@@ -120,11 +122,11 @@ private_testable:
 						curReg = 0;
 						if (i < numRegs - 1)
 						{
-							BitFunctions::copyBits(_dataBuffer, &curReg, i * 16, 0, 16);
+							BitFunctions::copyBits((byte*)_dataBuffer, &curReg, (word)(i * 16), (word)0, (word)16);
 						}
 						else
 						{
-							BitFunctions::copyBits(_dataBuffer, &curReg, i * 16, 0, (totalBits - 1) % 16 + 1);
+							BitFunctions::copyBits((byte*)_dataBuffer, &curReg, (word)(i * 16), (word)0, (word)((totalBits - 1) % 16 + 1));
 						}
 						ENSURE(_modbus->Hreg(6 + i, curReg));
 					}

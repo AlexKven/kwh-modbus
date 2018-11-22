@@ -1,9 +1,21 @@
 #pragma once
 
+#ifdef NO_ARDUINO
+#else
+#include "../arduinoMacros/arduinoMacros.h"
+#endif
+
 class BitFunctions
 {
 public:
-	static inline char bitsToBytes(unsigned char bits);
+	static inline char bitsToBytes(unsigned char bits)
+	{
+		unsigned char result = bits / CHAR_BIT;
+		if (bits % CHAR_BIT == 0)
+			return result;
+		else
+			return result + 1;
+	}
 
 	template<class T, class N>
 	static inline void setBits(T *ptr, N bit, N count = 1)
