@@ -296,7 +296,7 @@ protected_testable:
 			AWAIT(_completeModbusReadRegisters);
 			ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
 			_modbus->isReadRegsResponse(regCount, regs);
-			if (_deviceDirectory->addOrReplaceDevice((byte*)(regs + 3), regs[2], slaveRegisters, slaveId) == -1)
+			if (_deviceDirectory->addOrReplaceDevice((byte*)(regs + 3), DeviceDirectoryRow(slaveId, i, regs[2], slaveRegisters)) == -1)
 			{
 				sentData[0] = 1;
 				sentData[1] = 1;

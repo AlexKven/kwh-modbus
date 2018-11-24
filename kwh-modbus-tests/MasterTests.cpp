@@ -634,9 +634,9 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Exactly(4);
 
 	// Add three new devices to device directory
-	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 7, 22, 13)).Once();
-	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 8, 22, 13)).Once();
-	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 9, 22, 13)).Once();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), DeviceDirectoryRow(13, 0, 7, 22))).Once();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), DeviceDirectoryRow(13, 1, 8, 22))).Once();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), DeviceDirectoryRow(13, 2, 9, 22))).Once();
 
 	// Slave ID set to 13
 	ASSERT_EQ(curSlaveId, 13);
@@ -911,9 +911,9 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Exactly(3);
 
 	// Add two new devices to device directory, failed one never gets added
-	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 7, 47, 13)).Once();
-	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 8, 47, 13)).Once();
-	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), 9, 47, 13)).Never();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), DeviceDirectoryRow(13, 0, 7, 47))).Once();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), DeviceDirectoryRow(13, 1, 8, 47))).Once();
+	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), DeviceDirectoryRow(13, 2, 9, 47))).Never();
 
 	Verify(Method(mockDeviceDirectory, filterDevicesForSlave).Using(nullptr, 0, 13)).Once();
 

@@ -300,17 +300,15 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 
 	ASSERT_EQ(modbusSlave->getSlaveId(), 2);
 
-	word tpe;
-	byte slv;
-	word regs;
 	int row;
-	ASSERT_TRUE(deviceDirectory->findDeviceForName((byte*)"dev00", tpe, slv, regs, row));
-	ASSERT_EQ(tpe, 1);
-	ASSERT_EQ(slv, 2);
+	auto device = deviceDirectory->findDeviceForName((byte*)"dev00", row);
+	ASSERT_NE(device, nullptr);
+	ASSERT_EQ(*device, DeviceDirectoryRow(2, 0, 1, 13));
 	ASSERT_EQ(row, 0);
-	ASSERT_TRUE(deviceDirectory->findDeviceForName((byte*)"dev01", tpe, slv, regs, row));
-	ASSERT_EQ(tpe, 2);
-	ASSERT_EQ(slv, 2);
+
+	device = deviceDirectory->findDeviceForName((byte*)"dev01", row);
+	ASSERT_NE(device, nullptr);
+	ASSERT_EQ(*device, DeviceDirectoryRow(2, 1, 2, 13));
 	ASSERT_EQ(row, 1);
 }
 
