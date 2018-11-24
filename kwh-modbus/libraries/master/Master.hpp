@@ -36,15 +36,6 @@ enum ModbusRequestStatus : byte
 	otherResponse = 5
 };
 
-enum MasterState : byte
-{
-	mIdle = 0,
-	mReadingSlave = 1,
-	mAwaitingResponse = 2,
-	mSendingData = 3,
-	mAwaitingConfirmation = 4
-};
-
 template<class M, class S, class D>
 class Master : public TimeManager
 {
@@ -53,16 +44,32 @@ private_testable:
 	const byte _minorVersion = 0;
 	bool _timeUpdatePending = false;
 
+	uint32_t lastUpdateTimes[8];
+
 	D *_deviceDirectory;
 	S *_system;
 	M *_modbus;
-
-	MasterState _state;
 
 protected_testable:
 	virtual void reportMalfunction(int line)
 	{
 
+	}
+
+	virtual uint32_t getPollPeriodForTimeScale(TimeScale timeScale)
+	{
+		switch (timeScale)
+		{
+		case TimeScale::ms250: return 2;
+		case TimeScale::sec1: return 5;
+		case TimeScale::sec15: return 60;
+		case TimeScale::min1: return 120;
+		case TimeScale::min10: return 1200;
+		case TimeScale::min30: return 1800;
+		case TimeScale::hr1: return 3600;
+		case TimeScale::hr24: return 86400;
+		default: return 0; // Bad timescale
+		}
 	}
 
 	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), ensureTaskNotStarted, void, VARS());
@@ -314,6 +321,13 @@ protected_testable:
 	{
 		CREATE_ASSIGN_CLASS_TASK(_processNewSlave, ESCAPE(Master<M, S, D>), this, processNewSlave, justReject);
 		return _processNewSlave;
+	}
+
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(), TimeScale);
+	readAndSendDeviceData_Task _readAndSendDeviceData;
+	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), readAndSendDeviceData, TimeScale maxTimeScale)
+	{
+		RETURN_ASYNC;
 	}
 
 	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), loop, void, VARS(unsigned long, bool));

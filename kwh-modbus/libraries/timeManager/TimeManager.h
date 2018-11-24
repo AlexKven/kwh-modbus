@@ -10,14 +10,14 @@
 
 enum class TimeScale
 {
-	ms250 = 0,
-	sec1,
-	sec15,
-	min1,
-	min10,
-	min30,
-	hr1,
-	hr24
+	ms250 = 0, // 2 sec
+	sec1, // 5 sec
+	sec15, // 1 min
+	min1, // 2 min
+	min10, // 20 min
+	min30, // 30 min
+	hr1, // 1 hr
+	hr24 // 24 hr
 };
 
 class TimeManager
