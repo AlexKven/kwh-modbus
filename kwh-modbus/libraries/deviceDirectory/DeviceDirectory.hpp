@@ -5,6 +5,14 @@
 #include "../../noArduino/ArduinoMacros.h"
 #endif
 
+struct DeviceDirectoryRow
+{
+	byte slaveId;
+	word deviceNumber;
+	word deviceType;
+	word deviceRegs;
+};
+
 template<typename T>
 class DeviceDirectory
 {
