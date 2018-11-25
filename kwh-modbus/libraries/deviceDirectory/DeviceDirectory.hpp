@@ -282,39 +282,23 @@ public:
 			return addDevice(devName, device);
 	}
 
-	DeviceDirectoryRow* findNextDevice(byte* devName, int &row, bool(*conditionFunction)(byte* name, DeviceDirectoryRow &device) = nullptr)
+	DeviceDirectoryRow* findNextDevice(byte* devName, int &row)
 	{
-		bool good;
-		do
+		while (_devices[row].slaveId == 0)
 		{
-			good = true;
-			if (_devices[row].slaveId == 0)
+			if (_devices[row].deviceType == 0)
 			{
-				if (_devices[row].deviceType == 0)
-				{
-					row = -1;
-					return nullptr;
-				}
-				good = false;
+				row = -1;
+				return nullptr;
 			}
-			byte* name = getDeviceName(row);
-			for (int i = 0; i < _deviceNameLength; i++)
-			{
-				devName[i] = name[i];
-			}
-
-			if (conditionFunction != nullptr)
-				good = conditionFunction(name, _devices[row]);
-
 			row++;
-		} while (!good);
-
-		if (row > _maxDevices)
-		{
-			row = -1;
-			return nullptr;
 		}
-
+		byte* name = getDeviceName(row);
+		for (int i = 0; i < _deviceNameLength; i++)
+		{
+			devName[i] = name[i];
+		}
+		row += 1;
 		return (_devices + row - 1);
 	}
 
