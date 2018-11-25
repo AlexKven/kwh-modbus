@@ -119,7 +119,7 @@ public:
 		modbusSlave->addReg(10, 0);
 		modbusSlave->addReg(11, 0);
 		modbusSlave->addReg(12, 0);
-		master->config(system, modbusMaster, deviceDirectory);
+		master->config(system, modbusMaster, deviceDirectory, 40);
 		slave->config(system, modbusSlave);
 		deviceDirectory->init(5, 20);
 		seedRandom(masterSerial);

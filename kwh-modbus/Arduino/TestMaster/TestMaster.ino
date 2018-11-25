@@ -6,6 +6,7 @@
 #include "HardwareSerial.h"
 #include "ResilientModbusMaster.hpp"
 #include "TimeManager.h"
+#include "Device.h"
 #include "Master.hpp"
 #include "DeviceDirectory.hpp"
 #include "SoftwareSerial.h"

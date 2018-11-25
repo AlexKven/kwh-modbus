@@ -863,7 +863,6 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_2)
 	int row = 2;
 	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
-	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, -1);
 	ASSERT_EQ(result, nullptr);
 }
@@ -1002,7 +1001,6 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_2)
 	int row = 3;
 	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
-	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, -1);
 	ASSERT_EQ(result, nullptr);
 }
@@ -1141,7 +1139,6 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_2)
 	int row = 3;
 	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
-	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, -1);
 	ASSERT_EQ(result, nullptr);
 }

@@ -41,7 +41,7 @@ protected:
 		delete modbus;
 		modbus = new T_MODBUS();
 		modbus->init(registerArray, 20, 12, 20);
-		master->config(system, modbus, &mockDeviceDirectory.get());
+		master->config(system, modbus, &mockDeviceDirectory.get(), 10);
 	}
 public:
 	void SetUp()
@@ -49,7 +49,7 @@ public:
 		auto sze = sizeof(T_MASTER);
 		registerArray = new word[12];
 		modbus->init(registerArray, 0, 12, 20);
-		master->config(system, modbus, &mockDeviceDirectory.get());
+		master->config(system, modbus, &mockDeviceDirectory.get(), 10);
 		modbus->config(serial, system, 1200);
 	}
 

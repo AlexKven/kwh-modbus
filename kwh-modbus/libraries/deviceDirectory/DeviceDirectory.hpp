@@ -261,6 +261,13 @@ public:
 	}
 
 	// Untested
+	DeviceDirectoryRow* findNextDevice(int &row)
+	{
+		byte *dummy;
+		return findNextDevice(dummy, row);
+	}
+
+	// Untested
 	bool isEmpty()
 	{
 		return _devices[0].slaveId == 0 && _devices[0].deviceType == 0;

@@ -8,8 +8,10 @@
 #endif
 
 #include "../device/Device.h"
+#include "../device/DataCollectorDevice.h"
 #include "../asyncAwait/AsyncAwait.hpp"
 #include "../timeManager/TimeManager.h"
+#include "../deviceDirectoryRow/DeviceDirectoryRow.h"
 
 #define ENSURE(statement) if (!(statement)) return false
 #define ENSURE_NONMALFUNCTION(modbus_task) if (modbus_task.result() != success) \
@@ -43,6 +45,8 @@ private_testable:
 	const byte _majorVersion = 1;
 	const byte _minorVersion = 0;
 	bool _timeUpdatePending = false;
+	byte *_dataBuffer = nullptr;
+	word _dataBufferSize;
 
 	uint32_t lastUpdateTimes[8];
 
@@ -323,11 +327,40 @@ protected_testable:
 		return _processNewSlave;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(), TimeScale);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, uint32_t, uint32_t, byte, int, DeviceDirectoryRow*, uint32_t, byte), TimeScale, uint32_t);
 	readAndSendDeviceData_Task _readAndSendDeviceData;
-	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), readAndSendDeviceData, TimeScale maxTimeScale)
+	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), readAndSendDeviceData, TimeScale maxTimeScale, uint32_t currentTime)
 	{
+		ASYNC_VAR_INIT(0, deviceRow_receive, 0);
+		ASYNC_VAR(1, device_receive);
+		ASYNC_VAR(2, device_name);
+		ASYNC_VAR(3, accumulateData);
+		ASYNC_VAR(4, timeScale);
+		ASYNC_VAR(5, dataSize);
+		ASYNC_VAR(6, updateStart);
+		ASYNC_VAR(7, numDataPoints);
+		ASYNC_VAR(8, curReadStart);
+		ASYNC_VAR(9, curReadNum);
+		ASYNC_VAR(10, deviceRow_send);
+		ASYNC_VAR(11, device_send);
+		ASYNC_VAR(12, curWriteStart);
+		ASYNC_VAR(13, curWriteNum);
+		START_ASYNC;
+		while (deviceRow_receive != -1)
+		{
+			device_receive = _deviceDirectory->findNextDevice(device_name, deviceRow_receive);
+			if (device_receive != nullptr)
+			{
+				DataCollectorDevice::getParametersFromDataCollectorDeviceType(device_receive->deviceType, accumulateData, timeScale, dataSize);
+				if (timeScale <= maxTimeScale)
+				{
+					uint32_t updateStart = (currentTime - lastUpdateTimes[(int)timeScale]);
+					uint32_t numDataPoints = updateStart * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
+				}
+			}
+		}
 		RETURN_ASYNC;
+		END_ASYNC;
 	}
 
 	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), loop, void, VARS(unsigned long, bool));
@@ -377,11 +410,13 @@ protected_testable:
 	}
 
 public:
-	void config(S *system, M *modbus, D *deviceDirectory)
+	void config(S *system, M *modbus, D *deviceDirectory, byte dataBufferSize)
 	{
 		_system = system;
 		_modbus = modbus;
 		_deviceDirectory = deviceDirectory;
+		_dataBufferSize = dataBufferSize;
+		_dataBuffer = new byte[_dataBufferSize];
 	}
 
 	bool started = false;
