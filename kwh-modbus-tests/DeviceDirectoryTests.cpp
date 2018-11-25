@@ -35,6 +35,14 @@ public:
 	{
 		
 	}
+
+	static bool conditionFct(byte* name, DeviceDirectoryRow &device)
+	{
+		int row = (name[3] - '0');
+		if (row >= 3 && row <= 5)
+			return false;
+		return (device.slaveId + device.deviceType) % 2 == 0;
+	};
 };
 
 TEST_F(DeviceDirectoryTests, getDeviceName)
@@ -754,4 +762,646 @@ TEST_F(DeviceDirectoryTests, filterDevicesForSlave_empty)
 		3, 4);
 
 	ASSERT_EQ(numDeleted, 0);
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_0)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow()
+	};
+
+	int row = 0;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(row, 1);
+	ASSERT_EQ(result, deviceDirectory->_devices + 0);
+	assertArrayEq(resultName, 'N', 'm', 'e', '0');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_1)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow()
+	};
+
+	int row = 1;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(row, 2);
+	ASSERT_EQ(result, deviceDirectory->_devices + 1);
+	assertArrayEq(resultName, 'N', 'm', 'e', '1');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_2)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow()
+	};
+
+	int row = 2;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(row, -1);
+	ASSERT_EQ(result, nullptr);
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_0)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(0, 0, 1, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow()
+	};
+
+	int row = 0;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(row, 1);
+	ASSERT_EQ(result, deviceDirectory->_devices + 0);
+	assertArrayEq(resultName, 'N', 'm', 'e', '0');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1a)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(0, 0, 1, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow()
+	};
+
+	int row = 1;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(row, 3);
+	ASSERT_EQ(result, deviceDirectory->_devices + 2);
+	assertArrayEq(resultName, 'N', 'm', 'e', '2');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1b)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(0, 0, 1, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow()
+	};
+
+	int row = 2;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(row, 3);
+	ASSERT_EQ(result, deviceDirectory->_devices + 2);
+	assertArrayEq(resultName, 'N', 'm', 'e', '2');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_2)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(0, 0, 1, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow()
+	};
+
+	int row = 3;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(row, -1);
+	ASSERT_EQ(result, nullptr);
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0a)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(0, 0, 1, 0),
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow()
+	};
+
+	int row = 0;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(row, 2);
+	ASSERT_EQ(result, deviceDirectory->_devices + 1);
+	assertArrayEq(resultName, 'N', 'm', 'e', '1');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0b)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(0, 0, 1, 0),
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow()
+	};
+
+	int row = 1;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(row, 2);
+	ASSERT_EQ(result, deviceDirectory->_devices + 1);
+	assertArrayEq(resultName, 'N', 'm', 'e', '1');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_1)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(0, 0, 1, 0),
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow()
+	};
+
+	int row = 2;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(row, 3);
+	ASSERT_EQ(result, deviceDirectory->_devices + 2);
+	assertArrayEq(resultName, 'N', 'm', 'e', '2');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_2)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(0, 0, 1, 0),
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow(),
+		DeviceDirectoryRow()
+	};
+
+	int row = 3;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(row, -1);
+	ASSERT_EQ(result, nullptr);
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_WithCondition_0)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(1, 0, 2, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(3, 0, 1, 0),
+		DeviceDirectoryRow(4, 0, 5, 0),
+		DeviceDirectoryRow(4, 0, 6, 0),
+		DeviceDirectoryRow(5, 0, 7, 0)
+	};
+
+	int row = 0;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row, conditionFct);
+	ASSERT_EQ(row, 1);
+	ASSERT_EQ(result, deviceDirectory->_devices + 0);
+	assertArrayEq(resultName, 'N', 'm', 'e', '0');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_WithCondition_1a)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(1, 0, 2, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(3, 0, 1, 0),
+		DeviceDirectoryRow(4, 0, 5, 0),
+		DeviceDirectoryRow(4, 0, 6, 0),
+		DeviceDirectoryRow(5, 0, 7, 0)
+	};
+
+	int row = 1;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row, conditionFct);
+	ASSERT_EQ(row, 3);
+	ASSERT_EQ(result, deviceDirectory->_devices + 2);
+	assertArrayEq(resultName, 'N', 'm', 'e', '2');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_WithCondition_1b)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(1, 0, 2, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(3, 0, 1, 0),
+		DeviceDirectoryRow(4, 0, 5, 0),
+		DeviceDirectoryRow(4, 0, 6, 0),
+		DeviceDirectoryRow(5, 0, 7, 0)
+	};
+
+	int row = 2;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row, conditionFct);
+	ASSERT_EQ(row, 3);
+	ASSERT_EQ(result, deviceDirectory->_devices + 2);
+	assertArrayEq(resultName, 'N', 'm', 'e', '2');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_WithCondition_2a)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(1, 0, 2, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(3, 0, 1, 0),
+		DeviceDirectoryRow(4, 0, 5, 0),
+		DeviceDirectoryRow(4, 0, 6, 0),
+		DeviceDirectoryRow(5, 0, 7, 0)
+	};
+
+	int row = 3;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row, conditionFct);
+	ASSERT_EQ(row, 7);
+	ASSERT_EQ(result, deviceDirectory->_devices + 6);
+	assertArrayEq(resultName, 'N', 'm', 'e', '6');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_WithCondition_2b)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(1, 0, 2, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(3, 0, 1, 0),
+		DeviceDirectoryRow(4, 0, 5, 0),
+		DeviceDirectoryRow(4, 0, 6, 0),
+		DeviceDirectoryRow(5, 0, 7, 0)
+	};
+
+	int row = 4;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row, conditionFct);
+	ASSERT_EQ(row, 7);
+	ASSERT_EQ(result, deviceDirectory->_devices + 6);
+	assertArrayEq(resultName, 'N', 'm', 'e', '6');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_WithCondition_2c)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(1, 0, 2, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(3, 0, 1, 0),
+		DeviceDirectoryRow(4, 0, 5, 0),
+		DeviceDirectoryRow(4, 0, 6, 0),
+		DeviceDirectoryRow(5, 0, 7, 0)
+	};
+
+	int row = 5;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row, conditionFct);
+	ASSERT_EQ(row, 7);
+	ASSERT_EQ(result, deviceDirectory->_devices + 6);
+	assertArrayEq(resultName, 'N', 'm', 'e', '6');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_WithCondition_2d)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(1, 0, 2, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(3, 0, 1, 0),
+		DeviceDirectoryRow(4, 0, 5, 0),
+		DeviceDirectoryRow(4, 0, 6, 0),
+		DeviceDirectoryRow(5, 0, 7, 0)
+	};
+
+	int row = 6;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row, conditionFct);
+	ASSERT_EQ(row, 7);
+	ASSERT_EQ(result, deviceDirectory->_devices + 6);
+	assertArrayEq(resultName, 'N', 'm', 'e', '6');
+}
+
+TEST_F(DeviceDirectoryTests, findNextDevice_WithCondition_3)
+{
+	Mock<DeviceDirectory<byte*>> mock = getMock();
+	byte name[4];
+	name[0] = 'N';
+	name[1] = 'm';
+	name[2] = 'e';
+	When(Method(mock, getDeviceName)).AlwaysDo([&name](int row)
+	{
+		name[3] = '0' + row;
+		return name;
+	});
+
+	deviceDirectory->_maxDevices = 7;
+	deviceDirectory->_deviceNameLength = 4;
+	deviceDirectory->_devices = new DeviceDirectoryRow[7]
+	{
+		DeviceDirectoryRow(1, 0, 1, 0),
+		DeviceDirectoryRow(1, 0, 2, 0),
+		DeviceDirectoryRow(2, 0, 2, 0),
+		DeviceDirectoryRow(3, 0, 1, 0),
+		DeviceDirectoryRow(4, 0, 5, 0),
+		DeviceDirectoryRow(4, 0, 6, 0),
+		DeviceDirectoryRow(5, 0, 7, 0)
+	};
+
+	int row = 7;
+	byte resultName[4];
+	auto result = deviceDirectory->findNextDevice(resultName, row, conditionFct);
+	ASSERT_EQ(row, -1);
+	ASSERT_EQ(result, nullptr);
 }
