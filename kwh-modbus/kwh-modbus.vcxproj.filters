@@ -124,6 +124,9 @@
     <ClInclude Include="libraries\bitFunctions\bitFunctions.h">
       <Filter>libraries\bitFunctions</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\deviceDirectoryRow\DeviceDirectoryRow.h">
+      <Filter>libraries\deviceDirectoryRow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -194,6 +197,9 @@
     </Filter>
     <Filter Include="libraries\bitFunctions">
       <UniqueIdentifier>{d721da3a-2911-4828-afad-057f7e926566}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\deviceDirectoryRow">
+      <UniqueIdentifier>{51098368-c398-4355-ae02-273a94fb7c38}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -5,45 +5,7 @@
 #include "../../noArduino/ArduinoMacros.h"
 #endif
 
-struct DeviceDirectoryRow
-{
-	byte slaveId;
-	word deviceNumber;
-	word deviceType;
-	word deviceRegs;
-
-	DeviceDirectoryRow()
-	{
-		slaveId = 0;
-		deviceType = 0;
-		deviceNumber = 0;
-		deviceRegs = 0;
-	}
-
-	DeviceDirectoryRow(byte _slaveId, word _deviceNumber, word _deviceType, word _deviceRegs)
-	{
-		slaveId = _slaveId;
-		deviceType = _deviceType;
-		deviceNumber = _deviceNumber;
-		deviceRegs = _deviceRegs;
-	}
-};
-
-static bool operator==(const DeviceDirectoryRow& lhs, const DeviceDirectoryRow& rhs)
-{
-	return (lhs.slaveId == rhs.slaveId) &&
-		(lhs.deviceNumber == rhs.deviceNumber) &&
-		(lhs.deviceType == rhs.deviceType) &&
-		(lhs.deviceRegs == rhs.deviceRegs);
-}
-
-static bool operator!=(const DeviceDirectoryRow& lhs, const DeviceDirectoryRow& rhs)
-{
-	return (lhs.slaveId != rhs.slaveId) ||
-		(lhs.deviceNumber != rhs.deviceNumber) ||
-		(lhs.deviceType != rhs.deviceType) ||
-		(lhs.deviceRegs != rhs.deviceRegs);
-}
+#include "../deviceDirectoryRow/DeviceDirectoryRow.h"
 
 template<typename T>
 class DeviceDirectory
@@ -282,7 +244,7 @@ public:
 			return addDevice(devName, device);
 	}
 
-	DeviceDirectoryRow* findNextDevice(byte* devName, int &row)
+	DeviceDirectoryRow* findNextDevice(byte* &devName, int &row)
 	{
 		while (_devices[row].slaveId == 0)
 		{
@@ -293,11 +255,7 @@ public:
 			}
 			row++;
 		}
-		byte* name = getDeviceName(row);
-		for (int i = 0; i < _deviceNameLength; i++)
-		{
-			devName[i] = name[i];
-		}
+		devName = getDeviceName(row);
 		row += 1;
 		return (_devices + row - 1);
 	}

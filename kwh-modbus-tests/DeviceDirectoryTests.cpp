@@ -791,8 +791,9 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_0)
 	};
 
 	int row = 0;
-	byte resultName[4];
+	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, 1);
 	ASSERT_EQ(result, deviceDirectory->_devices + 0);
 	assertArrayEq(resultName, 'N', 'm', 'e', '0');
@@ -825,8 +826,9 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_1)
 	};
 
 	int row = 1;
-	byte resultName[4];
+	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, 2);
 	ASSERT_EQ(result, deviceDirectory->_devices + 1);
 	assertArrayEq(resultName, 'N', 'm', 'e', '1');
@@ -859,8 +861,9 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_2)
 	};
 
 	int row = 2;
-	byte resultName[4];
+	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, -1);
 	ASSERT_EQ(result, nullptr);
 }
@@ -892,8 +895,9 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_0)
 	};
 
 	int row = 0;
-	byte resultName[4];
+	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, 1);
 	ASSERT_EQ(result, deviceDirectory->_devices + 0);
 	assertArrayEq(resultName, 'N', 'm', 'e', '0');
@@ -926,8 +930,9 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1a)
 	};
 
 	int row = 1;
-	byte resultName[4];
+	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, 3);
 	ASSERT_EQ(result, deviceDirectory->_devices + 2);
 	assertArrayEq(resultName, 'N', 'm', 'e', '2');
@@ -960,8 +965,9 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1b)
 	};
 
 	int row = 2;
-	byte resultName[4];
+	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, 3);
 	ASSERT_EQ(result, deviceDirectory->_devices + 2);
 	assertArrayEq(resultName, 'N', 'm', 'e', '2');
@@ -994,8 +1000,9 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_2)
 	};
 
 	int row = 3;
-	byte resultName[4];
+	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, -1);
 	ASSERT_EQ(result, nullptr);
 }
@@ -1027,8 +1034,9 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0a)
 	};
 
 	int row = 0;
-	byte resultName[4];
+	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, 2);
 	ASSERT_EQ(result, deviceDirectory->_devices + 1);
 	assertArrayEq(resultName, 'N', 'm', 'e', '1');
@@ -1061,8 +1069,9 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0b)
 	};
 
 	int row = 1;
-	byte resultName[4];
+	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, 2);
 	ASSERT_EQ(result, deviceDirectory->_devices + 1);
 	assertArrayEq(resultName, 'N', 'm', 'e', '1');
@@ -1095,8 +1104,9 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_1)
 	};
 
 	int row = 2;
-	byte resultName[4];
+	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, 3);
 	ASSERT_EQ(result, deviceDirectory->_devices + 2);
 	assertArrayEq(resultName, 'N', 'm', 'e', '2');
@@ -1129,8 +1139,9 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_2)
 	};
 
 	int row = 3;
-	byte resultName[4];
+	byte* resultName;
 	auto result = deviceDirectory->findNextDevice(resultName, row);
+	ASSERT_EQ(resultName, name);
 	ASSERT_EQ(row, -1);
 	ASSERT_EQ(result, nullptr);
 }
