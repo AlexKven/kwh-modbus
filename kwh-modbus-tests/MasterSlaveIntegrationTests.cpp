@@ -80,7 +80,7 @@ protected:
 	function<bool()> slaveAction;
 	function<bool()> masterAction;
 
-	bool runTaskStack(stack<IAsyncTask*> &tasks)
+	bool runTaskStack(stack<ITask*> &tasks)
 	{
 		if ((*tasks.top())())
 		{
@@ -275,7 +275,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
 	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, false);
 
-	stack<IAsyncTask*> tasks;
+	stack<ITask*> tasks;
 	tasks.push(&task1);
 	tasks.push(&task0);
 
@@ -317,7 +317,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave_
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
 	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, true);
 
-	stack<IAsyncTask*> tasks;
+	stack<ITask*> tasks;
 	tasks.push(&task1);
 	tasks.push(&task0);
 

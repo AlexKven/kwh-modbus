@@ -74,7 +74,7 @@ case __LINE__:
 
 #define END_ASYNC } return true
 
-class IAsyncTask
+class ITask
 {
 public:
 	virtual bool operator()() = 0;
@@ -82,7 +82,7 @@ public:
 };
 
 template<class T>
-class AsyncTask : public IAsyncTask
+class AsyncTask : public ITask
 {
 protected:
 	char _resultVal[sizeof(T)];
@@ -132,7 +132,7 @@ public:
 };
 
 template<>
-class AsyncTask<void> : public IAsyncTask
+class AsyncTask<void> : public ITask
 {
 protected:
 	char _resultVal[1];
