@@ -46,6 +46,7 @@ private_testable:
 	const byte _minorVersion = 0;
 	bool _timeUpdatePending = false;
 	byte *_dataBuffer = nullptr;
+	word _registerBuffer[10];
 	word _dataBufferSize;
 
 	uint32_t lastUpdateTimes[8];
@@ -243,7 +244,7 @@ protected_testable:
 		return _checkForNewSlaves;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), processNewSlave, void, VARS(byte, word, byte, word, word[3], word), bool);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), processNewSlave, void, VARS(byte, word, byte, word, word), bool);
 	processNewSlave_Task _processNewSlave;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), processNewSlave, bool justReject)
 	{
@@ -251,8 +252,7 @@ protected_testable:
 		ASYNC_VAR(1, i);
 		ASYNC_VAR(2, numDevices);
 		ASYNC_VAR(3, deviceNameLength);
-		ASYNC_VAR(4, sentData);
-		ASYNC_VAR(5, slaveRegisters)
+		ASYNC_VAR(4, slaveRegisters)
 		START_ASYNC;
 		word regCount;
 		word *regs;
@@ -280,20 +280,20 @@ protected_testable:
 
 			// fourth case: reject slave due to master being full and unable to accept new slaves
 
-			sentData[0] = 1;
-			sentData[1] = 1;
-			sentData[2] = 255;
-			completeModbusWriteRegisters(1, 0, 3, sentData);
+			_registerBuffer[0] = 1;
+			_registerBuffer[1] = 1;
+			_registerBuffer[2] = 255;
+			completeModbusWriteRegisters(1, 0, 3, _registerBuffer);
 			AWAIT(_completeModbusWriteRegisters);
 			ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 			RETURN_ASYNC;
 		}
 		for (i = 0; i < numDevices; i++)
 		{
-			sentData[0] = 1;
-			sentData[1] = 2;
-			sentData[2] = i;
-			completeModbusWriteRegisters(1, 0, 3, sentData);
+			_registerBuffer[0] = 1;
+			_registerBuffer[1] = 2;
+			_registerBuffer[2] = i;
+			completeModbusWriteRegisters(1, 0, 3, _registerBuffer);
 			AWAIT(_completeModbusWriteRegisters);
 			ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 			completeModbusReadRegisters(1, 0, 4 + (deviceNameLength + 1) / 2);
@@ -302,20 +302,20 @@ protected_testable:
 			_modbus->isReadRegsResponse(regCount, regs);
 			if (_deviceDirectory->addOrReplaceDevice((byte*)(regs + 3), DeviceDirectoryRow(slaveId, i, regs[2], slaveRegisters)) == -1)
 			{
-				sentData[0] = 1;
-				sentData[1] = 1;
-				sentData[2] = 255;
-				completeModbusWriteRegisters(1, 0, 3, sentData);
+				_registerBuffer[0] = 1;
+				_registerBuffer[1] = 1;
+				_registerBuffer[2] = 255;
+				completeModbusWriteRegisters(1, 0, 3, _registerBuffer);
 				AWAIT(_completeModbusWriteRegisters);
 				ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 				_deviceDirectory->filterDevicesForSlave(nullptr, 0, slaveId);
 				RETURN_ASYNC;
 			}
 		}
-		sentData[0] = 1;
-		sentData[1] = 1;
-		sentData[2] = slaveId;
-		completeModbusWriteRegisters(1, 0, 3, sentData);
+		_registerBuffer[0] = 1;
+		_registerBuffer[1] = 1;
+		_registerBuffer[2] = slaveId;
+		completeModbusWriteRegisters(1, 0, 3, _registerBuffer);
 		AWAIT(_completeModbusWriteRegisters);
 		ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 		_timeUpdatePending = true;
@@ -327,7 +327,7 @@ protected_testable:
 		return _processNewSlave;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, uint32_t, uint32_t, byte, int, DeviceDirectoryRow*, uint32_t, byte), TimeScale, uint32_t);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte), TimeScale, uint32_t);
 	readAndSendDeviceData_Task _readAndSendDeviceData;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), readAndSendDeviceData, TimeScale maxTimeScale, uint32_t currentTime)
 	{
@@ -337,14 +337,10 @@ protected_testable:
 		ASYNC_VAR(3, accumulateData);
 		ASYNC_VAR(4, timeScale);
 		ASYNC_VAR(5, dataSize);
-		ASYNC_VAR(6, updateStart);
+		ASYNC_VAR(6, readStart);
 		ASYNC_VAR(7, numDataPoints);
-		ASYNC_VAR(8, curReadStart);
-		ASYNC_VAR(9, curReadNum);
-		ASYNC_VAR(10, deviceRow_send);
-		ASYNC_VAR(11, device_send);
-		ASYNC_VAR(12, curWriteStart);
-		ASYNC_VAR(13, curWriteNum);
+		ASYNC_VAR(8, curReadPage);
+		ASYNC_VAR(9, pointsPerReadPage);
 		START_ASYNC;
 		while (deviceRow_receive != -1)
 		{
@@ -354,8 +350,16 @@ protected_testable:
 				DataCollectorDevice::getParametersFromDataCollectorDeviceType(device_receive->deviceType, accumulateData, timeScale, dataSize);
 				if (timeScale <= maxTimeScale)
 				{
-					uint32_t updateStart = (currentTime - lastUpdateTimes[(int)timeScale]);
-					uint32_t numDataPoints = updateStart * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
+					readStart = lastUpdateTimes[(int)timeScale];
+					numDataPoints = (currentTime - readStart) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
+
+					_registerBuffer[0] = 1;
+					_registerBuffer[1] = 3;
+					_registerBuffer[2] = device_receive->deviceNumber;
+					_registerBuffer[3] = (word)readStart;
+					_registerBuffer[4] = (word)(readStart >> 16);
+					_registerBuffer[5] = numDataPoints;
+					_registerBuffer[6] = curReadPage + (word)(_dataBufferSize << 8);
 				}
 			}
 		}
