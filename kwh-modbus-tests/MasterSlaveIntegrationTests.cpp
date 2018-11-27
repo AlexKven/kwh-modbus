@@ -57,6 +57,32 @@ class MasterSlaveIntegrationTests :
 	public ::testing::Test,
 	public ::testing::WithParamInterface<ModbusTransmissionError>
 {
+private:
+	class _SetTestConditionsTask : public ITask
+	{
+	private:
+		bool _isRun = false;
+		MasterSlaveIntegrationTests *_fixture;
+
+	public:
+		_SetTestConditionsTask(MasterSlaveIntegrationTests *fixture)
+		{
+			_fixture = fixture;
+		}
+
+		bool operator()()
+		{
+			_isRun = true;
+			_fixture->setTestConditions();
+			return true;
+		}
+
+		bool completed()
+		{
+			return _isRun;
+		}
+	};
+
 protected:
 	T_ModbusSlave *modbusSlave = new T_ModbusSlave();
 	T_ModbusMaster *modbusMaster = new T_ModbusMaster();
@@ -137,26 +163,6 @@ public:
 		names[1] = (byte*)"dev01";
 
 		slave->init(2, 5, 13, 20, devices, names);
-
-		if (contains(errorType, InboundError))
-		{
-			masterSerial->setPerBitErrorProb(.020);
-		}
-
-		if (contains(errorType, OutboundError))
-		{
-			slaveSerial->setPerBitErrorProb(0.012);
-		}
-
-		if (contains(errorType, InboundDelays))
-		{
-			masterSerial->setReadDelays(3000, 1000);
-		}
-
-		if (contains(errorType, OutboundDelays))
-		{
-			slaveSerial->setReadDelays(3000, 1000);
-		}
 	}
 
 	void seedRandom(MockSerialStream *stream)
@@ -176,6 +182,34 @@ public:
 		delete masterIn;
 		delete slaveSerial;
 		delete masterSerial;
+	}
+
+	void setTestConditions()
+	{
+		if (contains(errorType, InboundError))
+		{
+			masterSerial->setPerBitErrorProb(.020);
+		}
+
+		if (contains(errorType, OutboundError))
+		{
+			slaveSerial->setPerBitErrorProb(0.010);
+		}
+
+		if (contains(errorType, InboundDelays))
+		{
+			masterSerial->setReadDelays(3000, 1000);
+		}
+
+		if (contains(errorType, OutboundDelays))
+		{
+			slaveSerial->setReadDelays(3000, 1000);
+		}
+	}
+
+	ITask* getNewSetTestConditionsTask()
+	{
+		return new _SetTestConditionsTask(this);
 	}
 
 	void slaveThread()
@@ -229,6 +263,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 
 	modbusSlave->setSlaveId(1);
 	slave->setOutgoingState();
+	setTestConditions();
 
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);
@@ -260,6 +295,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 
 	modbusSlave->setSlaveId(2);
 	slave->setOutgoingState();
+	setTestConditions();
 
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);
@@ -273,10 +309,12 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 {
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
-	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, false);
+	ITask* task1 = getNewSetTestConditionsTask();
+	T_Master::processNewSlave_Task task2(&T_Master::processNewSlave, master, false);
 
 	stack<ITask*> tasks;
-	tasks.push(&task1);
+	tasks.push(&task2);
+	tasks.push(task1);
 	tasks.push(&task0);
 
 	slaveAction = [this]() {
@@ -294,6 +332,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
+
+	delete task1;
 
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
@@ -315,10 +355,12 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave_JustReject)
 {
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
-	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, true);
+	ITask* task1 = getNewSetTestConditionsTask();
+	T_Master::processNewSlave_Task task2(&T_Master::processNewSlave, master, true);
 
 	stack<ITask*> tasks;
-	tasks.push(&task1);
+	tasks.push(&task2);
+	tasks.push(task1);
 	tasks.push(&task0);
 
 	slaveAction = [this]() {
@@ -336,6 +378,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave_
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
+
+	delete task1;
 
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
@@ -358,6 +402,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
 
 	modbusSlave->setSlaveId(1);
 	slave->setOutgoingState();
+	setTestConditions();
+
 	master->setClock(2000000000);
 	Fake(Method(device0, setClock));
 	Fake(Method(device1, setClock));
@@ -370,6 +416,67 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
 	ASSERT_TRUE(masterSuccess);
 	Verify(Method(device0, setClock).Using(2000000000)).Once();
 	Verify(Method(device1, setClock).Using(2000000000)).Once();
+}
+
+TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlave)
+{
+	MockNewMethod(mockReadData, uint32_t startTime, word numPoints, byte page, word bufferSize, byte maxPoints);
+
+	Fake(Method(device0, setClock));
+	Fake(Method(device1, setClock));
+	When(Method(device1, readData)).AlwaysDo([&mockReadData] (uint32_t startTime, word numPoints, byte page,
+		byte* buffer, word bufferSize, byte maxPoints, byte &outDataPointsCount, byte &outPagesRemaining, byte &outDataPointSize) {
+		mockReadData.get().method(startTime, numPoints, page, bufferSize, maxPoints);
+		outDataPointsCount = 4;
+		outPagesRemaining = 1 - page;
+		outDataPointSize = 8;
+		buffer[0] = 0 + 4 * page;
+		buffer[1] = 1 + 4 * page;
+		buffer[2] = 2 + 4 * page;
+		buffer[3] = 3 + 4 * page;
+		return true;
+	});
+
+	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
+	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, false);
+	ITask* task2 = getNewSetTestConditionsTask();
+	T_Master::readAndSendDeviceData_Task task3(&T_Master::readAndSendDeviceData, master, TimeScale::sec1, 10);
+
+	stack<ITask*> tasks;
+	tasks.push(&task3);
+	tasks.push(task2);
+	tasks.push(&task1);
+	tasks.push(&task0);
+
+	slaveAction = [this]() {
+		slave->loop();
+		return masterSuccess;
+	};
+	masterAction = [this, &tasks]()
+	{
+		return runTaskStack(tasks);
+	};
+
+	modbusSlave->setSlaveId(1);
+	slave->setClock(2);
+	slave->setOutgoingState();
+	master->setClock(2);
+	master->_curTime = 10000;
+	master->lastUpdateTimes[1] = 2;
+
+	word devType;
+	DataCollectorDevice::getDataCollectorDeviceTypeFromParameters(false, TimeScale::sec1, 8, devType);
+	When(Method(device1, getType)).AlwaysReturn(devType);
+
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
+
+	delete task2;
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+	Verify(Method(mockReadData, method).Using(2, 8, 0, 20, 40)).Once();
 }
 
 INSTANTIATE_TEST_CASE_P(NoErrors, MasterSlaveIntegrationTests, ::testing::Values(None));

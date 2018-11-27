@@ -347,19 +347,24 @@ protected_testable:
 			device_receive = _deviceDirectory->findNextDevice(device_name, deviceRow_receive);
 			if (device_receive != nullptr)
 			{
-				DataCollectorDevice::getParametersFromDataCollectorDeviceType(device_receive->deviceType, accumulateData, timeScale, dataSize);
-				if (timeScale <= maxTimeScale)
+				if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(device_receive->deviceType, accumulateData, timeScale, dataSize))
 				{
-					readStart = lastUpdateTimes[(int)timeScale];
-					numDataPoints = (currentTime - readStart) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
+					if (timeScale <= maxTimeScale)
+					{
+						readStart = lastUpdateTimes[(int)timeScale];
+						numDataPoints = (currentTime - readStart) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
+						curReadPage = 0;
 
-					_registerBuffer[0] = 1;
-					_registerBuffer[1] = 3;
-					_registerBuffer[2] = device_receive->deviceNumber;
-					_registerBuffer[3] = (word)readStart;
-					_registerBuffer[4] = (word)(readStart >> 16);
-					_registerBuffer[5] = numDataPoints;
-					_registerBuffer[6] = curReadPage + (word)(_dataBufferSize << 8);
+						_registerBuffer[0] = 1;
+						_registerBuffer[1] = 3;
+						_registerBuffer[2] = device_receive->deviceNumber;
+						_registerBuffer[3] = (word)readStart;
+						_registerBuffer[4] = (word)(readStart >> 16);
+						_registerBuffer[5] = numDataPoints;
+						_registerBuffer[6] = curReadPage + (word)((_dataBufferSize * 8 / dataSize) << 8);
+						completeModbusWriteRegisters(device_receive->slaveId, 0, 7, _registerBuffer);
+						AWAIT(_completeModbusWriteRegisters);
+					}
 				}
 			}
 		}
@@ -421,6 +426,10 @@ public:
 		_deviceDirectory = deviceDirectory;
 		_dataBufferSize = dataBufferSize;
 		_dataBuffer = new byte[_dataBufferSize];
+		for (int i = 0; i < 8; i++)
+		{
+			lastUpdateTimes[i] = 0;
+		}
 	}
 
 	bool started = false;

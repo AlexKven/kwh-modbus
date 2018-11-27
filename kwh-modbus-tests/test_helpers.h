@@ -3,6 +3,10 @@
 #include "pch.h"
 #include <string>
 
+#define MockNewMethod(NAME, ...) class MockableMethod_ ## NAME { \
+public: virtual void method(__VA_ARGS__) {}}; Mock<MockableMethod_ ## NAME> NAME; \
+Fake(Method(NAME, method))
+
 template<class T>
 T maxOfUnsigned()
 {

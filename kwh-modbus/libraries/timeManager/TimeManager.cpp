@@ -65,7 +65,7 @@ uint32_t TimeManager::getClockForTimeCode(TimeScale timeScale, uint32_t timeCode
 
 bool TimeManager::wasNeverSet()
 {
-	return (_clockSet == 0);
+	return (_clockSet == 0 && _initialClock == 0);
 }
 
 // not tested because it is very trivial
