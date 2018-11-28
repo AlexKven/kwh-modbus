@@ -327,7 +327,7 @@ protected_testable:
 		return _processNewSlave;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte), TimeScale, uint32_t);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte, byte), TimeScale, uint32_t);
 	readAndSendDeviceData_Task _readAndSendDeviceData;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), readAndSendDeviceData, TimeScale maxTimeScale, uint32_t currentTime)
 	{
@@ -339,8 +339,11 @@ protected_testable:
 		ASYNC_VAR(5, dataSize);
 		ASYNC_VAR(6, readStart);
 		ASYNC_VAR(7, numDataPoints);
+		ASYNC_VAR(7, numReadPagesRemaining);
 		ASYNC_VAR(8, curReadPage);
-		ASYNC_VAR(9, pointsPerReadPage);
+		ASYNC_VAR(9, numPointsInReadPage);
+		word regCount;
+		word *regs;
 		START_ASYNC;
 		while (deviceRow_receive != -1)
 		{
@@ -354,7 +357,9 @@ protected_testable:
 						readStart = lastUpdateTimes[(int)timeScale];
 						numDataPoints = (currentTime - readStart) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
 						curReadPage = 0;
+						numReadPages = 1;
 
+						while (numReadPagesRemaining > 0)
 						_registerBuffer[0] = 1;
 						_registerBuffer[1] = 3;
 						_registerBuffer[2] = device_receive->deviceNumber;
@@ -364,6 +369,36 @@ protected_testable:
 						_registerBuffer[6] = curReadPage + (word)((_dataBufferSize * 8 / dataSize) << 8);
 						completeModbusWriteRegisters(device_receive->slaveId, 0, 7, _registerBuffer);
 						AWAIT(_completeModbusWriteRegisters);
+						ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+						completeModbusReadRegisters(device_receive->slaveId, 0, 6);
+						AWAIT(_completeModbusReadRegisters);
+						ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
+						_modbus->isReadRegsResponse(regCount, regs);
+						if (regs[0] != 3)
+						{
+							reportMalfunction(__LINE__);
+							return true;
+						}
+						switch (regs[1])
+						{
+						case 0:
+							numPointsInReadPage = (byte)regs[4];
+							numReadPagesRemaining = (byte)(regs[5] >> 8);
+							curReadPage++;
+							break;
+						case 1:
+							broadcastTime();
+							_system->delayMilliseconds(10);
+							break;
+						case 2:
+							// We were mistaken; move on to other slaves
+							break;
+						default:
+							// wtf
+							reportMalfunction(__LINE__);
+							return true;
+							break;
+						}
 					}
 				}
 			}
