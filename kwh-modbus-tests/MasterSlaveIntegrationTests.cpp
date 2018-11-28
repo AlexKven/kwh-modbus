@@ -421,12 +421,14 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
 TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlave)
 {
 	MockNewMethod(mockReadData, uint32_t startTime, word numPoints, byte page, word bufferSize, byte maxPoints);
+	bool slaveComplete = false;
 
 	Fake(Method(device0, setClock));
 	Fake(Method(device1, setClock));
-	When(Method(device1, readData)).AlwaysDo([&mockReadData] (uint32_t startTime, word numPoints, byte page,
+	When(Method(device1, readData)).AlwaysDo([&mockReadData, &slaveComplete] (uint32_t startTime, word numPoints, byte page,
 		byte* buffer, word bufferSize, byte maxPoints, byte &outDataPointsCount, byte &outPagesRemaining, byte &outDataPointSize) {
 		mockReadData.get().method(startTime, numPoints, page, bufferSize, maxPoints);
+		slaveComplete = true;
 		outDataPointsCount = 4;
 		outPagesRemaining = 1 - page;
 		outDataPointSize = 8;
@@ -448,9 +450,9 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 	tasks.push(&task1);
 	tasks.push(&task0);
 
-	slaveAction = [this]() {
+	slaveAction = [this, &slaveComplete]() {
 		slave->loop();
-		return masterSuccess;
+		return slaveComplete;
 	};
 	masterAction = [this, &tasks]()
 	{
