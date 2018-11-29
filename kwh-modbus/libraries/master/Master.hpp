@@ -12,6 +12,7 @@
 #include "../asyncAwait/AsyncAwait.hpp"
 #include "../timeManager/TimeManager.h"
 #include "../deviceDirectoryRow/DeviceDirectoryRow.h"
+#include "../bitFunctions/BitFunctions.hpp"
 
 #define ENSURE(statement) if (!(statement)) return false
 #define ENSURE_NONMALFUNCTION(modbus_task) if (modbus_task.result() != success) \
@@ -381,29 +382,50 @@ protected_testable:
 								reportMalfunction(__LINE__);
 								return true;
 							}
-							switch (regs[1])
+							if (regs[1] == 0)
 							{
-							case 0:
 								numPointsInReadPage = (byte)regs[4];
 								curReadPage = (byte)regs[5];
 								numReadPagesRemaining = (byte)(regs[5] >> 8);
 
+								completeModbusReadRegisters(device_receive->slaveId, 6,
+									BitFunctions::bitsToStructs<word, word>(numDataPoints * dataSize));
+								AWAIT(_completeModbusReadRegisters);
+								ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
+								_modbus->isReadRegsResponse(regCount, regs);
+
+								word numDataBytes = BitFunctions::bitsToBytes(numDataPoints * dataSize);
+								if (numDataBytes > _dataBufferSize)
+								{
+									reportMalfunction(__LINE__);
+									return true;
+								}
+								for (int i = 0; i < numDataBytes; i++)
+								{
+									if (i % 2 == 0)
+										_dataBuffer[i] = (byte)regs[i / 2];
+									else
+										_dataBuffer[i] = (byte)(regs[i / 2] >> 8);
+								}
+
 								// Send data to receivers
 
 								curReadPage++;
-								break;
-							case 1:
+							}
+							else if (regs[1] == 1)
+							{
 								broadcastTime();
 								_system->delayMicroseconds(10000);
-								break;
-							case 2:
+							}
+							else if (regs[1] == 2)
+							{
 								// We were mistaken; move on to other senders
-								break;
-							default:
+							}
+							else
+							{
 								// wtf
 								reportMalfunction(__LINE__);
 								return true;
-								break;
 							}
 						}
 					}
