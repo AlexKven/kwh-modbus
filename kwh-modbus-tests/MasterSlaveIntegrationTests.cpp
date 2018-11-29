@@ -428,7 +428,6 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 	When(Method(device1, readData)).AlwaysDo([&mockReadData, &slaveComplete] (uint32_t startTime, word numPoints, byte page,
 		byte* buffer, word bufferSize, byte maxPoints, byte &outDataPointsCount, byte &outPagesRemaining, byte &outDataPointSize) {
 		mockReadData.get().method(startTime, numPoints, page, bufferSize, maxPoints);
-		slaveComplete = true;
 		outDataPointsCount = 4;
 		outPagesRemaining = 1 - page;
 		outDataPointSize = 8;
@@ -436,6 +435,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 		buffer[1] = 1 + 4 * page;
 		buffer[2] = 2 + 4 * page;
 		buffer[3] = 3 + 4 * page;
+		if (outPagesRemaining == 0)
+			slaveComplete = true;
 		return true;
 	});
 
@@ -452,7 +453,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 
 	slaveAction = [this, &slaveComplete]() {
 		slave->loop();
-		return slaveComplete;
+		return this->masterSuccess;
 	};
 	masterAction = [this, &tasks]()
 	{
@@ -478,7 +479,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
-	Verify(Method(mockReadData, method).Using(2, 8, 0, 20, 40)).Once();
+	Verify(Method(mockReadData, method).Using(2, 8, 0, 20, 40)).AtLeastOnce();
+	Verify(Method(mockReadData, method).Using(2, 8, 0, 20, 40)).AtLeastOnce();
 }
 
 INSTANTIATE_TEST_CASE_P(NoErrors, MasterSlaveIntegrationTests, ::testing::Values(None));

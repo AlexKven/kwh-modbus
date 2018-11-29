@@ -339,9 +339,9 @@ protected_testable:
 		ASYNC_VAR(5, dataSize);
 		ASYNC_VAR(6, readStart);
 		ASYNC_VAR(7, numDataPoints);
-		ASYNC_VAR(7, numReadPagesRemaining);
-		ASYNC_VAR(8, curReadPage);
-		ASYNC_VAR(9, numPointsInReadPage);
+		ASYNC_VAR(8, numReadPagesRemaining);
+		ASYNC_VAR(9, curReadPage);
+		ASYNC_VAR(10, numPointsInReadPage);
 		word regCount;
 		word *regs;
 		START_ASYNC;
@@ -357,47 +357,54 @@ protected_testable:
 						readStart = lastUpdateTimes[(int)timeScale];
 						numDataPoints = (currentTime - readStart) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
 						curReadPage = 0;
-						numReadPages = 1;
+						numReadPagesRemaining = 1;
 
 						while (numReadPagesRemaining > 0)
-						_registerBuffer[0] = 1;
-						_registerBuffer[1] = 3;
-						_registerBuffer[2] = device_receive->deviceNumber;
-						_registerBuffer[3] = (word)readStart;
-						_registerBuffer[4] = (word)(readStart >> 16);
-						_registerBuffer[5] = numDataPoints;
-						_registerBuffer[6] = curReadPage + (word)((_dataBufferSize * 8 / dataSize) << 8);
-						completeModbusWriteRegisters(device_receive->slaveId, 0, 7, _registerBuffer);
-						AWAIT(_completeModbusWriteRegisters);
-						ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
-						completeModbusReadRegisters(device_receive->slaveId, 0, 6);
-						AWAIT(_completeModbusReadRegisters);
-						ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
-						_modbus->isReadRegsResponse(regCount, regs);
-						if (regs[0] != 3)
 						{
-							reportMalfunction(__LINE__);
-							return true;
-						}
-						switch (regs[1])
-						{
-						case 0:
-							numPointsInReadPage = (byte)regs[4];
-							numReadPagesRemaining = (byte)(regs[5] >> 8);
-							curReadPage++;
-							break;
-						case 1:
-							broadcastTime();
-							_system->delayMilliseconds(10);
-							break;
-						case 2:
-							// We were mistaken; move on to other slaves
-							break;
-						default:
-							// wtf
-							reportMalfunction(__LINE__);
-							return true;
-							break;
+							numReadPagesRemaining--;
+							_registerBuffer[0] = 1;
+							_registerBuffer[1] = 3;
+							_registerBuffer[2] = device_receive->deviceNumber;
+							_registerBuffer[3] = (word)readStart;
+							_registerBuffer[4] = (word)(readStart >> 16);
+							_registerBuffer[5] = numDataPoints;
+							_registerBuffer[6] = curReadPage + (word)((_dataBufferSize * 8 / dataSize) << 8);
+							completeModbusWriteRegisters(device_receive->slaveId, 0, 7, _registerBuffer);
+							AWAIT(_completeModbusWriteRegisters);
+							ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+							completeModbusReadRegisters(device_receive->slaveId, 0, 6);
+							AWAIT(_completeModbusReadRegisters);
+							ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
+							_modbus->isReadRegsResponse(regCount, regs);
+							if (regs[0] != 3)
+							{
+								reportMalfunction(__LINE__);
+								return true;
+							}
+							switch (regs[1])
+							{
+							case 0:
+								numPointsInReadPage = (byte)regs[4];
+								curReadPage = (byte)regs[5];
+								numReadPagesRemaining = (byte)(regs[5] >> 8);
+
+								// Send data to receivers
+
+								curReadPage++;
+								break;
+							case 1:
+								broadcastTime();
+								_system->delayMicroseconds(10000);
+								break;
+							case 2:
+								// We were mistaken; move on to other senders
+								break;
+							default:
+								// wtf
+								reportMalfunction(__LINE__);
+								return true;
+								break;
+							}
 						}
 					}
 				}
