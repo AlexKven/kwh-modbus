@@ -96,6 +96,7 @@ protected:
 
 	bool masterSuccess = false;
 	bool slaveSuccess = false;
+	bool slaveComplete = false;
 	ModbusTransmissionError errorType;
 
 	static WindowsSystemFunctions *system;
@@ -234,6 +235,8 @@ public:
 			TIMEOUT_CHECK;
 		}
 		this->masterSuccess = true;
+		system->delay(200);
+		slaveComplete = true;
 	}
 
 	static void slave_thread(void *param)
@@ -254,7 +257,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master);
 	slaveAction = [this]() {
 		slave->loop();
-		return masterSuccess;
+		return slaveComplete;
 	};
 	masterAction = [this, &task]()
 	{
@@ -286,7 +289,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 	slaveAction = [this]() {
 		//return true;
 		slave->loop();
-		return masterSuccess;
+		return slaveComplete;
 	};
 	masterAction = [this, &task]()
 	{
@@ -319,7 +322,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 
 	slaveAction = [this]() {
 		slave->loop();
-		return masterSuccess;
+		return slaveComplete;
 	};
 	masterAction = [this, &tasks]()
 	{
@@ -365,7 +368,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave_
 
 	slaveAction = [this]() {
 		slave->loop();
-		return masterSuccess;
+		return slaveComplete;
 	};
 	masterAction = [this, &tasks]()
 	{
@@ -391,7 +394,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
 {
 	slaveAction = [this]() {
 		slave->loop();
-		return masterSuccess;
+		return slaveComplete;
 	};
 	masterAction = [this]()
 	{
@@ -421,11 +424,10 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
 TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlave)
 {
 	MockNewMethod(mockReadData, uint32_t startTime, word numPoints, byte page, word bufferSize, byte maxPoints);
-	bool slaveComplete = false;
 
 	Fake(Method(device0, setClock));
 	Fake(Method(device1, setClock));
-	When(Method(device1, readData)).AlwaysDo([&mockReadData, &slaveComplete] (uint32_t startTime, word numPoints, byte page,
+	When(Method(device1, readData)).AlwaysDo([&mockReadData] (uint32_t startTime, word numPoints, byte page,
 		byte* buffer, word bufferSize, byte maxPoints, byte &outDataPointsCount, byte &outPagesRemaining, byte &outDataPointSize) {
 		mockReadData.get().method(startTime, numPoints, page, bufferSize, maxPoints);
 		outDataPointsCount = 4;
@@ -435,8 +437,6 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 		buffer[1] = 1 + 4 * page;
 		buffer[2] = 2 + 4 * page;
 		buffer[3] = 3 + 4 * page;
-		if (outPagesRemaining == 0)
-			slaveComplete = true;
 		return true;
 	});
 
@@ -451,9 +451,9 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 	tasks.push(&task1);
 	tasks.push(&task0);
 
-	slaveAction = [this, &slaveComplete]() {
+	slaveAction = [this]() {
 		slave->loop();
-		return this->masterSuccess;
+		return slaveComplete;
 	};
 	masterAction = [this, &tasks]()
 	{
