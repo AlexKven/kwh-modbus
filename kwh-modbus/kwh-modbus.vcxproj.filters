@@ -38,6 +38,9 @@
     <ClCompile Include="libraries\bitFunctions\bitFunctions.cpp">
       <Filter>libraries\bitFunctions</Filter>
     </ClCompile>
+    <ClCompile Include="libraries\device\DataTransmitterDevice.cpp">
+      <Filter>libraries\device</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\modbus\Modbus.h">
@@ -126,6 +129,9 @@
     </ClInclude>
     <ClInclude Include="libraries\deviceDirectoryRow\DeviceDirectoryRow.h">
       <Filter>libraries\deviceDirectoryRow</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\device\DataTransmitterDevice.h">
+      <Filter>libraries\device</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

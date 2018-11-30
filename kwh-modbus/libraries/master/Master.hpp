@@ -9,6 +9,7 @@
 
 #include "../device/Device.h"
 #include "../device/DataCollectorDevice.h"
+#include "../device/DataTransmitterDevice.h"
 #include "../asyncAwait/AsyncAwait.hpp"
 #include "../timeManager/TimeManager.h"
 #include "../deviceDirectoryRow/DeviceDirectoryRow.h"
@@ -328,7 +329,7 @@ protected_testable:
 		return _processNewSlave;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte, byte), TimeScale, uint32_t);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte, byte), TimeScale, uint32_t, int, DeviceDirectoryRow*);
 	readAndSendDeviceData_Task _readAndSendDeviceData;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), readAndSendDeviceData, TimeScale maxTimeScale, uint32_t currentTime)
 	{
@@ -343,6 +344,8 @@ protected_testable:
 		ASYNC_VAR(8, numReadPagesRemaining);
 		ASYNC_VAR(9, curReadPage);
 		ASYNC_VAR(10, numPointsInReadPage);
+		ASYNC_VAR_INIT(0, deviceRow_transmit, 0);
+		ASYNC_VAR(1, device_transmit);
 		word regCount;
 		word *regs;
 		START_ASYNC;
@@ -408,7 +411,18 @@ protected_testable:
 										_dataBuffer[i] = (byte)(regs[i / 2] >> 8);
 								}
 
-								// Send data to receivers
+								deviceRow_transmit = 0;
+								while (deviceRow_transmit != -1)
+								{
+									device_transmit = _deviceDirectory->findNextDevice(device_name, deviceRow_transmit);
+									if (device_transmit != nullptr)
+									{
+										if (DataTransmitterDevice::isDataTransmitterDeviceType(device_transmit->deviceType)
+										{
+
+										}
+									}
+								}
 
 								curReadPage++;
 							}

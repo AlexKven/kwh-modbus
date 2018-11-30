@@ -68,6 +68,7 @@
     <ClCompile Include="libraries\arduinoClasses\ArduinoSystem.cpp" />
     <ClCompile Include="libraries\bitFunctions\bitFunctions.cpp" />
     <ClCompile Include="libraries\device\DataCollectorDevice.cpp" />
+    <ClCompile Include="libraries\device\DataTransmitterDevice.cpp" />
     <ClCompile Include="libraries\device\Device.cpp" />
     <ClCompile Include="libraries\modbus\Modbus.cpp" />
     <ClCompile Include="libraries\modbus\ModbusArray.cpp" />
@@ -89,6 +90,7 @@
     <ClInclude Include="libraries\deviceDirectoryRow\DeviceDirectoryRow.h" />
     <ClInclude Include="libraries\deviceDirectory\DeviceDirectory.hpp" />
     <ClInclude Include="libraries\device\DataCollectorDevice.h" />
+    <ClInclude Include="libraries\device\DataTransmitterDevice.h" />
     <ClInclude Include="libraries\device\Device.h" />
     <ClInclude Include="libraries\master\Master.hpp" />
     <ClInclude Include="libraries\modbusMaster\ModbusMaster.hpp" />

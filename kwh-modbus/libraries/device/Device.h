@@ -12,8 +12,9 @@ enum class RecieveDataStatus
 {
 	success,
 	notSupported,
-	error,
-	nameTooLong
+	nameTooLong,
+	timeRequested,
+	failure
 };
 
 class Device

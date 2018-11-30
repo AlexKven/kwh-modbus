@@ -61,11 +61,12 @@ Slaves will have the first register always be the current state of the slave. Be
 | 5.5        | Num Remaining Pages       | 0 to 255      |                                                              |
 | 6 to X     | Data Points               | Anything      | Binary data containing sent data points, each point composed of an integer number of *bits* according to the device type |
 
-### 4: Master is writing data to device
+### 4: Master is preparing to write data to device
 
-| Register # | Value  | Range  | Notes         |
-| ---------- | ------ | ------ | ------------- |
-| 1          | Status | 0 or 1 | 1 is failure. |
+| Register # | Value  | Range  | Notes                                                        |
+| ---------- | ------ | ------ | ------------------------------------------------------------ |
+| 1          | Status | 0 to 4 | 0 = success, 1 = not supported, 2 = name is too long, 3 = current time is requested, 4 = failure |
+|            |        |        |                                                              |
 
 ###
 
@@ -95,18 +96,16 @@ Here is a listing of each request type:
     * 2: The number of data points being requested
     * 3: The page (0-255) requested (0 if first request)
     * 3.5: Max data points requested (0 if we don't request a max). Data points beyond this is guaranteed to be paginated by the slave
-* 4: Write data
+* 4: Prepare to write data
   * This is for writing data from *any* device, including itself (if supported).
   * The response to this will have a state of 4.
   * The data in this request will have the following format:
     * 0: Length of name of originating device (L)
-    * 1 to 0.5+(L/2): Name of originating device
-    * 1 after name to 2 after name: Start time
-    * 3 after name: data point size (8 bits)
-    * 3.5 after name: data point timescale (8 bits)
-    * 4 after name: data points offset
-    * 5 after name: data points count
-    * 6 to end: data points
+    * 1: Start time
+    * 2: Data point size (8 bits)
+    * 2.5: Data point timescale (8 bits)
+    * 3: Data points count
+    * 4 to end: Name
 * 32770 (0x8002): Broadcasts time in unsigned Y2K epoch time that is used by Arduino time library
   * Goes to all slaves at once
   * Overflows in 2136
