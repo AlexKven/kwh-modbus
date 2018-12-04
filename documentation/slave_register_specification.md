@@ -101,16 +101,22 @@ Here is a listing of each request type:
   * The response to this will have a state of 4.
   * The data in this request will have the following format:
     * 0: Length of name of originating device (L)
-    * 1: Start time
-    * 2: Data point size (8 bits)
-    * 2.5: Data point timescale (8 bits)
-    * 3: Data points count
-    * 4 to end: Name
+    * 1 to 2: Start time
+    * 3: Data point size (8 bits)
+    * 3.5: Data point timescale (8 bits)
+    * 4: Data points count
+    * 5 to end: Name
 * 5: Write data
   * This is to send actual data to the receiving slave.
   * You must call `4: Prepare to write data` before calling `5: Write data`.
   * This response will have a state of 5.
   * Slave will automatically calculate offset from page number, according to the value returned from `4: Prepare to write data`.
+  * The data in this request will have the following format:
+    * 0: Number of data points in this page (8 bits)
+    * 0.5: Data point size (8 bits)
+    * 1: Data point timescale
+    * 1.5: Page number
+    * 2 to end: Data
 * 32770 (0x8002): Broadcasts time in unsigned Y2K epoch time that is used by Arduino time library
   * Goes to all slaves at once
   * Overflows in 2136

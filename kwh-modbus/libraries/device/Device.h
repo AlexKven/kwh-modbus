@@ -26,6 +26,6 @@ public:
 	virtual void setClock(uint32_t clock);
 	virtual RecieveDataStatus prepareReceiveData(word nameLength, byte* name, uint32_t startTime,
 		byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount, byte &outDataPointsPerPage);
-	virtual RecieveDataStatus receiveDeviceData(uint32_t startTime, TimeScale timeScale, byte dataPointSize,
-		word startOffset, word pointCount, byte* dataPoints);
+	virtual RecieveDataStatus receiveDeviceData(byte dataPointsInPage, byte dataPointSize,
+		TimeScale timesScale, byte pageNumber, byte* dataPoints);
 };

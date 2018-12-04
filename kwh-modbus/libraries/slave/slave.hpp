@@ -177,36 +177,61 @@ private_testable:
 				displayedStateInvalid = true;
 				break;
 			case 4:
+			{
+				_state = sPreparingToReceiveDevData;
+				RecieveDataStatus status;
+				Device *device = _devices[_modbus->Hreg(2)];
+				word nameLength = _modbus->Hreg(3);
+				uint32_t startTime = _modbus->Hreg(4) + (_modbus->Hreg(5) << 16);
+				byte dataPointSize = (byte)(_modbus->Hreg(6) & 0xFF);
+				TimeScale dataTimeScale = (TimeScale)((_modbus->Hreg(6) >> 8) & 0xFF);
+				word dataPointsCount = _modbus->Hreg(7);
+				if (nameLength > _dataBufferSize)
 				{
-					_state = sPreparingToReceiveDevData;
-					RecieveDataStatus status;
-					Device *device = _devices[_modbus->Hreg(2)];
-					word nameLength = _modbus->Hreg(3);
-					uint32_t startTime = _modbus->Hreg(4) + (_modbus->Hreg(5) << 16);
-					byte dataPointSize = (byte)(_modbus->Hreg(6) & 0xFF);
-					TimeScale dataTimeScale = (TimeScale)((_modbus->Hreg(6) >> 8) & 0xFF);
-					word dataPointsCount = _modbus->Hreg(7);
-					if (nameLength > _dataBufferSize)
-					{
-						_stateDetail = (word)RecieveDataStatus::nameTooLong;
-					}
-					else
-					{
-						word curReg;
-						for (int i = 0; i < nameLength; i++)
-						{
-							if (i % 2 == 0)
-								curReg = _modbus->Hreg(8 + i / 2);
-							else
-								curReg >>= 8;
-							_dataBuffer[i] = (byte)(curReg & 0xFF);
-						}
-						byte dataPointsPerPage = 0;
-						status = device->prepareReceiveData(nameLength, _dataBuffer, startTime, dataPointSize, dataTimeScale, dataPointsCount, dataPointsPerPage);
-						_stateDetail = (word)status + ((word)dataPointsPerPage << 8);
-					}
-					displayedStateInvalid = true;
+					_stateDetail = (word)RecieveDataStatus::nameTooLong;
 				}
+				else
+				{
+					word curReg;
+					for (int i = 0; i < nameLength; i++)
+					{
+						if (i % 2 == 0)
+							curReg = _modbus->Hreg(8 + i / 2);
+						else
+							curReg >>= 8;
+						_dataBuffer[i] = (byte)(curReg & 0xFF);
+					}
+					byte dataPointsPerPage = 0;
+					status = device->prepareReceiveData(nameLength, _dataBuffer, startTime, dataPointSize, dataTimeScale, dataPointsCount, dataPointsPerPage);
+					_stateDetail = (word)status + ((word)dataPointsPerPage << 8);
+				}
+				displayedStateInvalid = true;
+			}
+				break;
+			case 5:
+			{
+				_state = sIdle;
+				RecieveDataStatus status;
+				Device *device = _devices[_modbus->Hreg(2)];
+				byte dataPointsInPage = (byte)_modbus->Hreg(3);
+				byte dataPointSize = (byte)(_modbus->Hreg(3) >> 8);
+				TimeScale timeScale = (TimeScale)((byte)_modbus->Hreg(4));
+				byte pageNumber = (byte)(_modbus->Hreg(4) >> 8);
+
+				word curReg = 0;
+				word dataLengthBytes = BitFunctions::bitsToBytes(dataPointsInPage * dataPointSize);
+				for (int i = 0; i < dataLengthBytes; i++)
+				{
+					if (i % 2 == 0)
+						curReg = _modbus->Hreg(5 + i / 2);
+					else
+						curReg >>= 8;
+					_dataBuffer[i] = (byte)(curReg & 0xFF);
+				}
+				
+				status = device->receiveDeviceData(dataPointsInPage, dataPointSize, timeScale, pageNumber, _dataBuffer);
+			}
+				displayedStateInvalid = true;
 				break;
 			case 32770:
 				_state = sIdle;

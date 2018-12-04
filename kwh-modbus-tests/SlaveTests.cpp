@@ -657,65 +657,6 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_PrepareWriteData)
 	ASSERT_EQ(registerArray[1], 703);
 }
 //
-//TEST_F(SlaveTests, SlaveTests_processIncomingState_PrepareWriteData_Error)
-//{
-//	MOCK_SLAVE;
-//	Mock<Device> mDevice0;
-//	Mock<Device> mDevice1;
-//	Device **deviceArray = new Device*[2];
-//	deviceArray[0] = &mDevice0.get();
-//	deviceArray[1] = &mDevice1.get();
-//	string actualName;
-//
-//	When(Method(mDevice1, receiveDeviceName)).Do([&actualName](word length, byte* name)
-//	{
-//		actualName = stringifyCharArray(length, (char*)name);
-//		return RecieveDataStatus::error;
-//	});
-//	When(Method(mDevice1, receiveDeviceData)).Do([](uint32_t startTime, TimeScale timeScale,
-//		byte dataPointSize, word startOffset, word pointCount, byte* dataPoints)
-//	{
-//		return RecieveDataStatus::success;
-//	});
-//
-//	mSlave.displayedStateInvalid = false;
-//
-//	mSlave._state = sIdle;
-//	mSlave._deviceCount = 2;
-//	mSlave._deviceNameLength = 703;
-//	mSlave._modbus->setSlaveId(14);
-//	mSlave._devices = deviceArray;
-//	mSlave._dataBuffer = new byte[15];
-//	mSlave._dataBufferSize = 15;
-//
-//	registerArray[0] = sReceivedRequest;
-//	registerArray[1] = 4;
-//	registerArray[2] = 1;
-//	registerArray[3] = 7;
-//	registerArray[4] = (word)'D' + ((word)'e' << 8);
-//	registerArray[5] = (word)'v' + ((word)'i' << 8);
-//	registerArray[6] = (word)'c' + ((word)'e' << 8);
-//	registerArray[7] = (word)'0';
-//	registerArray[8] = 200;
-//	registerArray[9] = 15;
-//	registerArray[10] = 6 + ((word)TimeScale::sec15 << 8);
-//	registerArray[11] = 21;
-//	registerArray[12] = 5;
-//	registerArray[13] = 0x2040;
-//	registerArray[14] = 0x040C;
-//
-//	bool processed;
-//	bool success = mSlave.processIncomingState(processed);
-//
-//	ASSERT_TRUE(processed);
-//	ASSERT_TRUE(success);
-//	ASSERT_EQ(mSlave._state, sIdle);
-//	Verify(Method(mDevice1, receiveDeviceName).Using(7, Any<byte*>())).Once();
-//	Verify(Method(mDevice1, receiveDeviceData)).Never();
-//	ASSERT_EQ(actualName, "Device0");
-//	ASSERT_EQ(mSlave.displayedStateInvalid, true);
-//}
-//
 //TEST_F(SlaveTests, SlaveTests_processIncomingState_ReceiveData)
 //{
 //	MOCK_SLAVE;

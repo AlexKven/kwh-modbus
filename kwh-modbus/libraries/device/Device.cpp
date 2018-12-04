@@ -11,10 +11,10 @@ void Device::setClock(uint32_t clock)
 
 RecieveDataStatus Device::prepareReceiveData(word nameLength, byte * name, uint32_t startTime, byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount, byte & outDataPointsPerPage)
 {
-	return RecieveDataStatus();
+	return RecieveDataStatus::notSupported;
 }
 
-RecieveDataStatus Device::receiveDeviceData(uint32_t startTime, TimeScale timeScale, byte dataPointSize, word startOffset, word pointCount, byte * dataPoints)
+RecieveDataStatus Device::receiveDeviceData(byte dataPointsInPage, byte dataPointSize, TimeScale timesScale, byte pageNumber, byte * dataPoints)
 {
-	return RecieveDataStatus();
+	return RecieveDataStatus::notSupported;
 }
