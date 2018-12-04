@@ -18,11 +18,12 @@ enum SlaveState : word
 	sReceivedRequest = 1,
 	sDisplayDevInfo = 2,
 	sDisplayDevData = 3,
-	sReceivingDevData = 4,
-	sDisplayDevCommand = 5,
-	sReceivingDevCommand = 6,
-	sDisplayDevMessage = 7,
-	sDisplaySlaveMessage = 8,
+	sPreparingToReceiveDevData = 4,
+	sReceivingDevData = 5,
+	sDisplayDevCommand = 6,
+	sReceivingDevCommand = 7,
+	sDisplayDevMessage = 8,
+	sDisplaySlaveMessage = 9,
 	sSetTime = 32770
 };
 
@@ -37,6 +38,7 @@ private_testable:
 	byte **_deviceNames = nullptr;
 	Device **_devices = nullptr;
 	SlaveState _state = sIdle;
+	word _stateDetail;
 	bool displayedStateInvalid = true;
 	word _hregCount;
 
@@ -140,6 +142,9 @@ private_testable:
 				//ENSURE(_modbus->Hreg(2, _devices[deviceNum]->getType()));
 			}
 			break;
+		case sPreparingToReceiveDevData:
+			ENSURE(_modbus->Hreg(1, _stateDetail));
+			break;
 		}
 		displayedStateInvalid = false;
 		return true;
@@ -173,46 +178,32 @@ private_testable:
 				break;
 			case 4:
 				{
-					_state = sIdle;
+					_state = sPreparingToReceiveDevData;
 					RecieveDataStatus status;
 					Device *device = _devices[_modbus->Hreg(2)];
 					word nameLength = _modbus->Hreg(3);
+					uint32_t startTime = _modbus->Hreg(4) + (_modbus->Hreg(5) << 16);
+					byte dataPointSize = (byte)(_modbus->Hreg(6) & 0xFF);
+					TimeScale dataTimeScale = (TimeScale)((_modbus->Hreg(6) >> 8) & 0xFF);
+					word dataPointsCount = _modbus->Hreg(7);
 					if (nameLength > _dataBufferSize)
 					{
-						// Error: name too long
-					}
-					word curReg;
-					for (int i = 0; i < nameLength; i++)
-					{
-						if (i % 2 == 0)
-							curReg = _modbus->Hreg(4 + i / 2);
-						else
-							curReg >>= 8;
-						_dataBuffer[i] = (byte)(curReg & 0xFF);
-					}
-					status = device->receiveDeviceName(nameLength, _dataBuffer);
-					if (status != RecieveDataStatus::success)
-					{
-						// failure
+						_stateDetail = (word)RecieveDataStatus::nameTooLong;
 					}
 					else
 					{
-						word nameOffset = nameLength / 2 + nameLength % 2;
-						uint32_t startTime = _modbus->Hreg(4 + nameOffset) + (_modbus->Hreg(5 + nameOffset) << 16);
-						byte dataPointSize = (byte)(_modbus->Hreg(6 + nameOffset) & 0xFF);
-						TimeScale dataTimeScale = (TimeScale)((_modbus->Hreg(6 + nameOffset) >> 8) & 0xFF);
-						word dataPointsOffset = _modbus->Hreg(7 + nameOffset);
-						word dataPointsCount = _modbus->Hreg(8 + nameOffset);
-						word dataLengthBytes = BitFunctions::bitsToBytes(dataPointsCount * dataPointSize);
-						for (int i = 0; i < dataLengthBytes; i++)
+						word curReg;
+						for (int i = 0; i < nameLength; i++)
 						{
 							if (i % 2 == 0)
-								curReg = _modbus->Hreg(9 + nameOffset + i / 2);
+								curReg = _modbus->Hreg(8 + i / 2);
 							else
 								curReg >>= 8;
 							_dataBuffer[i] = (byte)(curReg & 0xFF);
 						}
-						status = device->receiveDeviceData(startTime, dataTimeScale, dataPointSize, dataPointsOffset, dataPointsCount, _dataBuffer);
+						byte dataPointsPerPage = 0;
+						status = device->prepareReceiveData(nameLength, _dataBuffer, startTime, dataPointSize, dataTimeScale, dataPointsCount, dataPointsPerPage);
+						_stateDetail = (word)status + ((word)dataPointsPerPage << 8);
 					}
 					displayedStateInvalid = true;
 				}

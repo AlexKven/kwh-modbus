@@ -63,10 +63,10 @@ Slaves will have the first register always be the current state of the slave. Be
 
 ### 4: Master is preparing to write data to device
 
-| Register # | Value  | Range  | Notes                                                        |
-| ---------- | ------ | ------ | ------------------------------------------------------------ |
-| 1          | Status | 0 to 4 | 0 = success, 1 = not supported, 2 = name is too long, 3 = current time is requested, 4 = failure |
-|            |        |        |                                                              |
+| Register # | Value                         | Range    | Notes                                                        |
+| ---------- | ----------------------------- | -------- | ------------------------------------------------------------ |
+| 1          | Status (8 bits)               | 0 to 4   | 0 = success, 1 = not supported, 2 = name is too long, 3 = current time is requested, 4 = failure |
+| 1.5        | Data points per page (8 bits) | 0 to 255 | Specifies how many data points the slave will expect to receive per page |
 
 ###
 
@@ -106,6 +106,11 @@ Here is a listing of each request type:
     * 2.5: Data point timescale (8 bits)
     * 3: Data points count
     * 4 to end: Name
+* 5: Write data
+  * This is to send actual data to the receiving slave.
+  * You must call `4: Prepare to write data` before calling `5: Write data`.
+  * This response will have a state of 5.
+  * Slave will automatically calculate offset from page number, according to the value returned from `4: Prepare to write data`.
 * 32770 (0x8002): Broadcasts time in unsigned Y2K epoch time that is used by Arduino time library
   * Goes to all slaves at once
   * Overflows in 2136

@@ -14,7 +14,7 @@ KWH Modbus Devices are individual worker units that communicate with the master 
 | -------------- | ---------------------------- |
 | 00             | No data flow (commands only) |
 | 01             | Data collector               |
-| 10             | Data receiver                |
+| 10             | Data transmitter             |
 | 11             | Diagnostic data receiver     |
 
 **Data accumulation type:** 0 = instantaneous (like temperature), 1 = accumulate (like energy usage)

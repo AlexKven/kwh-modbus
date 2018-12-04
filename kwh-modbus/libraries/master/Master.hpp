@@ -329,7 +329,7 @@ protected_testable:
 		return _processNewSlave;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte, byte), TimeScale, uint32_t, int, DeviceDirectoryRow*);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte, byte, int, DeviceDirectoryRow*), TimeScale, uint32_t);
 	readAndSendDeviceData_Task _readAndSendDeviceData;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), readAndSendDeviceData, TimeScale maxTimeScale, uint32_t currentTime)
 	{
@@ -344,8 +344,8 @@ protected_testable:
 		ASYNC_VAR(8, numReadPagesRemaining);
 		ASYNC_VAR(9, curReadPage);
 		ASYNC_VAR(10, numPointsInReadPage);
-		ASYNC_VAR_INIT(0, deviceRow_transmit, 0);
-		ASYNC_VAR(1, device_transmit);
+		ASYNC_VAR_INIT(11, deviceRow_transmit, 0);
+		ASYNC_VAR(12, device_transmit);
 		word regCount;
 		word *regs;
 		START_ASYNC;
@@ -417,7 +417,7 @@ protected_testable:
 									device_transmit = _deviceDirectory->findNextDevice(device_name, deviceRow_transmit);
 									if (device_transmit != nullptr)
 									{
-										if (DataTransmitterDevice::isDataTransmitterDeviceType(device_transmit->deviceType)
+										if (DataTransmitterDevice::isDataTransmitterDeviceType(device_transmit->deviceType))
 										{
 
 										}

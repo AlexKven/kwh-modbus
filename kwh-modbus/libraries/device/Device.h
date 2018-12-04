@@ -24,7 +24,8 @@ public:
 	virtual bool readData(uint32_t startTime, word numPoints, byte page,
 		byte* buffer, word bufferSize, byte maxPoints, byte &outDataPointsCount, byte &outPagesRemaining, byte &outDataPointSize);
 	virtual void setClock(uint32_t clock);
-	virtual RecieveDataStatus receiveDeviceName(word nameLength, byte* name);
+	virtual RecieveDataStatus prepareReceiveData(word nameLength, byte* name, uint32_t startTime,
+		byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount, byte &outDataPointsPerPage);
 	virtual RecieveDataStatus receiveDeviceData(uint32_t startTime, TimeScale timeScale, byte dataPointSize,
 		word startOffset, word pointCount, byte* dataPoints);
 };
