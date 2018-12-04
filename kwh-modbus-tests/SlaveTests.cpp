@@ -656,73 +656,109 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_PrepareWriteData)
 	ASSERT_EQ(registerArray[0], sPreparingToReceiveDevData);
 	ASSERT_EQ(registerArray[1], 703);
 }
-//
-//TEST_F(SlaveTests, SlaveTests_processIncomingState_ReceiveData)
-//{
-//	MOCK_SLAVE;
-//	Mock<Device> mDevice0;
-//	Mock<Device> mDevice1;
-//	Device **deviceArray = new Device*[2];
-//	deviceArray[0] = &mDevice0.get();
-//	deviceArray[1] = &mDevice1.get();
-//	string actualName;
-//	byte actualData[4];
-//	actualData[3] = 0;
-//
-//	When(Method(mDevice1, receiveDeviceName)).Do([&actualName](word length, byte* name)
-//	{
-//		actualName = stringifyCharArray(length, (char*)name);
-//		return RecieveDataStatus::success;
-//	});
-//	When(Method(mDevice1, receiveDeviceData)).Do([&actualData](uint32_t startTime, TimeScale timeScale,
-//		byte dataPointSize, word startOffset, word pointCount, byte* dataPoints)
-//	{
-//		BitFunctions::copyBits(dataPoints, actualData, 0, 0, 30);
-//		return RecieveDataStatus::success;
-//	});
-//
-//	mSlave.displayedStateInvalid = false;
-//
-//	mSlave._state = sIdle;
-//	mSlave._deviceCount = 2;
-//	mSlave._deviceNameLength = 703;
-//	mSlave._modbus->setSlaveId(14);
-//	mSlave._devices = deviceArray;
-//	mSlave._dataBuffer = new byte[15];
-//	mSlave._dataBufferSize = 15;
-//
-//	registerArray[0] = sReceivedRequest;
-//	registerArray[1] = 4;
-//	registerArray[2] = 1;
-//	registerArray[3] = 7;
-//	registerArray[4] = (word)'D' + ((word)'e' << 8);
-//	registerArray[5] = (word)'v' + ((word)'i' << 8);
-//	registerArray[6] = (word)'c' + ((word)'e' << 8);
-//	registerArray[7] = (word)'0';
-//	registerArray[8] = 200;
-//	registerArray[9] = 15;
-//	registerArray[10] = 6 + ((word)TimeScale::sec15 << 8);
-//	registerArray[11] = 21;
-//	registerArray[12] = 5;
-//	registerArray[13] = 0x2040;
-//	registerArray[14] = 0x040C;
-//
-//	bool processed;
-//	bool success = mSlave.processIncomingState(processed);
-//
-//	ASSERT_TRUE(processed);
-//	ASSERT_TRUE(success);
-//	ASSERT_EQ(mSlave._state, sIdle);
-//	Verify(Method(mDevice1, receiveDeviceName).Using(7, Any<byte*>())).Once();
-//	Verify(Method(mDevice1, receiveDeviceData).Using(983240, TimeScale::sec15, 6, 21, 5, Any<byte*>())).Once();
-//	ASSERT_EQ(actualName, "Device0");
-//	assertArrayEq<byte, byte, byte, byte>(actualData,
-//		0x40,
-//		0x20,
-//		0x0C,
-//		0x04);
-//	ASSERT_EQ(mSlave.displayedStateInvalid, true);
-//}
+
+TEST_F(SlaveTests, SlaveTests_processIncomingState_WriteData)
+{
+	MOCK_SLAVE;
+	MockNewMethod(mockReceiveData, byte dataPointsInPage, byte dataPointSize,
+		TimeScale timesScale, byte pageNumber);
+	Mock<Device> mDevice0;
+	Mock<Device> mDevice1;
+	Device **deviceArray = new Device*[2];
+	deviceArray[0] = &mDevice0.get();
+	deviceArray[1] = &mDevice1.get();
+	byte actualData[4];
+	actualData[3] = 0;
+
+	When(Method(mDevice1, receiveDeviceData)).Do([&actualData, &mockReceiveData](byte dataPointsInPage, byte dataPointSize,
+		TimeScale timeScale, byte pageNumber, byte* dataPoints)
+	{
+		mockReceiveData.get().method(dataPointsInPage, dataPointSize, timeScale, pageNumber);
+		BitFunctions::copyBits(dataPoints, actualData, 0, 0, 30);
+		return RecieveDataStatus::success;
+	});
+
+	mSlave.displayedStateInvalid = false;
+
+	mSlave._state = sIdle;
+	mSlave._deviceCount = 2;
+	mSlave._deviceNameLength = 703;
+	mSlave._modbus->setSlaveId(14);
+	mSlave._devices = deviceArray;
+	mSlave._dataBuffer = new byte[15];
+	mSlave._dataBufferSize = 15;
+
+	registerArray[0] = sReceivedRequest;
+	registerArray[1] = 5;
+	registerArray[2] = 1;
+	registerArray[3] = 6 + (word)(5 << 8);
+	registerArray[4] = (word)TimeScale::sec15 + (word)(2 << 8);
+	registerArray[5] = 0x25FE;
+	registerArray[6] = 0xE68C;
+
+	bool processed;
+	bool success = mSlave.processIncomingState(processed);
+
+	ASSERT_TRUE(processed);
+	ASSERT_TRUE(success);
+	ASSERT_EQ(mSlave._state, sIdle);
+	Verify(Method(mockReceiveData, method).Using(6, 5, TimeScale::sec15, 2)).Once();
+	assertArrayEq<byte, byte, byte, byte>(actualData,
+		0xFE,
+		0x25,
+		0x8C,
+		0x26);
+	ASSERT_EQ(mSlave.displayedStateInvalid, true);
+}
+
+TEST_F(SlaveTests, SlaveTests_processIncomingState_WriteData_DataTooLong)
+{
+	MOCK_SLAVE;
+	MockNewMethod(mockReceiveData, byte dataPointsInPage, byte dataPointSize,
+		TimeScale timesScale, byte pageNumber);
+	Mock<Device> mDevice0;
+	Mock<Device> mDevice1;
+	Device **deviceArray = new Device*[2];
+	deviceArray[0] = &mDevice0.get();
+	deviceArray[1] = &mDevice1.get();
+	byte actualData[4];
+	actualData[3] = 0;
+
+	When(Method(mDevice1, receiveDeviceData)).Do([&actualData, &mockReceiveData](byte dataPointsInPage, byte dataPointSize,
+		TimeScale timeScale, byte pageNumber, byte* dataPoints)
+	{
+		mockReceiveData.get().method(dataPointsInPage, dataPointSize, timeScale, pageNumber);
+		BitFunctions::copyBits(dataPoints, actualData, 0, 0, 30);
+		return RecieveDataStatus::success;
+	});
+
+	mSlave.displayedStateInvalid = false;
+
+	mSlave._state = sIdle;
+	mSlave._deviceCount = 2;
+	mSlave._deviceNameLength = 703;
+	mSlave._modbus->setSlaveId(14);
+	mSlave._devices = deviceArray;
+	mSlave._dataBuffer = new byte[15];
+	mSlave._dataBufferSize = 15;
+
+	registerArray[0] = sReceivedRequest;
+	registerArray[1] = 5;
+	registerArray[2] = 1;
+	registerArray[3] = 99 + (word)(5 << 8);
+	registerArray[4] = (word)TimeScale::sec15 + (word)(2 << 8);
+	registerArray[5] = 0x25FE;
+	registerArray[6] = 0xE68C;
+
+	bool processed;
+	bool success = mSlave.processIncomingState(processed);
+
+	ASSERT_TRUE(processed);
+	ASSERT_TRUE(success);
+	ASSERT_EQ(mSlave._state, sIdle);
+	Verify(Method(mockReceiveData, method)).Never();
+	ASSERT_EQ(mSlave.displayedStateInvalid, false);
+}
 //
 //TEST_F(SlaveTests, SlaveTests_processIncomingState_ReceiveData_Error)
 //{

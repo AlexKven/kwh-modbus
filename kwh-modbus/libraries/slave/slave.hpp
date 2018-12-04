@@ -220,13 +220,21 @@ private_testable:
 
 				word curReg = 0;
 				word dataLengthBytes = BitFunctions::bitsToBytes(dataPointsInPage * dataPointSize);
-				for (int i = 0; i < dataLengthBytes; i++)
+				if (dataLengthBytes > _dataBufferSize)
 				{
-					if (i % 2 == 0)
-						curReg = _modbus->Hreg(5 + i / 2);
-					else
-						curReg >>= 8;
-					_dataBuffer[i] = (byte)(curReg & 0xFF);
+					// Data is too long. Save myself the segfault
+					return true;
+				}
+				else
+				{
+					for (int i = 0; i < dataLengthBytes; i++)
+					{
+						if (i % 2 == 0)
+							curReg = _modbus->Hreg(5 + i / 2);
+						else
+							curReg >>= 8;
+						_dataBuffer[i] = (byte)(curReg & 0xFF);
+					}
 				}
 				
 				status = device->receiveDeviceData(dataPointsInPage, dataPointSize, timeScale, pageNumber, _dataBuffer);
