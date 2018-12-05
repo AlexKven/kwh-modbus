@@ -348,6 +348,7 @@ protected_testable:
 		ASYNC_VAR(12, device_transmit);
 		word regCount;
 		word *regs;
+		byte *dummyName;
 		START_ASYNC;
 		while (deviceRow_receive != -1)
 		{
@@ -414,12 +415,43 @@ protected_testable:
 								deviceRow_transmit = 0;
 								while (deviceRow_transmit != -1)
 								{
-									device_transmit = _deviceDirectory->findNextDevice(device_name, deviceRow_transmit);
+									device_transmit = _deviceDirectory->findNextDevice(dummyName, deviceRow_transmit);
 									if (device_transmit != nullptr)
 									{
 										if (DataTransmitterDevice::isDataTransmitterDeviceType(device_transmit->deviceType))
 										{
-
+											_registerBuffer[0] = 1;
+											_registerBuffer[1] = 3;
+											_registerBuffer[2] = device_transmit->deviceNumber;
+											_registerBuffer[3] = _deviceDirectory->getDeviceNameLength();
+											_registerBuffer[4] = (word)readStart;
+											_registerBuffer[5] = (word)(readStart >> 16);
+											_registerBuffer[6] = dataSize + ((word)timescale << 8);
+											_registerBuffer[7] = numPointsInReadPage;
+											word curReg = 0;
+											for (int i = 0; i < _deviceDirectory->getDeviceNameLength(); i++)
+											{
+												if (i % 2 == 0)
+												{
+													curReg = device_name[i];
+												}
+												else
+												{
+													curReg += ((word)device_name[i] << 8);
+												}
+												if (i % 2 == 0 || i == _deviceDirectory->getDeviceNameLength() - 1)
+												{
+													_registerBuffer[8 + i / 2] = curReg;
+												}
+											}
+											completeModbusWriteRegisters(device_transmit->slaveId, 0,
+												9 + (_deviceDirectory->getDeviceNameLength() - 1) / 2, _registerBuffer);
+											AWAIT(_completeModbusWriteRegisters);
+											ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+											//completeModbusReadRegisters(device_receive->slaveId, 0, 6);
+											//AWAIT(_completeModbusReadRegisters);
+											//ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
+											//_modbus->isReadRegsResponse(regCount, regs);
 										}
 									}
 								}

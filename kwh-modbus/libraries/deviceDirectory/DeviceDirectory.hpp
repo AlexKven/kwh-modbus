@@ -58,6 +58,11 @@ public:
 		init(deviceNameLength, maxDevicesOut, persistentStore);
 	}
 
+	virtual word getDeviceNameLength()
+	{
+		return _deviceNameLength;
+	}
+
 	//Device Directory row: [Name (8), DeviceType (1), SlaveID (1)]
 	//If empty, DeviceType = 0, and SlaveID = 0 unless there's
 	//device entries after that row, then DeviceType = 1
