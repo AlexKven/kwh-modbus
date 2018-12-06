@@ -442,7 +442,7 @@ protected_testable:
 													{
 														curReg += ((word)device_name[i] << 8);
 													}
-													if (i % 2 == 0 || i == _deviceDirectory->getDeviceNameLength() - 1)
+													if (i % 2 == 1 || i == _deviceDirectory->getDeviceNameLength() - 1)
 													{
 														_registerBuffer[8 + i / 2] = curReg;
 													}
