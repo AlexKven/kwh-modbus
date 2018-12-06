@@ -424,12 +424,18 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
 TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlave)
 {
 	MockNewMethod(mockReadData, uint32_t startTime, word numPoints, byte page, word bufferSize, byte maxPoints);
-	MockNewMethod(mockPrepareReceiveData, uint32_t startTime, word numPoints, byte page, word bufferSize, byte maxPoints);
+	MockNewMethod(mockPrepareReceiveData, word nameLength, uint32_t startTime,
+		byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount);
 
 	Fake(Method(device0, setClock));
 	Fake(Method(device1, setClock));
-	When(Method(device0, prepareReceiveData)).AlwaysDo([&mockPrepareReceiveData](word nameLength, byte* name, uint32_t startTime,
+
+	string sendingDeviceName;
+	When(Method(device0, prepareReceiveData)).AlwaysDo([&mockPrepareReceiveData, &sendingDeviceName](word nameLength, byte* name, uint32_t startTime,
 		byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount, byte &outDataPointsPerPage) {
+		mockPrepareReceiveData.get().method(nameLength, startTime, dataPointSize, dataTimeScale, dataPointsCount);
+		sendingDeviceName = stringifyCharArray(nameLength, (char*)name);
+		outDataPointsPerPage = 3;
 		return RecieveDataStatus::success;
 	});
 	When(Method(device1, readData)).AlwaysDo([&mockReadData] (uint32_t startTime, word numPoints, byte page,
@@ -485,8 +491,9 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
+	ASSERT_EQ(sendingDeviceName, "dev01");
 	Verify(Method(mockReadData, method).Using(2, 8, 0, 20, 40)).AtLeastOnce();
-	Verify(Method(mockReadData, method).Using(2, 8, 0, 20, 40)).AtLeastOnce();
+	Verify(Method(mockPrepareReceiveData, method).Using(5, 2, 8, TimeScale::sec1, 4)).AtLeastOnce();
 }
 
 INSTANTIATE_TEST_CASE_P(NoErrors, MasterSlaveIntegrationTests, ::testing::Values(None));
