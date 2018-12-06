@@ -424,9 +424,14 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
 TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlave)
 {
 	MockNewMethod(mockReadData, uint32_t startTime, word numPoints, byte page, word bufferSize, byte maxPoints);
+	MockNewMethod(mockPrepareReceiveData, uint32_t startTime, word numPoints, byte page, word bufferSize, byte maxPoints);
 
 	Fake(Method(device0, setClock));
 	Fake(Method(device1, setClock));
+	When(Method(device0, prepareReceiveData)).AlwaysDo([&mockPrepareReceiveData](word nameLength, byte* name, uint32_t startTime,
+		byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount, byte &outDataPointsPerPage) {
+		return RecieveDataStatus::success;
+	});
 	When(Method(device1, readData)).AlwaysDo([&mockReadData] (uint32_t startTime, word numPoints, byte page,
 		byte* buffer, word bufferSize, byte maxPoints, byte &outDataPointsCount, byte &outPagesRemaining, byte &outDataPointSize) {
 		mockReadData.get().method(startTime, numPoints, page, bufferSize, maxPoints);
@@ -470,6 +475,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 	word devType;
 	DataCollectorDevice::getDataCollectorDeviceTypeFromParameters(false, TimeScale::sec1, 8, devType);
 	When(Method(device1, getType)).AlwaysReturn(devType);
+	When(Method(device0, getType)).AlwaysReturn(32768);
 
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);

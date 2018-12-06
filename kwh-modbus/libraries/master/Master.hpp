@@ -398,18 +398,20 @@ protected_testable:
 								ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
 								_modbus->isReadRegsResponse(regCount, regs);
 
-								word numDataBytes = BitFunctions::bitsToBytes(numDataPoints * dataSize);
-								if (numDataBytes > _dataBufferSize)
 								{
-									reportMalfunction(__LINE__);
-									return true;
-								}
-								for (int i = 0; i < numDataBytes; i++)
-								{
-									if (i % 2 == 0)
-										_dataBuffer[i] = (byte)regs[i / 2];
-									else
-										_dataBuffer[i] = (byte)(regs[i / 2] >> 8);
+									word numDataBytes = BitFunctions::bitsToBytes(numDataPoints * dataSize);
+									if (numDataBytes > _dataBufferSize)
+									{
+										reportMalfunction(__LINE__);
+										return true;
+									}
+									for (int i = 0; i < numDataBytes; i++)
+									{
+										if (i % 2 == 0)
+											_dataBuffer[i] = (byte)regs[i / 2];
+										else
+											_dataBuffer[i] = (byte)(regs[i / 2] >> 8);
+									}
 								}
 
 								deviceRow_transmit = 0;
@@ -421,27 +423,29 @@ protected_testable:
 										if (DataTransmitterDevice::isDataTransmitterDeviceType(device_transmit->deviceType))
 										{
 											_registerBuffer[0] = 1;
-											_registerBuffer[1] = 3;
+											_registerBuffer[1] = 4;
 											_registerBuffer[2] = device_transmit->deviceNumber;
 											_registerBuffer[3] = _deviceDirectory->getDeviceNameLength();
 											_registerBuffer[4] = (word)readStart;
 											_registerBuffer[5] = (word)(readStart >> 16);
-											_registerBuffer[6] = dataSize + ((word)timescale << 8);
+											_registerBuffer[6] = dataSize + ((word)timeScale << 8);
 											_registerBuffer[7] = numPointsInReadPage;
-											word curReg = 0;
-											for (int i = 0; i < _deviceDirectory->getDeviceNameLength(); i++)
 											{
-												if (i % 2 == 0)
+												word curReg = 0;
+												for (int i = 0; i < _deviceDirectory->getDeviceNameLength(); i++)
 												{
-													curReg = device_name[i];
-												}
-												else
-												{
-													curReg += ((word)device_name[i] << 8);
-												}
-												if (i % 2 == 0 || i == _deviceDirectory->getDeviceNameLength() - 1)
-												{
-													_registerBuffer[8 + i / 2] = curReg;
+													if (i % 2 == 0)
+													{
+														curReg = device_name[i];
+													}
+													else
+													{
+														curReg += ((word)device_name[i] << 8);
+													}
+													if (i % 2 == 0 || i == _deviceDirectory->getDeviceNameLength() - 1)
+													{
+														_registerBuffer[8 + i / 2] = curReg;
+													}
 												}
 											}
 											completeModbusWriteRegisters(device_transmit->slaveId, 0,
