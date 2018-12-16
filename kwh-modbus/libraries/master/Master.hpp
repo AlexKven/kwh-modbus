@@ -329,7 +329,7 @@ protected_testable:
 		return _processNewSlave;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte, byte, int, DeviceDirectoryRow*), TimeScale, uint32_t);
+	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte, byte, byte, byte, int, DeviceDirectoryRow*), TimeScale, uint32_t);
 	readAndSendDeviceData_Task _readAndSendDeviceData;
 	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), readAndSendDeviceData, TimeScale maxTimeScale, uint32_t currentTime)
 	{
@@ -344,8 +344,10 @@ protected_testable:
 		ASYNC_VAR(8, numReadPagesRemaining);
 		ASYNC_VAR(9, curReadPage);
 		ASYNC_VAR(10, numPointsInReadPage);
-		ASYNC_VAR_INIT(11, deviceRow_transmit, 0);
-		ASYNC_VAR(12, device_transmit);
+		ASYNC_VAR(11, curWritePage);
+		ASYNC_VAR(12, numPointsInWritePage);
+		ASYNC_VAR_INIT(13, deviceRow_transmit, 0);
+		ASYNC_VAR(14, device_transmit);
 		word regCount;
 		word *regs;
 		byte *dummyName;
@@ -422,6 +424,7 @@ protected_testable:
 									{
 										if (DataTransmitterDevice::isDataTransmitterDeviceType(device_transmit->deviceType))
 										{
+											prepare_write:
 											_registerBuffer[0] = 1;
 											_registerBuffer[1] = 4;
 											_registerBuffer[2] = device_transmit->deviceNumber;
@@ -452,10 +455,26 @@ protected_testable:
 												9 + (_deviceDirectory->getDeviceNameLength() - 1) / 2, _registerBuffer);
 											AWAIT(_completeModbusWriteRegisters);
 											ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
-											//completeModbusReadRegisters(device_receive->slaveId, 0, 6);
-											//AWAIT(_completeModbusReadRegisters);
-											//ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
-											//_modbus->isReadRegsResponse(regCount, regs);
+											completeModbusReadRegisters(device_transmit->slaveId, 0, 2);
+											AWAIT(_completeModbusReadRegisters);
+											ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
+											_modbus->isReadRegsResponse(regCount, regs);
+											if ((regs[1] & 0xFF) == 3)
+											{
+												broadcastTime();
+												_system->delayMicroseconds(10000);
+												goto prepare_write;
+											}
+											else if ((regs[1] & 0xFF == 0))
+											{
+												curWritePage = 0;
+												numPointsInWritePage = (byte)(regs[1] >> 8);
+											}
+											else
+											{
+												reportMalfunction(__LINE__);
+												return true;
+											}
 										}
 									}
 								}
