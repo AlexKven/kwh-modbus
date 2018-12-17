@@ -331,7 +331,90 @@ protected_testable:
 		return _processNewSlave;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte, byte, byte, byte, int, DeviceDirectoryRow*), TimeScale, uint32_t);
+	DEFINE_CLASS_TASK(THIS_T, sendDataToSlaves, void, VARS(int, DeviceDirectoryRow*, byte, byte), uint32_t, byte, TimeScale, word, byte*, byte*);
+	sendDataToSlaves_Task _sendDataToSlaves;
+	virtual ASYNC_CLASS_FUNC(THIS_T, sendDataToSlaves, uint32_t startTime,
+		byte dataSize, TimeScale timeScale, word numDataPoints, byte* name, byte* data)
+	{
+		ASYNC_VAR_INIT(0, deviceRow, 0);
+		ASYNC_VAR(1, device);
+		ASYNC_VAR(2, curPage);
+		ASYNC_VAR(3, numPointsInPage);
+		word regCount;
+		word *regs;
+		byte *dummyName;
+		START_ASYNC;
+		while (deviceRow != -1)
+		{
+			device = _deviceDirectory->findNextDevice(dummyName, deviceRow);
+			if (device != nullptr)
+			{
+				if (DataTransmitterDevice::isDataTransmitterDeviceType(device->deviceType))
+				{
+				prepare_write:
+					_registerBuffer[0] = 1;
+					_registerBuffer[1] = 4;
+					_registerBuffer[2] = device->deviceNumber;
+					_registerBuffer[3] = _deviceDirectory->getDeviceNameLength();
+					_registerBuffer[4] = (word)startTime;
+					_registerBuffer[5] = (word)(startTime >> 16);
+					_registerBuffer[6] = dataSize + ((word)timeScale << 8);
+					_registerBuffer[7] = numDataPoints;
+					{
+						word curReg = 0;
+						for (int i = 0; i < _deviceDirectory->getDeviceNameLength(); i++)
+						{
+							if (i % 2 == 0)
+							{
+								curReg = name[i];
+							}
+							else
+							{
+								curReg += ((word)name[i] << 8);
+							}
+							if (i % 2 == 1 || i == _deviceDirectory->getDeviceNameLength() - 1)
+							{
+								_registerBuffer[8 + i / 2] = curReg;
+							}
+						}
+					}
+					completeModbusWriteRegisters(device->slaveId, 0,
+						9 + (_deviceDirectory->getDeviceNameLength() - 1) / 2, _registerBuffer);
+					AWAIT(_completeModbusWriteRegisters);
+					ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+					completeModbusReadRegisters(device->slaveId, 0, 2);
+					AWAIT(_completeModbusReadRegisters);
+					ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
+					_modbus->isReadRegsResponse(regCount, regs);
+					if ((regs[1] & 0xFF) == 3)
+					{
+						broadcastTime();
+						_system->delayMicroseconds(10000);
+						goto prepare_write;
+					}
+					else if ((regs[1] & 0xFF == 0))
+					{
+						curPage = 0;
+						numPointsInPage = (byte)(regs[1] >> 8);
+					}
+					else
+					{
+						reportMalfunction(__LINE__);
+						return true;
+					}
+				}
+			}
+		}
+		END_ASYNC;
+	}
+	sendDataToSlaves_Task& sendDataToSlaves(uint32_t startTime,
+		byte dataSize, TimeScale timeScale, word numDataPoints, byte* name, byte* data)
+	{
+		CREATE_ASSIGN_CLASS_TASK(_sendDataToSlaves, THIS_T, this, sendDataToSlaves, startTime, dataSize, timeScale, numDataPoints, name, data);
+		return _sendDataToSlaves;
+	}
+
+	DEFINE_CLASS_TASK(THIS_T, readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte, byte), TimeScale, uint32_t);
 	readAndSendDeviceData_Task _readAndSendDeviceData;
 	virtual ASYNC_CLASS_FUNC(THIS_T, readAndSendDeviceData, TimeScale maxTimeScale, uint32_t currentTime)
 	{
@@ -346,13 +429,8 @@ protected_testable:
 		ASYNC_VAR(8, numReadPagesRemaining);
 		ASYNC_VAR(9, curReadPage);
 		ASYNC_VAR(10, numPointsInReadPage);
-		ASYNC_VAR(11, curWritePage);
-		ASYNC_VAR(12, numPointsInWritePage);
-		ASYNC_VAR_INIT(13, deviceRow_transmit, 0);
-		ASYNC_VAR(14, device_transmit);
 		word regCount;
 		word *regs;
-		byte *dummyName;
 		START_ASYNC;
 		while (deviceRow_receive != -1)
 		{
@@ -418,69 +496,9 @@ protected_testable:
 									}
 								}
 
-								deviceRow_transmit = 0;
-								while (deviceRow_transmit != -1)
-								{
-									device_transmit = _deviceDirectory->findNextDevice(dummyName, deviceRow_transmit);
-									if (device_transmit != nullptr)
-									{
-										if (DataTransmitterDevice::isDataTransmitterDeviceType(device_transmit->deviceType))
-										{
-											prepare_write:
-											_registerBuffer[0] = 1;
-											_registerBuffer[1] = 4;
-											_registerBuffer[2] = device_transmit->deviceNumber;
-											_registerBuffer[3] = _deviceDirectory->getDeviceNameLength();
-											_registerBuffer[4] = (word)readStart;
-											_registerBuffer[5] = (word)(readStart >> 16);
-											_registerBuffer[6] = dataSize + ((word)timeScale << 8);
-											_registerBuffer[7] = numPointsInReadPage;
-											{
-												word curReg = 0;
-												for (int i = 0; i < _deviceDirectory->getDeviceNameLength(); i++)
-												{
-													if (i % 2 == 0)
-													{
-														curReg = device_name[i];
-													}
-													else
-													{
-														curReg += ((word)device_name[i] << 8);
-													}
-													if (i % 2 == 1 || i == _deviceDirectory->getDeviceNameLength() - 1)
-													{
-														_registerBuffer[8 + i / 2] = curReg;
-													}
-												}
-											}
-											completeModbusWriteRegisters(device_transmit->slaveId, 0,
-												9 + (_deviceDirectory->getDeviceNameLength() - 1) / 2, _registerBuffer);
-											AWAIT(_completeModbusWriteRegisters);
-											ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
-											completeModbusReadRegisters(device_transmit->slaveId, 0, 2);
-											AWAIT(_completeModbusReadRegisters);
-											ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
-											_modbus->isReadRegsResponse(regCount, regs);
-											if ((regs[1] & 0xFF) == 3)
-											{
-												broadcastTime();
-												_system->delayMicroseconds(10000);
-												goto prepare_write;
-											}
-											else if ((regs[1] & 0xFF == 0))
-											{
-												curWritePage = 0;
-												numPointsInWritePage = (byte)(regs[1] >> 8);
-											}
-											else
-											{
-												reportMalfunction(__LINE__);
-												return true;
-											}
-										}
-									}
-								}
-
+								sendDataToSlaves(readStart, dataSize, timeScale, numPointsInReadPage, device_name, _dataBuffer);
+								AWAIT(_sendDataToSlaves);
+								
 								curReadPage++;
 							}
 							else if (regs[1] == 1)
