@@ -57,6 +57,8 @@ private_testable:
 	S *_system;
 	M *_modbus;
 
+	typedef Master<M, S, D> THIS_T;
+
 protected_testable:
 	virtual void reportMalfunction(int line)
 	{
@@ -79,9 +81,9 @@ protected_testable:
 		}
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), ensureTaskNotStarted, void, VARS());
+	DEFINE_CLASS_TASK(THIS_T, ensureTaskNotStarted, void, VARS());
 	ensureTaskNotStarted_Task _ensureTaskNotStarted;
-	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), ensureTaskNotStarted)
+	virtual ASYNC_CLASS_FUNC(THIS_T, ensureTaskNotStarted)
 	{
 		START_ASYNC;
 		if (_modbus->getStatus() != TaskNotStarted)
@@ -96,13 +98,13 @@ protected_testable:
 	}
 	ensureTaskNotStarted_Task &ensureTaskNotStarted()
 	{
-		CREATE_ASSIGN_CLASS_TASK(_ensureTaskNotStarted, ESCAPE(Master<M, S, D>), this, ensureTaskNotStarted);
+		CREATE_ASSIGN_CLASS_TASK(_ensureTaskNotStarted, THIS_T, this, ensureTaskNotStarted);
 		return _ensureTaskNotStarted;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), completeModbusReadRegisters, ModbusRequestStatus, VARS(), byte, word, word);
+	DEFINE_CLASS_TASK(THIS_T, completeModbusReadRegisters, ModbusRequestStatus, VARS(), byte, word, word);
 	completeModbusReadRegisters_Task _completeModbusReadRegisters;
-	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), completeModbusReadRegisters, byte recipientId, word regStart, word regCount)
+	virtual ASYNC_CLASS_FUNC(THIS_T, completeModbusReadRegisters, byte recipientId, word regStart, word regCount)
 	{
 		word* dummy0 = nullptr;
 		byte dummy1 = 0;
@@ -148,13 +150,13 @@ protected_testable:
 	}
 	completeModbusReadRegisters_Task &completeModbusReadRegisters(byte reciptientId, word regStart, word regCount)
 	{
-		CREATE_ASSIGN_CLASS_TASK(_completeModbusReadRegisters, ESCAPE(Master<M, S, D>), this, completeModbusReadRegisters, reciptientId, regStart, regCount);
+		CREATE_ASSIGN_CLASS_TASK(_completeModbusReadRegisters, THIS_T, this, completeModbusReadRegisters, reciptientId, regStart, regCount);
 		return _completeModbusReadRegisters;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), completeModbusWriteRegisters, ModbusRequestStatus, VARS(), byte, word, word, word*);
+	DEFINE_CLASS_TASK(THIS_T, completeModbusWriteRegisters, ModbusRequestStatus, VARS(), byte, word, word, word*);
 	completeModbusWriteRegisters_Task _completeModbusWriteRegisters;
-	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), completeModbusWriteRegisters, byte recipientId, word regStart, word regCount, word *regValues)
+	virtual ASYNC_CLASS_FUNC(THIS_T, completeModbusWriteRegisters, byte recipientId, word regStart, word regCount, word *regValues)
 	{
 		byte dummy;
 		START_ASYNC;
@@ -207,13 +209,13 @@ protected_testable:
 	}
 	completeModbusWriteRegisters_Task &completeModbusWriteRegisters(byte recipientId, word regStart, word regCount, word *regValues)
 	{
-		CREATE_ASSIGN_CLASS_TASK(_completeModbusWriteRegisters, ESCAPE(Master<M, S, D>), this, completeModbusWriteRegisters, recipientId, regStart, regCount, regValues);
+		CREATE_ASSIGN_CLASS_TASK(_completeModbusWriteRegisters, THIS_T, this, completeModbusWriteRegisters, recipientId, regStart, regCount, regValues);
 		return _completeModbusWriteRegisters;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), checkForNewSlaves, SearchResultCode, VARS());
+	DEFINE_CLASS_TASK(THIS_T, checkForNewSlaves, SearchResultCode, VARS());
 	checkForNewSlaves_Task _checkForNewSlaves;
-	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), checkForNewSlaves)
+	virtual ASYNC_CLASS_FUNC(THIS_T, checkForNewSlaves)
 	{
 		START_ASYNC;
 		completeModbusReadRegisters(1, 0, 8);
@@ -242,13 +244,13 @@ protected_testable:
 	}
 	checkForNewSlaves_Task &checkForNewSlaves()
 	{
-		CREATE_ASSIGN_CLASS_TASK(_checkForNewSlaves, ESCAPE(Master<M, S, D>), this, checkForNewSlaves);
+		CREATE_ASSIGN_CLASS_TASK(_checkForNewSlaves, THIS_T, this, checkForNewSlaves);
 		return _checkForNewSlaves;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), processNewSlave, void, VARS(byte, word, byte, word, word), bool);
+	DEFINE_CLASS_TASK(THIS_T, processNewSlave, void, VARS(byte, word, byte, word, word), bool);
 	processNewSlave_Task _processNewSlave;
-	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), processNewSlave, bool justReject)
+	virtual ASYNC_CLASS_FUNC(THIS_T, processNewSlave, bool justReject)
 	{
 		ASYNC_VAR(0, slaveId);
 		ASYNC_VAR(1, i);
@@ -325,13 +327,13 @@ protected_testable:
 	}
 	processNewSlave_Task &processNewSlave(bool justReject)
 	{
-		CREATE_ASSIGN_CLASS_TASK(_processNewSlave, ESCAPE(Master<M, S, D>), this, processNewSlave, justReject);
+		CREATE_ASSIGN_CLASS_TASK(_processNewSlave, THIS_T, this, processNewSlave, justReject);
 		return _processNewSlave;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte, byte, byte, byte, int, DeviceDirectoryRow*), TimeScale, uint32_t);
+	DEFINE_CLASS_TASK(THIS_T, readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte, byte, byte, byte, int, DeviceDirectoryRow*), TimeScale, uint32_t);
 	readAndSendDeviceData_Task _readAndSendDeviceData;
-	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), readAndSendDeviceData, TimeScale maxTimeScale, uint32_t currentTime)
+	virtual ASYNC_CLASS_FUNC(THIS_T, readAndSendDeviceData, TimeScale maxTimeScale, uint32_t currentTime)
 	{
 		ASYNC_VAR_INIT(0, deviceRow_receive, 0);
 		ASYNC_VAR(1, device_receive);
@@ -505,9 +507,9 @@ protected_testable:
 		END_ASYNC;
 	}
 
-	DEFINE_CLASS_TASK(ESCAPE(Master<M, S, D>), loop, void, VARS(unsigned long, bool));
+	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, bool));
 	loop_Task _loop;
-	virtual ASYNC_CLASS_FUNC(ESCAPE(Master<M, S, D>), loop)
+	virtual ASYNC_CLASS_FUNC(THIS_T, loop)
 	{
 		tick(_system->millis());
 
@@ -570,7 +572,7 @@ public:
 	{
 		if (!started)
 		{
-			CREATE_ASSIGN_CLASS_TASK(_loop, ESCAPE(Master<M, S, D>), this, loop);
+			CREATE_ASSIGN_CLASS_TASK(_loop, THIS_T, this, loop);
 			started = true;
 		}
 		_loop();
