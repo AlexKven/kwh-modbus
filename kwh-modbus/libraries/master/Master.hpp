@@ -396,12 +396,12 @@ protected_testable:
 					{
 						numPointsInPage = (byte)(regs[1] >> 8);
 						for (curPage = 0;
-							curPage < numDataPoints / numPointsInPage + (numDataPoints % numPointsInPage == 0);
+							curPage < numDataPoints / numPointsInPage + (numDataPoints % numPointsInPage != 0);
 							curPage++)
 						{
 							{
 								word curNumPoints = numPointsInPage;
-								if (curPage * numPointsInPage > numDataPoints)
+								if ((curPage + 1) * numPointsInPage > numDataPoints)
 								{
 									curNumPoints = numDataPoints % numPointsInPage;
 								}

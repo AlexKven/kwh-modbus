@@ -466,6 +466,11 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 		return true;
 	});
 
+	// 8 bit data points
+	// Master requests 8 data points, which ar 0, 1, 2, 3, 4, 5, 6, 7
+	// Master receives two pages of data points, {0, 1, 2, 3}, and {4, 5, 6, 7}
+	// For each page, master sends two pages to receiving device, {{0, 1, 2}, {3}}, {{4, 5, 6}, 7}
+
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
 	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, false);
 	ITask* task2 = getNewSetTestConditionsTask();
