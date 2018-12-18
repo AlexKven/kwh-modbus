@@ -426,16 +426,31 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 	MockNewMethod(mockReadData, uint32_t startTime, word numPoints, byte page, word bufferSize, byte maxPoints);
 	MockNewMethod(mockPrepareReceiveData, word nameLength, uint32_t startTime,
 		byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount);
+	MockNewMethod(mockRecieveData, byte dataPointsInPage, byte dataPointSize,
+		TimeScale timesScale, byte pageNumber);
 
 	Fake(Method(device0, setClock));
 	Fake(Method(device1, setClock));
 
 	string sendingDeviceName;
+	queue<tuple<byte*, int>> receivedDataPages;
+
 	When(Method(device0, prepareReceiveData)).AlwaysDo([&mockPrepareReceiveData, &sendingDeviceName](word nameLength, byte* name, uint32_t startTime,
 		byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount, byte &outDataPointsPerPage) {
 		mockPrepareReceiveData.get().method(nameLength, startTime, dataPointSize, dataTimeScale, dataPointsCount);
 		sendingDeviceName = stringifyCharArray(nameLength, (char*)name);
 		outDataPointsPerPage = 3;
+		return RecieveDataStatus::success;
+	});
+	When(Method(device0, receiveDeviceData)).AlwaysDo([&mockRecieveData, &receivedDataPages](byte dataPointsInPage, byte dataPointSize,
+		TimeScale timeScale, byte pageNumber, byte* dataPoints)
+	{
+		mockRecieveData.get().method(dataPointsInPage, dataPointSize, timeScale, pageNumber);
+		int size = BitFunctions::bitsToBytes(dataPointsInPage * dataPointSize);
+		byte *page = new byte[size];
+		page[size - 1] = 0;
+		BitFunctions::copyBits(dataPoints, page, 0, 0, dataPointsInPage * dataPointSize);
+		receivedDataPages.push(make_tuple(page, size));
 		return RecieveDataStatus::success;
 	});
 	When(Method(device1, readData)).AlwaysDo([&mockReadData] (uint32_t startTime, word numPoints, byte page,

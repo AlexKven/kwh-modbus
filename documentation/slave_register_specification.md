@@ -12,11 +12,11 @@ Slaves will have the first register always be the current state of the slave. Be
 | 1 | Slave just received a request from master | Master assigns the register to 1 to signify a request, and the slave looks for a 1 after every poll |
 | 2 | Master is reading device info ||
 | 3 | Master is reading data from a device ||
-| 4 | Master is writing data to a device ||
-| 5 | Master is reading command from a device ||
-| 6 | Master is sending command to a device ||
-| 7 | Master is reading message from a device ||
-| 8 | Master is reading message from slave ||
+| 4 | Master is preparing to write data to a device ||
+| 6 | Master is reading command from a device ||
+| 7 | Master is sending command to a device ||
+| 8 | Master is reading message from a device ||
+| 9 | Master is reading message from slave ||
 
 ### 0: Slave is Idle ###
 
@@ -109,7 +109,7 @@ Here is a listing of each request type:
 * 5: Write data
   * This is to send actual data to the receiving slave.
   * You must call `4: Prepare to write data` before calling `5: Write data`.
-  * This response will have a state of 5.
+  * This response will have a state of 0.
   * Slave will automatically calculate offset from page number, according to the value returned from `4: Prepare to write data`.
   * The data in this request will have the following format:
     * 0: Number of data points in this page (8 bits)

@@ -392,10 +392,33 @@ protected_testable:
 						_system->delayMicroseconds(10000);
 						goto prepare_write;
 					}
-					else if ((regs[1] & 0xFF == 0))
+					else if ((regs[1] & 0xFF) == 0)
 					{
-						curPage = 0;
 						numPointsInPage = (byte)(regs[1] >> 8);
+						for (curPage = 0;
+							curPage < numDataPoints / numPointsInPage + (numDataPoints % numPointsInPage == 0);
+							curPage++)
+						{
+							{
+								word curNumPoints = numPointsInPage;
+								if (curPage * numPointsInPage > numDataPoints)
+								{
+									curNumPoints = numDataPoints % numPointsInPage;
+								}
+								_registerBuffer[0] = 1;
+								_registerBuffer[1] = 5;
+								_registerBuffer[2] = device->deviceNumber;
+								_registerBuffer[3] = curNumPoints + ((word)dataSize << 8);
+								_registerBuffer[4] = (word)timeScale + ((word)curPage << 8);
+								word bitsToCopy = curNumPoints * dataSize;
+								word bitStart = curPage * numPointsInPage * dataSize;
+								BitFunctions::copyBits<byte, word, word>(data, _registerBuffer, bitStart, 80, bitsToCopy);
+								completeModbusWriteRegisters(device->slaveId, 0,
+									5 + BitFunctions::bitsToBytes(curNumPoints * dataSize), _registerBuffer);
+							}
+							AWAIT(_completeModbusWriteRegisters);
+							ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+						}
 					}
 					else
 					{
