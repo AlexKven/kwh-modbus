@@ -427,13 +427,12 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 	MockNewMethod(mockPrepareReceiveData, word nameLength, uint32_t startTime,
 		byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount);
 	MockNewMethod(mockRecieveData, byte dataPointsInPage, byte dataPointSize,
-		TimeScale timesScale, byte pageNumber);
+		TimeScale timesScale, byte pageNumber, uint32_t data);
 
 	Fake(Method(device0, setClock));
 	Fake(Method(device1, setClock));
 
 	string sendingDeviceName;
-	queue<tuple<byte*, int>> receivedDataPages;
 
 	When(Method(device0, prepareReceiveData)).AlwaysDo([&mockPrepareReceiveData, &sendingDeviceName](word nameLength, byte* name, uint32_t startTime,
 		byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount, byte &outDataPointsPerPage) {
@@ -442,15 +441,16 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 		outDataPointsPerPage = 3;
 		return RecieveDataStatus::success;
 	});
-	When(Method(device0, receiveDeviceData)).AlwaysDo([&mockRecieveData, &receivedDataPages](byte dataPointsInPage, byte dataPointSize,
+	When(Method(device0, receiveDeviceData)).AlwaysDo([&mockRecieveData](byte dataPointsInPage, byte dataPointSize,
 		TimeScale timeScale, byte pageNumber, byte* dataPoints)
 	{
-		mockRecieveData.get().method(dataPointsInPage, dataPointSize, timeScale, pageNumber);
-		int size = BitFunctions::bitsToBytes(dataPointsInPage * dataPointSize);
-		byte *page = new byte[size];
-		page[size - 1] = 0;
-		BitFunctions::copyBits(dataPoints, page, 0, 0, dataPointsInPage * dataPointSize);
-		receivedDataPages.push(make_tuple(page, size));
+		uint32_t data = 0;
+		for (int i = 0; i < dataPointsInPage; i++)
+		{
+			data = data << 8;
+			data = data + dataPoints[i];
+		}
+		mockRecieveData.get().method(dataPointsInPage, dataPointSize, timeScale, pageNumber, data);
 		return RecieveDataStatus::success;
 	});
 	When(Method(device1, readData)).AlwaysDo([&mockReadData] (uint32_t startTime, word numPoints, byte page,
@@ -469,7 +469,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 	// 8 bit data points
 	// Master requests 8 data points, which ar 0, 1, 2, 3, 4, 5, 6, 7
 	// Master receives two pages of data points, {0, 1, 2, 3}, and {4, 5, 6, 7}
-	// For each page, master sends two pages to receiving device, {{0, 1, 2}, {3}}, {{4, 5, 6}, 7}
+	// For each page, master sends two pages to receiving device, {{0, 1, 2}, {3}}, {{4, 5, 6}, {7}}
 
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
 	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, false);
@@ -514,6 +514,15 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 	ASSERT_EQ(sendingDeviceName, "dev01");
 	Verify(Method(mockReadData, method).Using(2, 8, 0, 20, 40)).AtLeastOnce();
 	Verify(Method(mockPrepareReceiveData, method).Using(5, 2, 8, TimeScale::sec1, 4)).AtLeastOnce();
+	// Data pages recieved by the slave should match {{0, 1, 2}, {3}}, {{4, 5, 6}, {7}}
+	Verify(Method(mockRecieveData, method).Using(3, 8, TimeScale::sec1, 0,
+		(0 << 16) + (1 << 8) + (2 << 0)) +
+		Method(mockRecieveData, method).Using(1, 8, TimeScale::sec1, 1,
+		(3 << 0)) +
+		Method(mockRecieveData, method).Using(3, 8, TimeScale::sec1, 0,
+		(4 << 16) + (5 << 8) + (6 << 0)) +
+		Method(mockRecieveData, method).Using(1, 8, TimeScale::sec1, 1,
+		(7 << 0)));
 }
 
 INSTANTIATE_TEST_CASE_P(NoErrors, MasterSlaveIntegrationTests, ::testing::Values(None));
