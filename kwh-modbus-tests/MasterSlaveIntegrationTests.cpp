@@ -73,7 +73,10 @@ private:
 		bool operator()()
 		{
 			_isRun = true;
-			_fixture->setTestConditions();
+			if (isLongTest)
+				_fixture->SetLongTestConditions();
+			else
+				_fixture->setTestConditions();
 			return true;
 		}
 
@@ -81,7 +84,10 @@ private:
 		{
 			return _isRun;
 		}
+
+		bool isLongTest = false;
 	};
+	int timeout = 5000;
 
 protected:
 	T_ModbusSlave *modbusSlave = new T_ModbusSlave();
@@ -185,16 +191,43 @@ public:
 		delete masterSerial;
 	}
 
-	void setTestConditions()
+	void SetLongTestConditions()
 	{
+		timeout = 12000;
+		modbusMaster->setMaxTimePerTryMicros(500000);
+		modbusMaster->setMaxTimeMicros(1000000);
+
 		if (contains(errorType, InboundError))
 		{
-			masterSerial->setPerBitErrorProb(.020);
+			masterSerial->setPerBitErrorProb(0.003);
 		}
 
 		if (contains(errorType, OutboundError))
 		{
-			slaveSerial->setPerBitErrorProb(0.010);
+			slaveSerial->setPerBitErrorProb(0.003);
+		}
+
+		if (contains(errorType, InboundDelays))
+		{
+			masterSerial->setReadDelays(2500, 500);
+		}
+
+		if (contains(errorType, OutboundDelays))
+		{
+			slaveSerial->setReadDelays(2500, 500);
+		}
+	}
+
+	void setTestConditions()
+	{
+		if (contains(errorType, InboundError))
+		{
+			masterSerial->setPerBitErrorProb(0.02);
+		}
+
+		if (contains(errorType, OutboundError))
+		{
+			slaveSerial->setPerBitErrorProb(0.001);
 		}
 
 		if (contains(errorType, InboundDelays))
@@ -208,7 +241,7 @@ public:
 		}
 	}
 
-	ITask* getNewSetTestConditionsTask()
+	_SetTestConditionsTask* getNewSetTestConditionsTask()
 	{
 		return new _SetTestConditionsTask(this);
 	}
@@ -218,7 +251,7 @@ public:
 		this->slaveSuccess = false;
 		bool processed;
 		bool broadcast;
-		TIMEOUT_START(5000);
+		TIMEOUT_START(timeout);
 		while (!this->slaveAction())
 		{
 			TIMEOUT_CHECK;
@@ -229,13 +262,13 @@ public:
 	void masterThread()
 	{
 		this->masterSuccess = false;
-		TIMEOUT_START(5000);
+		TIMEOUT_START(timeout);
 		while (!this->masterAction())
 		{
 			TIMEOUT_CHECK;
 		}
 		this->masterSuccess = true;
-		system->delay(200);
+		system->delay(500);
 		slaveComplete = true;
 	}
 
@@ -473,7 +506,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
 	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, false);
-	ITask* task2 = getNewSetTestConditionsTask();
+	auto task2 = getNewSetTestConditionsTask();
+	task2->isLongTest = true;
 	T_Master::readAndSendDeviceData_Task task3(&T_Master::readAndSendDeviceData, master, TimeScale::sec1, 10);
 
 	stack<ITask*> tasks;
@@ -516,12 +550,12 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 	Verify(Method(mockPrepareReceiveData, method).Using(5, 2, 8, TimeScale::sec1, 4)).AtLeastOnce();
 	// Data pages recieved by the slave should match {{0, 1, 2}, {3}}, {{4, 5, 6}, {7}}
 	Verify(Method(mockRecieveData, method).Using(3, 8, TimeScale::sec1, 0,
-		(0 << 16) + (1 << 8) + (2 << 0)) +
-		Method(mockRecieveData, method).Using(1, 8, TimeScale::sec1, 1,
-		(3 << 0)) +
-		Method(mockRecieveData, method).Using(3, 8, TimeScale::sec1, 0,
-		(4 << 16) + (5 << 8) + (6 << 0)) +
-		Method(mockRecieveData, method).Using(1, 8, TimeScale::sec1, 1,
+		(0 << 16) + (1 << 8) + (2 << 0)));
+	Verify(Method(mockRecieveData, method).Using(1, 8, TimeScale::sec1, 1,
+		(3 << 0)));
+	Verify(Method(mockRecieveData, method).Using(3, 8, TimeScale::sec1, 0,
+		(4 << 16) + (5 << 8) + (6 << 0)));
+	Verify(Method(mockRecieveData, method).Using(1, 8, TimeScale::sec1, 1,
 		(7 << 0)));
 }
 
