@@ -88,6 +88,7 @@ private:
 		bool isLongTest = false;
 	};
 	int timeout = 5000;
+	int slaveWrapUpTime = 500;
 
 protected:
 	T_ModbusSlave *modbusSlave = new T_ModbusSlave();
@@ -193,18 +194,19 @@ public:
 
 	void SetLongTestConditions()
 	{
-		timeout = 12000;
-		modbusMaster->setMaxTimePerTryMicros(500000);
-		modbusMaster->setMaxTimeMicros(1000000);
+		timeout = 30000;
+		slaveWrapUpTime = 2000;
+		modbusMaster->setMaxTimePerTryMicros(100000);
+		modbusMaster->setMaxTimeMicros(10000000);
 
 		if (contains(errorType, InboundError))
 		{
-			masterSerial->setPerBitErrorProb(0.003);
+			masterSerial->setPerBitErrorProb(0.005);
 		}
 
 		if (contains(errorType, OutboundError))
 		{
-			slaveSerial->setPerBitErrorProb(0.003);
+			slaveSerial->setPerBitErrorProb(0.005);
 		}
 
 		if (contains(errorType, InboundDelays))
@@ -251,7 +253,7 @@ public:
 		this->slaveSuccess = false;
 		bool processed;
 		bool broadcast;
-		TIMEOUT_START(timeout);
+		TIMEOUT_START(timeout + slaveWrapUpTime * 2);
 		while (!this->slaveAction())
 		{
 			TIMEOUT_CHECK;
@@ -268,7 +270,7 @@ public:
 			TIMEOUT_CHECK;
 		}
 		this->masterSuccess = true;
-		system->delay(500);
+		system->delay(slaveWrapUpTime);
 		slaveComplete = true;
 	}
 
