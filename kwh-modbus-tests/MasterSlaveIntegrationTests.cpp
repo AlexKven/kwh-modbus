@@ -456,7 +456,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
 	Verify(Method(device1, setClock).Using(2000000000)).Once();
 }
 
-TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingData)
+TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingData_SetSlaveTime)
 {
 	MockNewMethod(mockReadData, uint32_t startTime, word numPoints, byte page, word bufferSize, byte maxPoints);
 	MockNewMethod(mockPrepareReceiveData, word nameLength, uint32_t startTime,
@@ -464,21 +464,28 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingD
 	MockNewMethod(mockRecieveData, byte dataPointsInPage, byte dataPointSize,
 		TimeScale timesScale, byte pageNumber, uint32_t data);
 
-	Fake(Method(device0, setClock));
-	Fake(Method(device1, setClock));
+	bool dev0_TimeSet = false;
+	bool dev1_TimeSet = false;
+
+	When(Method(device0, setClock)).AlwaysDo([&dev0_TimeSet](uint32_t time) {dev0_TimeSet = true; });
+	When(Method(device1, setClock)).AlwaysDo([&dev1_TimeSet](uint32_t time) {dev1_TimeSet = true; });;
 
 	string sendingDeviceName;
 
-	When(Method(device0, prepareReceiveData)).AlwaysDo([&mockPrepareReceiveData, &sendingDeviceName](word nameLength, byte* name, uint32_t startTime,
+	When(Method(device0, prepareReceiveData)).AlwaysDo([&dev0_TimeSet, &mockPrepareReceiveData, &sendingDeviceName](word nameLength, byte* name, uint32_t startTime,
 		byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount, byte &outDataPointsPerPage) {
+		if (!dev0_TimeSet)
+			return RecieveDataStatus::timeRequested;
 		mockPrepareReceiveData.get().method(nameLength, startTime, dataPointSize, dataTimeScale, dataPointsCount);
 		sendingDeviceName = stringifyCharArray(nameLength, (char*)name);
 		outDataPointsPerPage = 3;
 		return RecieveDataStatus::success;
 	});
-	When(Method(device0, receiveDeviceData)).AlwaysDo([&mockRecieveData](byte dataPointsInPage, byte dataPointSize,
+	When(Method(device0, receiveDeviceData)).AlwaysDo([&dev0_TimeSet, &mockRecieveData](byte dataPointsInPage, byte dataPointSize,
 		TimeScale timeScale, byte pageNumber, byte* dataPoints)
 	{
+		if (!dev0_TimeSet)
+			return RecieveDataStatus::timeRequested;
 		uint32_t data = 0;
 		for (int i = 0; i < dataPointsInPage; i++)
 		{
@@ -488,7 +495,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingD
 		mockRecieveData.get().method(dataPointsInPage, dataPointSize, timeScale, pageNumber, data);
 		return RecieveDataStatus::success;
 	});
-	When(Method(device1, readData)).AlwaysDo([&mockReadData] (uint32_t startTime, word numPoints, byte page,
+	When(Method(device1, readData)).AlwaysDo([&dev1_TimeSet, &mockReadData] (uint32_t startTime, word numPoints, byte page,
 		byte* buffer, word bufferSize, byte maxPoints, byte &outDataPointsCount, byte &outPagesRemaining, byte &outDataPointSize) {
 		mockReadData.get().method(startTime, numPoints, page, bufferSize, maxPoints);
 		outDataPointsCount = 4;
@@ -561,6 +568,109 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingD
 		(4 << 16) + (5 << 8) + (6 << 0)));
 	Verify(Method(mockRecieveData, method).Using(1, 8, TimeScale::sec1, 1,
 		(7 << 0)));
+
+	// Verify that master last update times was updated
+	assertArrayEq<uint32_t>(master->lastUpdateTimes, 10, 10, 7);
+}
+
+TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingData)
+{
+	MockNewMethod(mockReadData, uint32_t startTime, word numPoints, byte page, word bufferSize, byte maxPoints);
+	MockNewMethod(mockPrepareReceiveData, word nameLength, uint32_t startTime,
+		byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount);
+	MockNewMethod(mockRecieveData, byte dataPointsInPage, byte dataPointSize,
+		TimeScale timesScale, byte pageNumber, uint32_t data);
+
+	Fake(Method(device0, setClock));
+	Fake(Method(device1, setClock));
+
+	string sendingDeviceName;
+
+	When(Method(device0, prepareReceiveData)).AlwaysDo([&mockPrepareReceiveData, &sendingDeviceName](word nameLength, byte* name, uint32_t startTime,
+		byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount, byte &outDataPointsPerPage) {
+		mockPrepareReceiveData.get().method(nameLength, startTime, dataPointSize, dataTimeScale, dataPointsCount);
+		sendingDeviceName = stringifyCharArray(nameLength, (char*)name);
+		outDataPointsPerPage = 4;
+		return RecieveDataStatus::success;
+	});
+	When(Method(device0, receiveDeviceData)).AlwaysDo([&mockRecieveData](byte dataPointsInPage, byte dataPointSize,
+		TimeScale timeScale, byte pageNumber, byte* dataPoints)
+	{
+		uint32_t data = 0;
+		for (int i = 0; i < dataPointsInPage; i++)
+		{
+			data = data << 8;
+			data = data + dataPoints[i];
+		}
+		mockRecieveData.get().method(dataPointsInPage, dataPointSize, timeScale, pageNumber, data);
+		return RecieveDataStatus::success;
+	});
+	When(Method(device1, readData)).AlwaysDo([&mockReadData](uint32_t startTime, word numPoints, byte page,
+		byte* buffer, word bufferSize, byte maxPoints, byte &outDataPointsCount, byte &outPagesRemaining, byte &outDataPointSize) {
+		mockReadData.get().method(startTime, numPoints, page, bufferSize, maxPoints);
+		outDataPointsCount = 4;
+		outPagesRemaining = 0;
+		outDataPointSize = 8;
+		buffer[0] = 0 + 4 * page;
+		buffer[1] = 1 + 4 * page;
+		buffer[2] = 2 + 4 * page;
+		buffer[3] = 3 + 4 * page;
+		return true;
+	});
+
+	// 8 bit data points
+	// Master requests 4 data points, which are 0, 1, 2, 3
+	// Master receives and sends one page of data, containing all four data points
+
+	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
+	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, false);
+	auto task2 = getNewSetTestConditionsTask();
+	task2->isLongTest = true;
+	T_Master::transferPendingData_Task task3(&T_Master::transferPendingData, master, TimeScale::sec1, 6);
+
+	stack<ITask*> tasks;
+	tasks.push(&task3);
+	tasks.push(task2);
+	tasks.push(&task1);
+	tasks.push(&task0);
+
+	slaveAction = [this]() {
+		slave->loop();
+		return slaveComplete;
+	};
+	masterAction = [this, &tasks]()
+	{
+		return runTaskStack(tasks);
+	};
+
+	modbusSlave->setSlaveId(1);
+	slave->setClock(2);
+	slave->setOutgoingState();
+	master->setClock(2);
+	master->_curTime = 10000;
+	master->lastUpdateTimes[0] = 5;
+	master->lastUpdateTimes[1] = 2;
+	master->lastUpdateTimes[2] = 7;
+
+	word devType;
+	DataCollectorDevice::getDataCollectorDeviceTypeFromParameters(false, TimeScale::sec1, 8, devType);
+	When(Method(device1, getType)).AlwaysReturn(devType);
+	When(Method(device0, getType)).AlwaysReturn(32768);
+
+	auto t_master = system->createThread(master_thread, this);
+	auto t_slave = system->createThread(slave_thread, this);
+	system->waitForThreads(2, t_master, t_slave);
+
+	delete task2;
+
+	ASSERT_TRUE(slaveSuccess);
+	ASSERT_TRUE(masterSuccess);
+	ASSERT_EQ(sendingDeviceName, "dev01");
+	Verify(Method(mockReadData, method).Using(2, 4, 0, 20, 40)).AtLeastOnce();
+	Verify(Method(mockPrepareReceiveData, method).Using(5, 2, 8, TimeScale::sec1, 4)).AtLeastOnce();
+	// Data pages recieved by the slave should match {{0, 1, 2}, {3}}, {{4, 5, 6}, {7}}
+	Verify(Method(mockRecieveData, method).Using(3, 8, TimeScale::sec1, 0,
+		(0 << 24) + (1 << 16) + (2 << 8) + (3 << 0)));
 
 	// Verify that master last update times was updated
 	assertArrayEq<uint32_t>(master->lastUpdateTimes, 10, 10, 7);
