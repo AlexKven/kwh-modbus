@@ -257,7 +257,7 @@ protected_testable:
 		ASYNC_VAR(2, numDevices);
 		ASYNC_VAR(3, deviceNameLength);
 		ASYNC_VAR(4, slaveRegisters)
-		START_ASYNC;
+			START_ASYNC;
 		word regCount;
 		word *regs;
 		numDevices = 0;
@@ -351,7 +351,7 @@ protected_testable:
 			{
 				if (DataTransmitterDevice::isDataTransmitterDeviceType(device->deviceType))
 				{
-				prepare_write:
+				begin_write:
 					_registerBuffer[0] = 1;
 					_registerBuffer[1] = 4;
 					_registerBuffer[2] = device->deviceNumber;
@@ -390,7 +390,7 @@ protected_testable:
 					{
 						broadcastTime();
 						_system->delayMicroseconds(10000);
-						goto prepare_write;
+						goto begin_write;
 					}
 					else if ((regs[1] & 0xFF) == 0)
 					{
@@ -437,112 +437,154 @@ protected_testable:
 		return _sendDataToSlaves;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, readAndSendDeviceData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t, word, byte, byte, byte), TimeScale, uint32_t);
+	DEFINE_CLASS_TASK(THIS_T, readAndSendDeviceData, void, VARS(bool, TimeScale, byte, uint32_t, word, byte, byte, byte),
+		DeviceDirectoryRow*, word, byte*, uint32_t, uint32_t);
 	readAndSendDeviceData_Task _readAndSendDeviceData;
-	virtual ASYNC_CLASS_FUNC(THIS_T, readAndSendDeviceData, TimeScale maxTimeScale, uint32_t currentTime)
+	virtual ASYNC_CLASS_FUNC(THIS_T, readAndSendDeviceData, DeviceDirectoryRow* deviceRow, word deviceNameLength,
+		byte *deviceName, uint32_t startTime, uint32_t endTime)
 	{
-		ASYNC_VAR_INIT(0, deviceRow_receive, 0);
-		ASYNC_VAR(1, device_receive);
-		ASYNC_VAR(2, device_name);
+	ASYNC_VAR(0, accumulateData);
+	ASYNC_VAR(1, timeScale);
+	ASYNC_VAR(2, dataSize);
+	ASYNC_VAR(3, readStart);
+	ASYNC_VAR(4, numDataPoints);
+	ASYNC_VAR(5, numReadPagesRemaining);
+	ASYNC_VAR(6, curReadPage);
+	ASYNC_VAR(7, numPointsInReadPage);
+	word regCount;
+	word *regs;
+	START_ASYNC;
+	if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(deviceRow->deviceType, accumulateData, timeScale, dataSize))
+	{
+		begin_read:
+		readStart = lastUpdateTimes[(int)timeScale];
+		numDataPoints = (endTime - startTime) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
+		curReadPage = 0;
+		numReadPagesRemaining = 1;
+
+		while (numReadPagesRemaining > 0)
+		{
+			numReadPagesRemaining--;
+			_registerBuffer[0] = 1;
+			_registerBuffer[1] = 3;
+			_registerBuffer[2] = deviceRow->deviceNumber;
+			_registerBuffer[3] = (word)readStart;
+			_registerBuffer[4] = (word)(readStart >> 16);
+			_registerBuffer[5] = numDataPoints;
+			_registerBuffer[6] = curReadPage + (word)((_dataBufferSize * 8 / dataSize) << 8);
+			completeModbusWriteRegisters(deviceRow->slaveId, 0, 7, _registerBuffer);
+			AWAIT(_completeModbusWriteRegisters);
+			ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+			completeModbusReadRegisters(deviceRow->slaveId, 0, 6);
+			AWAIT(_completeModbusReadRegisters);
+			ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
+			_modbus->isReadRegsResponse(regCount, regs);
+			if (regs[0] != 3)
+			{
+				reportMalfunction(__LINE__);
+				return true;
+			}
+			if (regs[1] == 0)
+			{
+				numPointsInReadPage = (byte)regs[4];
+				curReadPage = (byte)regs[5];
+				numReadPagesRemaining = (byte)(regs[5] >> 8);
+
+				completeModbusReadRegisters(deviceRow->slaveId, 6,
+					BitFunctions::bitsToStructs<word, word>(numDataPoints * dataSize));
+				AWAIT(_completeModbusReadRegisters);
+				ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
+				_modbus->isReadRegsResponse(regCount, regs);
+
+				{
+					word numDataBytes = BitFunctions::bitsToBytes(numDataPoints * dataSize);
+					if (numDataBytes > _dataBufferSize)
+					{
+						reportMalfunction(__LINE__);
+						return true;
+					}
+					for (int i = 0; i < numDataBytes; i++)
+					{
+						if (i % 2 == 0)
+							_dataBuffer[i] = (byte)regs[i / 2];
+						else
+							_dataBuffer[i] = (byte)(regs[i / 2] >> 8);
+					}
+				}
+
+				sendDataToSlaves(startTime, dataSize, timeScale, numPointsInReadPage, deviceName, _dataBuffer);
+				AWAIT(_sendDataToSlaves);
+
+				curReadPage++;
+			}
+			else if (regs[1] == 1)
+			{
+				broadcastTime();
+				_system->delayMicroseconds(10000);
+				goto begin_read;
+			}
+			else if (regs[1] == 2)
+			{
+				// We were mistaken; move on to other senders
+			}
+			else
+			{
+				// wtf
+				reportMalfunction(__LINE__);
+				return true;
+			}
+		}
+	}
+	RETURN_ASYNC;
+	END_ASYNC;
+	}
+	readAndSendDeviceData_Task& readAndSendDeviceData(DeviceDirectoryRow* deviceRow, word deviceNameLength,
+		byte *deviceName, uint32_t startTime, uint32_t endTime)
+	{
+		_readAndSendDeviceData = readAndSendDeviceData_Task(&THIS_T::readAndSendDeviceData, this, deviceRow, deviceNameLength, deviceName, startTime, endTime);
+		//CREATE_ASSIGN_CLASS_TASK(_readAndSendDeviceData, THIS_T, this, readAndSendDeviceData, deviceRow, deviceNameLength, deviceName, startTime, endTime);
+		return _readAndSendDeviceData;
+	}
+
+	DEFINE_CLASS_TASK(THIS_T, transferPendingData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t), TimeScale, uint32_t);
+	readAndSendDeviceData_Task _transferPendingData;
+	virtual ASYNC_CLASS_FUNC(THIS_T, transferPendingData, TimeScale maxTimeScale, uint32_t currentTime)
+	{
+		ASYNC_VAR_INIT(0, deviceIndex, 0);
+		ASYNC_VAR(1, deviceRow);
+		ASYNC_VAR(2, deviceName);
 		ASYNC_VAR(3, accumulateData);
 		ASYNC_VAR(4, timeScale);
 		ASYNC_VAR(5, dataSize);
 		ASYNC_VAR(6, readStart);
-		ASYNC_VAR(7, numDataPoints);
-		ASYNC_VAR(8, numReadPagesRemaining);
-		ASYNC_VAR(9, curReadPage);
-		ASYNC_VAR(10, numPointsInReadPage);
 		word regCount;
 		word *regs;
 		START_ASYNC;
-		while (deviceRow_receive != -1)
+		while (deviceIndex != -1)
 		{
-			device_receive = _deviceDirectory->findNextDevice(device_name, deviceRow_receive);
-			if (device_receive != nullptr)
+			deviceRow = _deviceDirectory->findNextDevice(deviceName, deviceIndex);
+			if (deviceRow != nullptr)
 			{
-				if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(device_receive->deviceType, accumulateData, timeScale, dataSize))
+				if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(deviceRow->deviceType, accumulateData, timeScale, dataSize))
 				{
 					if (timeScale <= maxTimeScale)
 					{
-						readStart = lastUpdateTimes[(int)timeScale];
-						numDataPoints = (currentTime - readStart) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
-						curReadPage = 0;
-						numReadPagesRemaining = 1;
-
-						while (numReadPagesRemaining > 0)
 						{
-							numReadPagesRemaining--;
-							_registerBuffer[0] = 1;
-							_registerBuffer[1] = 3;
-							_registerBuffer[2] = device_receive->deviceNumber;
-							_registerBuffer[3] = (word)readStart;
-							_registerBuffer[4] = (word)(readStart >> 16);
-							_registerBuffer[5] = numDataPoints;
-							_registerBuffer[6] = curReadPage + (word)((_dataBufferSize * 8 / dataSize) << 8);
-							completeModbusWriteRegisters(device_receive->slaveId, 0, 7, _registerBuffer);
-							AWAIT(_completeModbusWriteRegisters);
-							ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
-							completeModbusReadRegisters(device_receive->slaveId, 0, 6);
-							AWAIT(_completeModbusReadRegisters);
-							ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
-							_modbus->isReadRegsResponse(regCount, regs);
-							if (regs[0] != 3)
-							{
-								reportMalfunction(__LINE__);
-								return true;
-							}
-							if (regs[1] == 0)
-							{
-								numPointsInReadPage = (byte)regs[4];
-								curReadPage = (byte)regs[5];
-								numReadPagesRemaining = (byte)(regs[5] >> 8);
-
-								completeModbusReadRegisters(device_receive->slaveId, 6,
-									BitFunctions::bitsToStructs<word, word>(numDataPoints * dataSize));
-								AWAIT(_completeModbusReadRegisters);
-								ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
-								_modbus->isReadRegsResponse(regCount, regs);
-
-								{
-									word numDataBytes = BitFunctions::bitsToBytes(numDataPoints * dataSize);
-									if (numDataBytes > _dataBufferSize)
-									{
-										reportMalfunction(__LINE__);
-										return true;
-									}
-									for (int i = 0; i < numDataBytes; i++)
-									{
-										if (i % 2 == 0)
-											_dataBuffer[i] = (byte)regs[i / 2];
-										else
-											_dataBuffer[i] = (byte)(regs[i / 2] >> 8);
-									}
-								}
-
-								sendDataToSlaves(readStart, dataSize, timeScale, numPointsInReadPage, device_name, _dataBuffer);
-								AWAIT(_sendDataToSlaves);
-								
-								curReadPage++;
-							}
-							else if (regs[1] == 1)
-							{
-								broadcastTime();
-								_system->delayMicroseconds(10000);
-							}
-							else if (regs[1] == 2)
-							{
-								// We were mistaken; move on to other senders
-							}
-							else
-							{
-								// wtf
-								reportMalfunction(__LINE__);
-								return true;
-							}
+							readStart = lastUpdateTimes[(int)timeScale];
+							word numDataPoints = (currentTime - readStart) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
+							readAndSendDeviceData(deviceRow, _deviceDirectory->getDeviceNameLength(), deviceName,
+								readStart, currentTime);
 						}
+						AWAIT(_readAndSendDeviceData);
 					}
 				}
 			}
+		}
+		auto intTS = (int)timeScale;
+		while (intTS >= 0)
+		{
+			lastUpdateTimes[intTS] = currentTime;
+			intTS--;
 		}
 		RETURN_ASYNC;
 		END_ASYNC;
@@ -557,7 +599,7 @@ protected_testable:
 		ASYNC_VAR_INIT(0, lastActivityTime, 0);
 		ASYNC_VAR(1, something);
 		START_ASYNC;
-		for(;;)
+		for (;;)
 		{
 			if (_timeUpdatePending)
 			{

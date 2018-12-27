@@ -456,7 +456,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
 	Verify(Method(device1, setClock).Using(2000000000)).Once();
 }
 
-TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlave)
+TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingData)
 {
 	MockNewMethod(mockReadData, uint32_t startTime, word numPoints, byte page, word bufferSize, byte maxPoints);
 	MockNewMethod(mockPrepareReceiveData, word nameLength, uint32_t startTime,
@@ -510,7 +510,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, false);
 	auto task2 = getNewSetTestConditionsTask();
 	task2->isLongTest = true;
-	T_Master::readAndSendDeviceData_Task task3(&T_Master::readAndSendDeviceData, master, TimeScale::sec1, 10);
+	T_Master::transferPendingData_Task task3(&T_Master::transferPendingData, master, TimeScale::sec1, 10);
 
 	stack<ITask*> tasks;
 	tasks.push(&task3);
@@ -532,7 +532,9 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 	slave->setOutgoingState();
 	master->setClock(2);
 	master->_curTime = 10000;
+	master->lastUpdateTimes[0] = 5;
 	master->lastUpdateTimes[1] = 2;
+	master->lastUpdateTimes[2] = 7;
 
 	word devType;
 	DataCollectorDevice::getDataCollectorDeviceTypeFromParameters(false, TimeScale::sec1, 8, devType);
@@ -559,6 +561,9 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_readDataFromSlav
 		(4 << 16) + (5 << 8) + (6 << 0)));
 	Verify(Method(mockRecieveData, method).Using(1, 8, TimeScale::sec1, 1,
 		(7 << 0)));
+
+	// Verify that master last update times was updated
+	assertArrayEq<uint32_t>(master->lastUpdateTimes, 10, 10, 7);
 }
 
 INSTANTIATE_TEST_CASE_P(NoErrors, MasterSlaveIntegrationTests, ::testing::Values(None));
