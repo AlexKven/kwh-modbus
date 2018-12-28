@@ -547,7 +547,7 @@ protected_testable:
 	}
 
 	DEFINE_CLASS_TASK(THIS_T, transferPendingData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t), TimeScale, uint32_t);
-	readAndSendDeviceData_Task _transferPendingData;
+	transferPendingData_Task _transferPendingData;
 	virtual ASYNC_CLASS_FUNC(THIS_T, transferPendingData, TimeScale maxTimeScale, uint32_t currentTime)
 	{
 		ASYNC_VAR_INIT(0, deviceIndex, 0);
@@ -580,7 +580,7 @@ protected_testable:
 				}
 			}
 		}
-		auto intTS = (int)timeScale;
+		auto intTS = (int)maxTimeScale;
 		while (intTS >= 0)
 		{
 			lastUpdateTimes[intTS] = currentTime;

@@ -43,6 +43,18 @@ protected:
 		modbus->init(registerArray, 20, 12, 20);
 		master->config(system, modbus, &mockDeviceDirectory.get(), 10);
 	}
+
+	word DataCollectorDeviceType(bool accumulateData, TimeScale timeScale, byte dataPacketSize)
+	{
+		word devType;
+		DataCollectorDevice::getDataCollectorDeviceTypeFromParameters(accumulateData, timeScale, dataPacketSize, devType);
+		return devType;
+	}
+
+	word DataTransmitterDeviceType()
+	{
+		return 2 << 14;
+	}
 public:
 	void SetUp()
 	{
@@ -972,4 +984,92 @@ TEST_F(MasterTests, setClock_SetsTimeUpdatePending)
 	master->setClock(0);
 
 	ASSERT_TRUE(master->_timeUpdatePending);
+}
+
+TEST_F(MasterTests, transferPendingData_Success)
+{
+	MOCK_MODBUS;
+	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
+
+	char dev0_name[] = "device0";
+	char dev1_name[] = "device1";
+	char dev2_name[] = "device2";
+	char dev3_name[] = "device3";
+	char dev4_name[] = "device4";
+	char dev5_name[] = "device5";
+	char dev6_name[] = "device6";
+	char dev7_name[] = "device7";
+
+	DeviceDirectoryRow dev0(3, 0, DataCollectorDeviceType(false, TimeScale::min30, 7), 10);
+	DeviceDirectoryRow dev1(3, 1, DataCollectorDeviceType(false, TimeScale::sec15, 11), 10);
+	DeviceDirectoryRow dev2(4, 0, DataCollectorDeviceType(true, TimeScale::min1, 4), 10);
+	DeviceDirectoryRow dev3(5, 0, DataTransmitterDeviceType(), 10);
+	DeviceDirectoryRow dev4(4, 1, DataCollectorDeviceType(true, TimeScale::hr1, 4), 10);
+	DeviceDirectoryRow dev5(5, 1, DataTransmitterDeviceType(), 10);
+	DeviceDirectoryRow dev6(6, 0, DataCollectorDeviceType(false, TimeScale::sec1, 3), 10);
+	DeviceDirectoryRow dev7(6, 1, DataCollectorDeviceType(false, TimeScale::ms250, 3), 10);
+
+	When(OverloadedMethod(mockDeviceDirectory, findNextDevice, DeviceDirectoryRow*(byte*&, int&)))
+		.Do([&dev0_name, &dev0](byte* &devName, int &row)
+	{
+		row++;
+		devName = (byte*)dev0_name;
+		return &dev0;
+	}).Do([&dev1_name, &dev1](byte* &devName, int &row)
+	{
+		row++;
+		devName = (byte*)dev1_name;
+		return &dev1;
+	}).Do([&dev2_name, &dev2](byte* &devName, int &row)
+	{
+		row++;
+		devName = (byte*)dev2_name;
+		return &dev2;
+	}).Do([&dev3_name, &dev3](byte* &devName, int &row)
+	{
+		row++;
+		devName = (byte*)dev3_name;
+		return &dev3;
+	}).Do([&dev4_name, &dev4](byte* &devName, int &row)
+	{
+		row++;
+		devName = (byte*)dev4_name;
+		return &dev4;
+	}).Do([&dev5_name, &dev5](byte* &devName, int &row)
+	{
+		row++;
+		devName = (byte*)dev5_name;
+		return &dev5;
+	}).Do([&dev6_name, &dev6](byte* &devName, int &row)
+	{
+		row++;
+		devName = (byte*)dev6_name;
+		return &dev6;
+	}).Do([&dev7_name, &dev7](byte* &devName, int &row)
+	{
+		row++;
+		devName = (byte*)dev7_name;
+		return &dev7;
+	}).Do([](byte* &devName, int &row)
+	{
+		row = -1;
+		return nullptr;
+	});
+
+	Mock<IMockedTask<void, DeviceDirectoryRow*, word, byte*, uint32_t, uint32_t>> readAndSendDeviceDataMock;
+	T_MASTER::readAndSendDeviceData_Task::mock = &readAndSendDeviceDataMock.get();
+	When(Method(readAndSendDeviceDataMock, func)).AlwaysReturn(true);
+	Fake(Method(readAndSendDeviceDataMock, result));
+
+	for (int i = 0; i < 8; i++)
+	{
+		master->lastUpdateTimes[i] = i + 5;
+	}
+
+	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::hr24, 20);
+	ASSERT_TRUE(task());
+	ASSERT_TRUE(master->_timeUpdatePending);
+
+	// Three requests for device data, plus write new slave ID
+	//Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Exactly(4);
 }

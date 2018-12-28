@@ -249,7 +249,7 @@ public:
 			return addDevice(devName, device);
 	}
 
-	DeviceDirectoryRow* findNextDevice(byte* &devName, int &row)
+	virtual DeviceDirectoryRow* findNextDevice(byte* &devName, int &row)
 	{
 		while (_devices[row].slaveId == 0)
 		{
@@ -266,7 +266,7 @@ public:
 	}
 
 	// Untested
-	DeviceDirectoryRow* findNextDevice(int &row)
+	virtual DeviceDirectoryRow* findNextDevice(int &row)
 	{
 		byte *dummy;
 		return findNextDevice(dummy, row);
