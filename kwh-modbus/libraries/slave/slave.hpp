@@ -179,6 +179,10 @@ private_testable:
 			case 4:
 			{
 				_state = sPreparingToReceiveDevData;
+				if (wasNeverSet())
+				{
+					_stateDetail = (word)RecieveDataStatus::timeRequested;
+				}
 				RecieveDataStatus status;
 				Device *device = _devices[_modbus->Hreg(2)];
 				word nameLength = _modbus->Hreg(3);
