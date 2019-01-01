@@ -29,6 +29,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="WindowsFunctions.h" />
     <ClInclude Include="WindowsSystemFunctions.h" />
+    <ClInclude Include="PointerTracker.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -8,6 +8,7 @@
 #include "../kwh-modbus/libraries/deviceDirectory/DeviceDirectory.hpp"
 #include "WindowsSystemFunctions.h"
 #include "test_helpers.h"
+#include "PointerTracker.h"
 
 #include <stack>
 #include <tuple>
@@ -36,6 +37,8 @@ protected:
 	T_MASTER *master = new T_MASTER();
 	Mock<DeviceDirectory<byte*>> mockDeviceDirectory;
 
+	PointerTracker tracker;
+
 	void SetupOutOfRangeRegisterArray()
 	{
 		delete modbus;
@@ -55,6 +58,49 @@ protected:
 	{
 		return 2 << 14;
 	}
+
+	vector<tuple<byte*, DeviceDirectoryRow>>* Setup_DataCollectorsAndTransmitters()
+	{
+		auto devices = new vector<tuple<byte*, DeviceDirectoryRow>>();
+		tracker.addPointer(devices);
+		devices->push_back(make_tuple((byte*)"device0", DeviceDirectoryRow(6, 1, DataCollectorDeviceType(false, TimeScale::ms250, 3), 10)));
+		devices->push_back(make_tuple((byte*)"device1", DeviceDirectoryRow(6, 0, DataCollectorDeviceType(false, TimeScale::sec1, 3), 10)));
+		devices->push_back(make_tuple((byte*)"device2", DeviceDirectoryRow(5, 1, DataTransmitterDeviceType(), 10)));
+		devices->push_back(make_tuple((byte*)"device3", DeviceDirectoryRow(4, 1, DataCollectorDeviceType(true, TimeScale::hr1, 4), 10)));
+		devices->push_back(make_tuple((byte*)"device4", DeviceDirectoryRow(5, 0, DataTransmitterDeviceType(), 10)));
+		devices->push_back(make_tuple((byte*)"device5", DeviceDirectoryRow(4, 0, DataCollectorDeviceType(true, TimeScale::min1, 4), 10)));
+		devices->push_back(make_tuple((byte*)"device6", DeviceDirectoryRow(4, 2, DataCollectorDeviceType(true, TimeScale::hr24, 4), 10)));
+		devices->push_back(make_tuple((byte*)"device7", DeviceDirectoryRow(3, 1, DataCollectorDeviceType(false, TimeScale::sec15, 11), 10)));
+		devices->push_back(make_tuple((byte*)"device8", DeviceDirectoryRow(3, 0, DataCollectorDeviceType(false, TimeScale::min30, 7), 10)));
+
+		When(OverloadedMethod(mockDeviceDirectory, findNextDevice, DeviceDirectoryRow*(byte*&, int&)))
+			.AlwaysDo([devices](byte* &devName, int &row)
+		{
+			if (row < devices->size())
+			{
+				row++;
+				devName = get<0>((*devices)[row - 1]);
+				return &get<1>((*devices)[row - 1]);
+			}
+			else
+			{
+				row = -1;
+				return (DeviceDirectoryRow*)nullptr;
+			}
+		});
+
+		return devices;
+	}
+
+	static DeviceDirectoryRow* getDevicePtr(vector<tuple<byte*, DeviceDirectoryRow>>* devices, int index)
+	{
+		return &get<1>(devices->at(index));
+	}
+
+	static byte* getDeviceNamePtr(vector<tuple<byte*, DeviceDirectoryRow>>* devices, int index)
+	{
+		return get<0>(devices->at(index));
+	}
 public:
 	void SetUp()
 	{
@@ -63,6 +109,9 @@ public:
 		modbus->init(registerArray, 0, 12, 20);
 		master->config(system, modbus, &mockDeviceDirectory.get(), 10);
 		modbus->config(serial, system, 1200);
+		tracker.addPointer(new int());
+		tracker.addPointer(new int());
+		tracker.addPointer(new int());
 	}
 
 	void TearDown()
@@ -986,75 +1035,11 @@ TEST_F(MasterTests, setClock_SetsTimeUpdatePending)
 	ASSERT_TRUE(master->_timeUpdatePending);
 }
 
-TEST_F(MasterTests, transferPendingData_Success)
+TEST_F(MasterTests, transferPendingData_AllTimescales_Success)
 {
 	MOCK_MODBUS;
 	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
-
-	char dev0_name[] = "device0";
-	char dev1_name[] = "device1";
-	char dev2_name[] = "device2";
-	char dev3_name[] = "device3";
-	char dev4_name[] = "device4";
-	char dev5_name[] = "device5";
-	char dev6_name[] = "device6";
-	char dev7_name[] = "device7";
-
-	DeviceDirectoryRow dev0(3, 0, DataCollectorDeviceType(false, TimeScale::min30, 7), 10);
-	DeviceDirectoryRow dev1(3, 1, DataCollectorDeviceType(false, TimeScale::sec15, 11), 10);
-	DeviceDirectoryRow dev2(4, 0, DataCollectorDeviceType(true, TimeScale::min1, 4), 10);
-	DeviceDirectoryRow dev3(5, 0, DataTransmitterDeviceType(), 10);
-	DeviceDirectoryRow dev4(4, 1, DataCollectorDeviceType(true, TimeScale::hr1, 4), 10);
-	DeviceDirectoryRow dev5(5, 1, DataTransmitterDeviceType(), 10);
-	DeviceDirectoryRow dev6(6, 0, DataCollectorDeviceType(false, TimeScale::sec1, 3), 10);
-	DeviceDirectoryRow dev7(6, 1, DataCollectorDeviceType(false, TimeScale::ms250, 3), 10);
-
-	When(OverloadedMethod(mockDeviceDirectory, findNextDevice, DeviceDirectoryRow*(byte*&, int&)))
-		.Do([&dev0_name, &dev0](byte* &devName, int &row)
-	{
-		row++;
-		devName = (byte*)dev0_name;
-		return &dev0;
-	}).Do([&dev1_name, &dev1](byte* &devName, int &row)
-	{
-		row++;
-		devName = (byte*)dev1_name;
-		return &dev1;
-	}).Do([&dev2_name, &dev2](byte* &devName, int &row)
-	{
-		row++;
-		devName = (byte*)dev2_name;
-		return &dev2;
-	}).Do([&dev3_name, &dev3](byte* &devName, int &row)
-	{
-		row++;
-		devName = (byte*)dev3_name;
-		return &dev3;
-	}).Do([&dev4_name, &dev4](byte* &devName, int &row)
-	{
-		row++;
-		devName = (byte*)dev4_name;
-		return &dev4;
-	}).Do([&dev5_name, &dev5](byte* &devName, int &row)
-	{
-		row++;
-		devName = (byte*)dev5_name;
-		return &dev5;
-	}).Do([&dev6_name, &dev6](byte* &devName, int &row)
-	{
-		row++;
-		devName = (byte*)dev6_name;
-		return &dev6;
-	}).Do([&dev7_name, &dev7](byte* &devName, int &row)
-	{
-		row++;
-		devName = (byte*)dev7_name;
-		return &dev7;
-	}).Do([](byte* &devName, int &row)
-	{
-		row = -1;
-		return nullptr;
-	});
+	auto devices = Setup_DataCollectorsAndTransmitters();
 
 	Mock<IMockedTask<void, DeviceDirectoryRow*, word, byte*, uint32_t, uint32_t>> readAndSendDeviceDataMock;
 	T_MASTER::readAndSendDeviceData_Task::mock = &readAndSendDeviceDataMock.get();
@@ -1068,8 +1053,92 @@ TEST_F(MasterTests, transferPendingData_Success)
 
 	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::hr24, 20);
 	ASSERT_TRUE(task());
-	ASSERT_TRUE(master->_timeUpdatePending);
 
-	// Three requests for device data, plus write new slave ID
-	//Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Exactly(4);
+	Verify(Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 0), 7, getDeviceNamePtr(devices, 0), 5, 20) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 1), 7, getDeviceNamePtr(devices, 1), 6, 20) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 3), 7, getDeviceNamePtr(devices, 3), 11, 20) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 5), 7, getDeviceNamePtr(devices, 5), 8, 20) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 6), 7, getDeviceNamePtr(devices, 6), 12, 20) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 7), 7, getDeviceNamePtr(devices, 7), 7, 20) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 8), 7, getDeviceNamePtr(devices, 8), 10, 20)).Once();
+	assertArrayEq<uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t>(
+		master->lastUpdateTimes, 20, 20, 20, 20, 20, 20, 20, 20);
+}
+
+TEST_F(MasterTests, transferPendingData_30MinMax_Success)
+{
+	MOCK_MODBUS;
+	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
+	auto devices = Setup_DataCollectorsAndTransmitters();
+
+	Mock<IMockedTask<void, DeviceDirectoryRow*, word, byte*, uint32_t, uint32_t>> readAndSendDeviceDataMock;
+	T_MASTER::readAndSendDeviceData_Task::mock = &readAndSendDeviceDataMock.get();
+	When(Method(readAndSendDeviceDataMock, func)).AlwaysReturn(true);
+	Fake(Method(readAndSendDeviceDataMock, result));
+
+	for (int i = 0; i < 8; i++)
+	{
+		master->lastUpdateTimes[i] = i + 5;
+	}
+
+	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::min30, 20);
+	ASSERT_TRUE(task());
+
+	Verify(Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 0), 7, getDeviceNamePtr(devices, 0), 5, 20) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 1), 7, getDeviceNamePtr(devices, 1), 6, 20) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 5), 7, getDeviceNamePtr(devices, 5), 8, 20) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 7), 7, getDeviceNamePtr(devices, 7), 7, 20) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 8), 7, getDeviceNamePtr(devices, 8), 10, 20)).Once();
+	assertArrayEq<uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t>(
+		master->lastUpdateTimes, 20, 20, 20, 20, 20, 20, 11, 12);
+}
+
+TEST_F(MasterTests, transferPendingData_1SecMax_Success)
+{
+	MOCK_MODBUS;
+	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
+	auto devices = Setup_DataCollectorsAndTransmitters();
+
+	Mock<IMockedTask<void, DeviceDirectoryRow*, word, byte*, uint32_t, uint32_t>> readAndSendDeviceDataMock;
+	T_MASTER::readAndSendDeviceData_Task::mock = &readAndSendDeviceDataMock.get();
+	When(Method(readAndSendDeviceDataMock, func)).AlwaysReturn(true);
+	Fake(Method(readAndSendDeviceDataMock, result));
+
+	for (int i = 0; i < 8; i++)
+	{
+		master->lastUpdateTimes[i] = i + 5;
+	}
+
+	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::sec1, 20);
+	ASSERT_TRUE(task());
+
+	Verify(Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 0), 7, getDeviceNamePtr(devices, 0), 5, 20) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 1), 7, getDeviceNamePtr(devices, 1), 6, 20)).Once();
+	assertArrayEq<uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t>(
+		master->lastUpdateTimes, 20, 20, 7, 8, 9, 10, 11, 12);
+}
+
+TEST_F(MasterTests, transferPendingData_1SecMax_NoDevices)
+{
+	MOCK_MODBUS;
+	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
+	auto devices = Setup_DataCollectorsAndTransmitters();
+	devices->erase(devices->begin(), devices->begin() + 2);
+
+	Mock<IMockedTask<void, DeviceDirectoryRow*, word, byte*, uint32_t, uint32_t>> readAndSendDeviceDataMock;
+	T_MASTER::readAndSendDeviceData_Task::mock = &readAndSendDeviceDataMock.get();
+	When(Method(readAndSendDeviceDataMock, func)).AlwaysReturn(true);
+	Fake(Method(readAndSendDeviceDataMock, result));
+
+	for (int i = 0; i < 8; i++)
+	{
+		master->lastUpdateTimes[i] = i + 5;
+	}
+
+	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::sec1, 20);
+	ASSERT_TRUE(task());
+
+	Verify(Method(readAndSendDeviceDataMock, func)).Never();
+	assertArrayEq<uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t>(
+		master->lastUpdateTimes, 20, 20, 7, 8, 9, 10, 11, 12);
 }
