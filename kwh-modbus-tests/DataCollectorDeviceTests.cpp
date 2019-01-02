@@ -3,6 +3,7 @@
 #include "../kwh-modbus/libraries/device/DataCollectorDevice.h"
 #include "../kwh-modbus/libraries/bitFunctions/BitFunctions.hpp"
 #include "test_helpers.h"
+#include "PointerTracker.h"
 
 using namespace fakeit;
 
@@ -22,15 +23,17 @@ class DataCollectorDeviceTests : public ::testing::Test
 protected:
 	_DataCollectorDevice *device;
 
+	PointerTracker tracker;
+
 public:
 	void SetUp()
 	{
 		device = new _DataCollectorDevice();
+		tracker.addPointer(device);
 	}
 
 	void TearDown()
 	{
-		delete device;
 	}
 };
 
@@ -239,7 +242,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits)
 	});
 
 	device->init(false, TimeScale::sec1, 8);
-	byte* buffer = new byte[6];
+	byte* buffer = tracker.addArray(new byte[6]);
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
@@ -257,8 +260,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits)
 	ASSERT_EQ(buffer[3], 3);
 	ASSERT_EQ(buffer[4], 4);
 	ASSERT_EQ(buffer[5], 5);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_1page_15sec_8bits)
@@ -271,7 +272,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_15sec_8bits)
 	});
 
 	device->init(false, TimeScale::sec15, 8);
-	byte* buffer = new byte[6];
+	byte* buffer = tracker.addArray(new byte[6]);
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
@@ -289,8 +290,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_15sec_8bits)
 	ASSERT_EQ(buffer[3], 45);
 	ASSERT_EQ(buffer[4], 60);
 	ASSERT_EQ(buffer[5], 75);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_1page_250ms_8bits)
@@ -303,7 +302,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_250ms_8bits)
 	});
 
 	device->init(false, TimeScale::ms250, 8);
-	byte* buffer = new byte[6];
+	byte* buffer = tracker.addArray(new byte[6]);
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
@@ -321,8 +320,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_250ms_8bits)
 	ASSERT_EQ(buffer[3], 3);
 	ASSERT_EQ(buffer[4], 255);
 	ASSERT_EQ(buffer[5], 6);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits_largeBuffer)
@@ -335,7 +332,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits_largeBuffer)
 	});
 
 	device->init(false, TimeScale::sec1, 8);
-	byte* buffer = new byte[9];
+	byte* buffer = tracker.addArray(new byte[9]);
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
@@ -353,8 +350,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits_largeBuffer)
 	ASSERT_EQ(buffer[3], 3);
 	ASSERT_EQ(buffer[4], 4);
 	ASSERT_EQ(buffer[5], 5);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page0)
@@ -367,7 +362,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page0)
 	});
 
 	device->init(false, TimeScale::sec1, 8);
-	byte* buffer = new byte[6];
+	byte* buffer = tracker.addArray(new byte[6]);
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
@@ -385,8 +380,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page0)
 	ASSERT_EQ(buffer[3], 3);
 	ASSERT_EQ(buffer[4], 4);
 	ASSERT_EQ(buffer[5], 5);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page1)
@@ -399,7 +392,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page1)
 	});
 
 	device->init(false, TimeScale::sec1, 8);
-	byte* buffer = new byte[6];
+	byte* buffer = tracker.addArray(new byte[6]);
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
@@ -417,8 +410,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page1)
 	ASSERT_EQ(buffer[3], 9);
 	ASSERT_EQ(buffer[4], 10);
 	ASSERT_EQ(buffer[5], 11);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page2)
@@ -431,7 +422,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page2)
 	});
 
 	device->init(false, TimeScale::sec1, 8);
-	byte* buffer = new byte[6];
+	byte* buffer = tracker.addArray(new byte[6]);
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
@@ -449,8 +440,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page2)
 	ASSERT_EQ(buffer[3], 15);
 	ASSERT_EQ(buffer[4], 16);
 	ASSERT_EQ(buffer[5], 17);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_partialPage)
@@ -463,7 +452,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_partialPage)
 	});
 
 	device->init(false, TimeScale::sec1, 8);
-	byte* buffer = new byte[6];
+	byte* buffer = tracker.addArray(new byte[6]);
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
@@ -477,8 +466,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_partialPage)
 	ASSERT_EQ(dataPointSize, 8);
 	ASSERT_EQ(buffer[0], 12);
 	ASSERT_EQ(buffer[1], 13);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page0)
@@ -491,7 +478,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page0)
 	});
 
 	device->init(false, TimeScale::sec1, 3);
-	byte* buffer = new byte[2];
+	byte* buffer = tracker.addArray(new byte[2]);
 	buffer[0] = 0;
 	buffer[1] = 0;
 	byte dummy;
@@ -508,8 +495,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page0)
 	Verify(Method(mock, readDataPoint)).Exactly(5);
 	ASSERT_EQ(buffer[0], 136);
 	ASSERT_EQ(buffer[1], 70);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page1)
@@ -522,7 +507,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page1)
 	});
 
 	device->init(false, TimeScale::sec1, 3);
-	byte* buffer = new byte[2];
+	byte* buffer = tracker.addArray(new byte[2]);
 	buffer[0] = 0;
 	buffer[1] = 0;
 	byte dummy;
@@ -539,8 +524,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page1)
 	Verify(Method(mock, readDataPoint)).Exactly(2);
 	ASSERT_EQ(buffer[0], 53);
 	ASSERT_EQ(buffer[1], 0);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page0)
@@ -553,7 +536,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page0)
 	});
 
 	device->init(false, TimeScale::hr24, 5);
-	byte* buffer = new byte[3];
+	byte* buffer = tracker.addArray(new byte[3]);
 	buffer[0] = 0;
 	buffer[1] = 0;
 	buffer[2] = 0;
@@ -572,8 +555,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page0)
 	ASSERT_EQ(buffer[0], 0x40);
 	ASSERT_EQ(buffer[1], 0x7C);
 	ASSERT_EQ(buffer[2], 3);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page1)
@@ -586,7 +567,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page1)
 	});
 
 	device->init(false, TimeScale::hr24, 5);
-	byte* buffer = new byte[3];
+	byte* buffer = tracker.addArray(new byte[3]);
 	buffer[0] = 0;
 	buffer[1] = 0;
 	buffer[2] = 0;
@@ -605,8 +586,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page1)
 	ASSERT_EQ(buffer[0], 0x48);
 	ASSERT_EQ(buffer[1], 0x31);
 	ASSERT_EQ(buffer[2], 7);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page2)
@@ -619,7 +598,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page2)
 	});
 
 	device->init(false, TimeScale::hr24, 5);
-	byte* buffer = new byte[3];
+	byte* buffer = tracker.addArray(new byte[3]);
 	buffer[0] = 0;
 	buffer[1] = 0;
 	buffer[2] = 0;
@@ -638,8 +617,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page2)
 	ASSERT_EQ(buffer[0], 0x50);
 	ASSERT_EQ(buffer[1], 2);
 	ASSERT_EQ(buffer[2], 0);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_1page_1min_8bits_timeOffset)
@@ -652,7 +629,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_1min_8bits_timeOffset)
 	});
 
 	device->init(false, TimeScale::min1, 8);
-	byte* buffer = new byte[20];
+	byte* buffer = tracker.addArray(new byte[20]);
 	byte dummy;
 	byte numDataPointsInPage;
 	byte pagesRemaining;
@@ -672,8 +649,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_1min_8bits_timeOffset)
 	ASSERT_EQ(buffer[5], 114);
 	ASSERT_EQ(buffer[6], 174);
 	ASSERT_EQ(buffer[7], 234);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits_page0)
@@ -686,7 +661,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits
 	});
 
 	device->init(false, TimeScale::sec1, 3);
-	byte* buffer = new byte[2];
+	byte* buffer = tracker.addArray(new byte[2]);
 	buffer[0] = 0;
 	buffer[1] = 0;
 	byte dummy;
@@ -703,8 +678,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits
 	Verify(Method(mock, readDataPoint)).Exactly(3);
 	ASSERT_EQ(buffer[0], 136);
 	ASSERT_EQ(buffer[1], 0);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits_page1)
@@ -717,7 +690,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits
 	});
 
 	device->init(false, TimeScale::sec1, 3);
-	byte* buffer = new byte[2];
+	byte* buffer = tracker.addArray(new byte[2]);
 	buffer[0] = 0;
 	buffer[1] = 0;
 	byte dummy;
@@ -734,8 +707,6 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits
 	Verify(Method(mock, readDataPoint)).Exactly(3);
 	ASSERT_EQ(buffer[0], 0x63);
 	ASSERT_EQ(buffer[1], 1);
-
-	delete[] buffer;
 }
 
 TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits_page2)
@@ -748,7 +719,7 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits
 	});
 
 	device->init(false, TimeScale::sec1, 3);
-	byte* buffer = new byte[2];
+	byte* buffer = tracker.addArray(new byte[2]);
 	buffer[0] = 0;
 	buffer[1] = 0;
 	byte dummy;
@@ -765,6 +736,4 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits
 	Verify(Method(mock, readDataPoint)).Exactly(1);
 	ASSERT_EQ(buffer[0], 6);
 	ASSERT_EQ(buffer[1], 0);
-
-	delete[] buffer;
 }

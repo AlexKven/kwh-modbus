@@ -4,6 +4,7 @@
 #include "../kwh-modbus/libraries/modbus/Modbus.h"
 #include "../kwh-modbus/noArduino/ModbusMemory.h"
 #include "test_helpers.h"
+#include "PointerTracker.h"
 
 #define USE_MOCK Mock<ModbusMemory> mock = Mock<ModbusMemory>(*modbus)
 
@@ -13,6 +14,8 @@ class ModbusMemoryTests : public ::testing::Test
 {
 protected:
 	ModbusMemory *modbus = new ModbusMemory();
+
+	PointerTracker tracker;
 
 	void setup_FourRegisters(bool missingOne = false)
 	{
@@ -33,11 +36,11 @@ protected:
 public:
 	void SetUp()
 	{
+		tracker.addPointer(modbus);
 	}
 
 	void TearDown()
 	{
-		delete modbus;
 	}
 };
 

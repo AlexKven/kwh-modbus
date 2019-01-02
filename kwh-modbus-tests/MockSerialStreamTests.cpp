@@ -6,6 +6,7 @@
 #include <queue>
 #include "WindowsFunctions.h"
 #include "WindowsSystemFunctions.h"
+#include "PointerTracker.h"
 #include <math.h>
 
 #define APP_LINE << "Line #" << __LINE__
@@ -18,17 +19,18 @@ public:
 	std::queue<uint8_t> *readQueue;
 	std::queue<uint8_t> *writeQueue;
 
+	PointerTracker tracker;
+
 	void SetUp()
 	{
 		readQueue = new std::queue<uint8_t>();
 		writeQueue = new std::queue<uint8_t>();
 		WindowsFunctions win;
+		tracker.addPointers(readQueue, writeQueue);
 	}
 
 	void TearDown()
 	{
-		delete readQueue;
-		delete writeQueue;
 	}
 
 	void seedRandom(MockSerialStream &stream)

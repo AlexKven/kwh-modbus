@@ -23,18 +23,47 @@ private:
 	}
 public:
 	template<typename T>
-	void addPointer(T* ptr)
+	T* addPointer(T* ptr)
 	{
 		pointerVector.push_back(ptr);
 		deleterVector.push_back(del<T>);
+		return ptr;
 	}
 
 	template<typename T>
-	void addArray(T* ptr)
+	T* addArray(T* ptr)
 	{
 		pointerVector.push_back(ptr);
 		deleterVector.push_back(delArray<T>);
+		return ptr;
 	}
+
+	template<class A>
+	void addPointers(A* head)
+	{
+		addPointer(head);
+	}
+
+	template<class A, class ...B>
+	void addPointers(A* head, B*... args)
+	{
+		addPointer(head);
+		addPointers(args...);
+	}
+
+	template<class A>
+	void addArrays(A* head)
+	{
+		addArray(head);
+	}
+
+	template<class A, class ...B>
+	void addArrays(A* head, B*... args)
+	{
+		addArray(head);
+		addArrays(args...);
+	}
+
 	PointerTracker() {}
 	~PointerTracker()
 	{

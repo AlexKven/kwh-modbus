@@ -6,6 +6,7 @@
 #include "../kwh-modbus/mock/MockSerialStream.h"
 #include "WindowsSystemFunctions.h"
 #include "test_helpers.h"
+#include "PointerTracker.h"
 
 using namespace fakeit;
 
@@ -25,10 +26,10 @@ protected:
 	T_SLAVE *slave = new T_SLAVE();
 	Mock<Device> *mockDevices = nullptr;
 
+	PointerTracker tracker;
+
 	void SetupOutOfRangeRegisterArray()
 	{
-		delete modbus;
-		modbus = new T_MODBUS();
 		modbus->init(registerArray, 20, 15, 20);
 		slave->config(system, modbus);
 	}
@@ -36,7 +37,7 @@ protected:
 	void SetupDevices(Device **devices, word count, std::function<void(int, Mock<Device>&)> devMockCallback = nullptr)
 	{
 		if (mockDevices != nullptr)
-			delete[] mockDevices;
+			delete mockDevices;
 		mockDevices = new Mock<Device>[count];
 		for (word i = 0; i < count; i++)
 		{
@@ -64,14 +65,12 @@ public:
 		modbus->init(registerArray, 0, 15, 20);
 		slave->config(system, modbus);
 		slave->_hregCount = 15;
+		tracker.addPointers(modbus, slave, serial, system);
+		tracker.addArrays(registerArray);
 	}
 
 	void TearDown()
 	{
-		delete modbus;
-		delete[] registerArray;
-		if (mockDevices != nullptr)
-			delete[] mockDevices;
 	}
 };
 
@@ -109,9 +108,9 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
 	slave->_state = sDisplayDevInfo;
 	slave->displayedStateInvalid = true;
 
-	Device **devices = new Device*[3];
+	Device **devices = tracker.addArray(new Device*[3]);
 	SetupDevices(devices, 3);
-	byte **names = new byte*[3];
+	byte **names = tracker.addArray(new byte*[3]);
 	names[0] = (byte*)"dev01";
 	names[1] = (byte*)"dev02";
 	names[2] = (byte*)"dev03";
@@ -120,9 +119,6 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
 
 	// Select device #1
 	registerArray[2] = 1;
-
-	delete[] devices;
-	delete[] names;
 
 	bool success = slave->setOutgoingState();
 
@@ -147,9 +143,9 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_TimeNotSet)
 	slave->_state = sDisplayDevData;
 	slave->displayedStateInvalid = true;
 
-	Device **devices = new Device*[1];
+	Device **devices = tracker.addArray(new Device*[1]);
 	SetupDevices(devices, 1);
-	byte **names = new byte*[1];
+	byte **names = tracker.addArray(new byte*[1]);
 	names[0] = (byte*)"dev00";
 
 	slave->init(1, 5, 12, 1, devices, names);
@@ -167,9 +163,6 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_TimeNotSet)
 	// Page 0, and no limit to how many data points we can process
 	registerArray[6] = 0;
 
-	delete[] devices;
-	delete[] names;
-
 	bool success = slave->setOutgoingState();
 
 	ASSERT_EQ(slave->displayedStateInvalid, false);
@@ -183,9 +176,9 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_DeviceDoesntSendDa
 	slave->_state = sDisplayDevData;
 	slave->displayedStateInvalid = true;
 
-	Device **devices = new Device*[1];
+	Device **devices = tracker.addArray(new Device*[1]);
 	SetupDevices(devices, 1);
-	byte **names = new byte*[1];
+	byte **names = tracker.addArray(new byte*[1]);
 	names[0] = (byte*)"dev00";
 
 	slave->init(1, 5, 12, 1, devices, names);
@@ -205,9 +198,6 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_DeviceDoesntSendDa
 
 	// Page 0, and no limit to how many data points we can process
 	registerArray[6] = 0;
-
-	delete[] devices;
-	delete[] names;
 
 	bool success = slave->setOutgoingState();
 
@@ -228,7 +218,7 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_4bitData)
 	word passedBufferSize;
 	byte passedMaxPoints;
 
-	Device **devices = new Device*[1];
+	Device **devices = tracker.addArray(new Device*[1]);
 	SetupDevices(devices, 1);
 	When(Method(mockDevices[0], readData)).AlwaysDo([&](uint32_t startTime, word numPoints, byte page, byte * buffer, word bufferSize,
 		byte maxPoints, byte & outDataPointsCount, byte & outPagesRemaining, byte &outDataPointSize)
@@ -247,7 +237,7 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_4bitData)
 		outDataPointSize = 4;
 		return true;
 	});
-	byte **names = new byte*[1];
+	byte **names = tracker.addArray(new byte*[1]);
 	names[0] = (byte*)"dev00";
 
 	slave->init(1, 5, 12, 10, devices, names);
@@ -267,9 +257,6 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_4bitData)
 
 	// Page 0, and no limit to how many data points we can process
 	registerArray[6] = 0;
-
-	delete[] devices;
-	delete[] names;
 
 	bool success = slave->setOutgoingState();
 
@@ -301,7 +288,7 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_5bitData)
 	word passedBufferSize;
 	byte passedMaxPoints;
 
-	Device **devices = new Device*[1];
+	Device **devices = tracker.addArray(new Device*[1]);
 	SetupDevices(devices, 1);
 	When(Method(mockDevices[0], readData)).AlwaysDo([&](uint32_t startTime, word numPoints, byte page, byte * buffer, word bufferSize,
 		byte maxPoints, byte & outDataPointsCount, byte & outPagesRemaining, byte &outDataPointSize)
@@ -320,7 +307,7 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_5bitData)
 		outDataPointSize = 5;
 		return true;
 	});
-	byte **names = new byte*[1];
+	byte **names = tracker.addArray(new byte*[1]);
 	names[0] = (byte*)"dev00";
 
 	slave->init(1, 5, 12, 10, devices, names);
@@ -340,9 +327,6 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_5bitData)
 
 	// Page 1, and no limit to how many data points we can process
 	registerArray[6] = 1;
-
-	delete[] devices;
-	delete[] names;
 
 	bool success = slave->setOutgoingState();
 
@@ -765,16 +749,14 @@ TEST_F(SlaveTests, SlaveTests_init)
 	slave->_state = sIdle;
 	slave->_modbus->setSlaveId(17);
 
-	Device **devices = new Device*[3];
+	Device **devices = tracker.addArray(new Device*[3]);
 	SetupDevices(devices, 3);
-	byte **names = new byte*[3];
+	byte **names = tracker.addArray(new byte*[3]);
 	names[0] = (byte*)"dev01";
 	names[1] = (byte*)"dev02";
 	names[2] = (byte*)"dev03";
 
 	slave->init(3, 5, 20, 30, devices, names);
-
-	delete[] names;
 
 	ASSERT_EQ(slave->getDeviceCount(), 3);
 	ASSERT_EQ(slave->getDeviceNameLength(), 5);
@@ -783,7 +765,7 @@ TEST_F(SlaveTests, SlaveTests_init)
 		devices[0],
 		devices[1],
 		devices[2]);
-	delete[] devices;
+
 	for (int i = 0; i < 3; i++)
 	{
 		assertArrayEq(slave->_deviceNames[i],
@@ -798,18 +780,15 @@ TEST_F(SlaveTests, SlaveTests_clearDevices)
 	slave->_state = sIdle;
 	slave->_modbus->setSlaveId(17);
 
-	Device **devices = new Device*[3];
+	Device **devices = tracker.addArray(new Device*[3]);
 	SetupDevices(devices, 3);
-	byte **names = new byte*[3];
+	byte **names = tracker.addArray(new byte*[3]);
 	names[0] = (byte*)"dev01";
 	names[1] = (byte*)"dev02";
 	names[2] = (byte*)"dev03";
 
 	slave->init(3, 5, 20, 1, devices, names);
 	slave->clearDevices();
-
-	delete[] devices;
-	delete[] names;
 
 	ASSERT_EQ(slave->getDeviceCount(), 0);
 	ASSERT_EQ(slave->getDeviceNameLength(), 5); // Clearing doesn't change name length

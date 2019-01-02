@@ -3,6 +3,7 @@
 
 #include "../kwh-modbus/libraries/deviceDirectory/DeviceDirectory.hpp"
 #include "test_helpers.h"
+#include "PointerTracker.h"
 #define getMock() Mock<DeviceDirectory<byte*>>(*deviceDirectory)
 
 using namespace fakeit;
@@ -10,8 +11,9 @@ using namespace fakeit;
 class DeviceDirectoryTests : public ::testing::Test
 {
 protected:
-	word * registerArray;
 	DeviceDirectory<byte*> *deviceDirectory = new DeviceDirectory<byte*>();
+
+	PointerTracker tracker;
 
 	inline void setupCompareName_ReturnTrueOn(Mock<DeviceDirectory<byte*>> &mock, word index)
 	{
@@ -24,11 +26,11 @@ protected:
 public:
 	void SetUp()
 	{
+		tracker.addPointer(deviceDirectory);
 	}
 
 	void TearDown()
 	{
-		delete deviceDirectory;
 	}
 
 	int asyncTest(int __resume_line__)

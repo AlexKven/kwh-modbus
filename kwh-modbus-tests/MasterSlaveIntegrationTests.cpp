@@ -18,6 +18,7 @@
 #include "test_helpers.h"
 #include "WindowsFunctions.h"
 #include "WindowsSystemFunctions.h"
+#include "PointerTracker.h"
 #include <queue>
 
 #define TIMEOUT_START(MILLIS_MAX) unsigned long time_start = system->millis(); \
@@ -101,6 +102,8 @@ protected:
 	T_Slave *slave = new T_Slave();
 	T_Master *master = new T_Master();
 
+	PointerTracker tracker;
+
 	bool masterSuccess = false;
 	bool slaveSuccess = false;
 	bool slaveComplete = false;
@@ -138,6 +141,9 @@ public:
 		slaveSerial->setSystem(system);
 		masterSerial->setSystem(system);
 		deviceDirectory = new DeviceDirectory<byte*>();
+
+		tracker.addPointers(modbusSlave, modbusMaster, slaveIn, masterIn, slaveSerial,
+			masterSerial, deviceDirectory, slave, master);
 
 		modbusMaster->config(masterSerial, system, 4800);
 		modbusSlave->config(slaveSerial, system, 4800);
@@ -187,10 +193,6 @@ public:
 
 	void TearDown()
 	{
-		delete slaveIn;
-		delete masterIn;
-		delete slaveSerial;
-		delete masterSerial;
 	}
 
 	void SetLongTestConditions()
@@ -350,7 +352,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 {
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
-	ITask* task1 = getNewSetTestConditionsTask();
+	ITask* task1 = tracker.addPointer(getNewSetTestConditionsTask());
 	T_Master::processNewSlave_Task task2(&T_Master::processNewSlave, master, false);
 
 	stack<ITask*> tasks;
@@ -374,8 +376,6 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
 
-	delete task1;
-
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
 
@@ -396,7 +396,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave_JustReject)
 {
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
-	ITask* task1 = getNewSetTestConditionsTask();
+	ITask* task1 = tracker.addPointer(getNewSetTestConditionsTask());
 	T_Master::processNewSlave_Task task2(&T_Master::processNewSlave, master, true);
 
 	stack<ITask*> tasks;
@@ -420,7 +420,6 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave_
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
 
-	delete task1;
 
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
@@ -522,7 +521,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingD
 
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
 	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, false);
-	auto task2 = getNewSetTestConditionsTask();
+	auto task2 = tracker.addPointer(getNewSetTestConditionsTask());
 	task2->isLongTest = true;
 	T_Master::transferPendingData_Task task3(&T_Master::transferPendingData, master, TimeScale::sec1, 6);
 
@@ -557,8 +556,6 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingD
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
-
-	delete task2;
 
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
@@ -625,7 +622,7 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingD
 
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
 	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, false);
-	auto task2 = getNewSetTestConditionsTask();
+	auto task2 = tracker.addPointer(getNewSetTestConditionsTask());
 	task2->isLongTest = true;
 	T_Master::transferPendingData_Task task3(&T_Master::transferPendingData, master, TimeScale::sec1, 10);
 
@@ -661,8 +658,6 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingD
 	auto t_master = system->createThread(master_thread, this);
 	auto t_slave = system->createThread(slave_thread, this);
 	system->waitForThreads(2, t_master, t_slave);
-
-	delete task2;
 
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);

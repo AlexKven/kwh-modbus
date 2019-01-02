@@ -2,6 +2,7 @@
 #include "fakeit.hpp"
 #include "../kwh-modbus/libraries/timeManager/TimeManager.h"
 #include "test_helpers.h"
+#include "PointerTracker.h"
 
 using namespace fakeit;
 
@@ -10,15 +11,17 @@ class TimeManagerTests : public ::testing::Test
 protected:
 	TimeManager *timeManager;
 
+	PointerTracker tracker;
+
 public:
 	void SetUp()
 	{
 		timeManager = new TimeManager();
+		tracker.addPointer(timeManager);
 	}
 
 	void TearDown()
 	{
-		delete timeManager;
 	}
 };
 

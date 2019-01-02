@@ -41,8 +41,6 @@ protected:
 
 	void SetupOutOfRangeRegisterArray()
 	{
-		delete modbus;
-		modbus = new T_MODBUS();
 		modbus->init(registerArray, 20, 12, 20);
 		master->config(system, modbus, &mockDeviceDirectory.get(), 10);
 	}
@@ -109,15 +107,12 @@ public:
 		modbus->init(registerArray, 0, 12, 20);
 		master->config(system, modbus, &mockDeviceDirectory.get(), 10);
 		modbus->config(serial, system, 1200);
-		tracker.addPointer(new int());
-		tracker.addPointer(new int());
-		tracker.addPointer(new int());
+		tracker.addPointers(modbus, master, serial, system);
+		tracker.addArrays(registerArray);
 	}
 
 	void TearDown()
 	{
-		delete modbus;
-		delete[] registerArray;
 	}
 };
 
@@ -671,19 +666,15 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
 	stack<tuple<word, word*>> regsStack;
-	word* prevPtr = nullptr;
 	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 9, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('C' << 8), 0 }));
 	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 8, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('B' << 8), 0 }));
 	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 7, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('A' << 8), 0 }));
 	regsStack.push(make_tuple(7, new word[8]{ 0, 1 << 8, 3, 6, 22, 0, 0, 0 }));
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&prevPtr, &regsStack](word &regCount, word *&regs) {
-		if (prevPtr != nullptr)
-			delete[] prevPtr;
+	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
 		auto next = regsStack.top();
 		regsStack.pop();
 		regCount = get<0>(next);
 		regs = get<1>(next);
-		prevPtr = regs;
 		return true;
 	});
 
@@ -701,10 +692,6 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 
 	// Slave ID set to 13
 	ASSERT_EQ(curSlaveId, 13);
-
-	// Cleanup
-	if (prevPtr != nullptr)
-		delete[] prevPtr;
 }
 
 TEST_F(MasterTests, processNewSlave_Reject_ByRequest)
@@ -732,16 +719,12 @@ TEST_F(MasterTests, processNewSlave_Reject_ByRequest)
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
 	stack<tuple<word, word*>> regsStack;
-	word* prevPtr = nullptr;
-	regsStack.push(make_tuple(7, new word[7]{ 0, 1 << 8, 3, 6, 0, 0, 0 }));
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&prevPtr, &regsStack](word &regCount, word *&regs) {
-		if (prevPtr != nullptr)
-			delete[] prevPtr;
+	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 0, 1 << 8, 3, 6, 0, 0, 0 })));
+	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
 		auto next = regsStack.top();
 		regsStack.pop();
 		regCount = get<0>(next);
 		regs = get<1>(next);
-		prevPtr = regs;
 		return true;
 	});
 
@@ -754,10 +737,6 @@ TEST_F(MasterTests, processNewSlave_Reject_ByRequest)
 
 	// Slave ID set to 13
 	ASSERT_EQ(curSlaveId, 255);
-
-	// Cleanup
-	if (prevPtr != nullptr)
-		delete[] prevPtr;
 }
 
 TEST_F(MasterTests, processNewSlave_Reject_DirectoryAlreadyFull)
@@ -785,16 +764,12 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryAlreadyFull)
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
 	stack<tuple<word, word*>> regsStack;
-	word* prevPtr = nullptr;
-	regsStack.push(make_tuple(7, new word[7]{ 0, 1 << 8, 3, 6, 0, 0, 0 }));
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&prevPtr, &regsStack](word &regCount, word *&regs) {
-		if (prevPtr != nullptr)
-			delete[] prevPtr;
+	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 0, 1 << 8, 3, 6, 0, 0, 0 })));
+	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
 		auto next = regsStack.top();
 		regsStack.pop();
 		regCount = get<0>(next);
 		regs = get<1>(next);
-		prevPtr = regs;
 		return true;
 	});
 
@@ -807,10 +782,6 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryAlreadyFull)
 
 	// Slave ID set to 13
 	ASSERT_EQ(curSlaveId, 255);
-
-	// Cleanup
-	if (prevPtr != nullptr)
-		delete[] prevPtr;
 }
 
 TEST_F(MasterTests, processNewSlave_Reject_SlaveVersionMismatch)
@@ -838,16 +809,12 @@ TEST_F(MasterTests, processNewSlave_Reject_SlaveVersionMismatch)
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
 	stack<tuple<word, word*>> regsStack;
-	word* prevPtr = nullptr;
-	regsStack.push(make_tuple(7, new word[7]{ 0, 0, 3, 6, 0, 0, 0 }));
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&prevPtr, &regsStack](word &regCount, word *&regs) {
-		if (prevPtr != nullptr)
-			delete[] prevPtr;
+	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 0, 0, 3, 6, 0, 0, 0 })));
+	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
 		auto next = regsStack.top();
 		regsStack.pop();
 		regCount = get<0>(next);
 		regs = get<1>(next);
-		prevPtr = regs;
 		return true;
 	});
 
@@ -860,10 +827,6 @@ TEST_F(MasterTests, processNewSlave_Reject_SlaveVersionMismatch)
 
 	// Slave ID set to 13
 	ASSERT_EQ(curSlaveId, 255);
-
-	// Cleanup
-	if (prevPtr != nullptr)
-		delete[] prevPtr;
 }
 
 TEST_F(MasterTests, processNewSlave_Reject_ZeroDevices)
@@ -891,16 +854,12 @@ TEST_F(MasterTests, processNewSlave_Reject_ZeroDevices)
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
 	stack<tuple<word, word*>> regsStack;
-	word* prevPtr = nullptr;
-	regsStack.push(make_tuple(7, new word[7]{ 0, 1 << 8, 0, 6, 0, 0, 0 }));
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&prevPtr, &regsStack](word &regCount, word *&regs) {
-		if (prevPtr != nullptr)
-			delete[] prevPtr;
+	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 0, 1 << 8, 0, 6, 0, 0, 0 })));
+	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
 		auto next = regsStack.top();
 		regsStack.pop();
 		regCount = get<0>(next);
 		regs = get<1>(next);
-		prevPtr = regs;
 		return true;
 	});
 
@@ -913,10 +872,6 @@ TEST_F(MasterTests, processNewSlave_Reject_ZeroDevices)
 
 	// Slave ID set to 13
 	ASSERT_EQ(curSlaveId, 255);
-
-	// Cleanup
-	if (prevPtr != nullptr)
-		delete[] prevPtr;
 }
 
 TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
@@ -948,19 +903,15 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
 	stack<tuple<word, word*>> regsStack;
-	word* prevPtr = nullptr;
-	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 9, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('C' << 8), 0 }));
-	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 8, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('B' << 8), 0 }));
-	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 7, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('A' << 8), 0 }));
-	regsStack.push(make_tuple(7, new word[8]{ 0, 1 << 8, 3, 6, 47, 0, 0, 0 }));
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&prevPtr, &regsStack](word &regCount, word *&regs) {
-		if (prevPtr != nullptr)
-			delete[] prevPtr;
+	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 2, 1, 9, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('B' << 8), 0 })));
+	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 2, 1, 8, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('C' << 8), 0 })));
+	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 2, 1, 7, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('A' << 8), 0 })));
+	regsStack.push(make_tuple(7, tracker.addArray(new word[8]{ 0, 1 << 8, 3, 6, 47, 0, 0, 0 })));
+	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
 		auto next = regsStack.top();
 		regsStack.pop();
 		regCount = get<0>(next);
 		regs = get<1>(next);
-		prevPtr = regs;
 		return true;
 	});
 
@@ -980,10 +931,6 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 
 	// Slave ID set to 13
 	ASSERT_EQ(curSlaveId, 255);
-
-	// Cleanup
-	if (prevPtr != nullptr)
-		delete[] prevPtr;
 }
 
 TEST_F(MasterTests, broadcastTime_success)

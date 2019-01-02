@@ -4,6 +4,7 @@
 #include "../kwh-modbus/libraries/modbus/Modbus.h"
 #include "../kwh-modbus/libraries/modbus/ModbusArray.h"
 #include "test_helpers.h"
+#include "PointerTracker.h"
 
 #define USE_MOCK Mock<ModbusArray> mock = Mock<ModbusArray>(*modbus)
 
@@ -15,17 +16,19 @@ protected:
 	word *registerArray;
 	ModbusArray *modbus = new ModbusArray();
 
+	PointerTracker tracker;
+
 public:
 	void SetUp()
 	{
 		registerArray = new word[12];
 		modbus->init(registerArray, 5, 10, 14);
+		tracker.addArray(registerArray);
+		tracker.addPointer(modbus);
 	}
 
 	void TearDown()
 	{
-		delete modbus;
-		delete[] registerArray;
 	}
 };
 

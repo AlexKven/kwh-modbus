@@ -13,6 +13,7 @@
 #include "test_helpers.h"
 #include "WindowsFunctions.h"
 #include "WindowsSystemFunctions.h"
+#include "PointerTracker.h"
 #include <queue>
 
 #define TIMEOUT_START(MILLIS_MAX) unsigned long time_start = system->millis(); \
@@ -61,6 +62,8 @@ protected:
 	bool slaveSuccess = false;
 	ModbusTransmissionError errorType;
 
+	PointerTracker tracker;
+
 	static WindowsSystemFunctions *system;
 
 public:
@@ -75,6 +78,8 @@ public:
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
 		slaveSerial->setSystem(system);
 		masterSerial->setSystem(system);
+
+		tracker.addPointers(slave, master, slaveIn, masterIn, slaveSerial, masterSerial);
 
 		master->config(masterSerial, system, 1200);
 		slave->config(slaveSerial, system, 1200);
@@ -116,10 +121,6 @@ public:
 
 	void TearDown()
 	{
-		delete slaveIn;
-		delete masterIn;
-		delete slaveSerial;
-		delete masterSerial;
 	}
 
 	void slaveThread()

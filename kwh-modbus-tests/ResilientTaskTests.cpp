@@ -6,6 +6,7 @@
 #include "../kwh-modbus/libraries/resilientTask/ResilientTask.hpp"
 #include "test_helpers.h"
 #include "WindowsSystemFunctions.h"
+#include "PointerTracker.h"
 #include <functional>
 #include <queue>
 
@@ -58,6 +59,9 @@ protected:
 	TestResilientTask *task;
 	WindowsSystemFunctions *system;
 	unsigned long long _testStartTime;
+
+	PointerTracker tracker;
+
 public:
 	void SetUp()
 	{
@@ -65,11 +69,12 @@ public:
 		system = new WindowsSystemFunctions();
 		task->setSystem(system);
 		_testStartTime = system->millis();
+
+		tracker.addPointers(task, system);
 	}
 
 	void TearDown()
 	{
-		delete task, system;
 	}
 };
 
