@@ -27,7 +27,7 @@ T_MODBUS_BASE & mModbusBase = modbusBaseMock.get(); \
 Mock<T_MODBUS_TASK> modbusTaskMock(*(T_MODBUS_TASK*)modbus); \
 T_MODBUS_TASK & mModbusTask = modbusTaskMock.get()
 
-#define PUSH_REGS(COUNT, STACK, ...) STACK.push(make_tuple(COUNT, tracker.addArray(new word[COUNT] { __VA_ARGS__})))
+#define REGS(COUNT, ...)make_tuple(COUNT, tracker.addArray(new word[COUNT] { __VA_ARGS__}))
 
 class MasterTests : public ::testing::Test
 {
@@ -94,7 +94,29 @@ protected:
 		return devices;
 	}
 
+	void isRegsResponse_UseMockData(Mock<T_MODBUS_BASE> &mock, RegsStack &regsStack)
+	{
+		When(Method(mock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
+			auto next = regsStack.top();
+			regsStack.pop();
+			regCount = get<0>(next);
+			regs = get<1>(next);
+			return true;
+		});
+	}
 
+	tuple<int, word*> withString(tuple<int, word*> regs, const char* str)
+	{
+		int strLen = 0;
+		while (str[strLen] != '\0')
+			strLen++;
+		int count = get<0>(regs) + strLen / 2 + strLen % 2;
+		word* result = tracker.addArray(new word[count]);
+		result[count - 1] = 0;
+		BitFunctions::copyBits(get<1>(regs), result, 0, 0, 16 * get<0>(regs));
+		BitFunctions::copyBits(str, result, 0, 16 * get<0>(regs), strLen * 8);
+		return make_tuple(count, result);
+	}
 
 	static DeviceDirectoryRow* getDevicePtr(vector<tuple<byte*, DeviceDirectoryRow>>* devices, int index)
 	{
@@ -650,9 +672,14 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 {
 	byte curSlaveId = 1;
 	MOCK_MODBUS;
+	MockNewMethod(addDeviceName, string name);
 
 	When(Method(mockDeviceDirectory, findFreeSlaveID)).Return(13);
-	When(Method(mockDeviceDirectory, addOrReplaceDevice)).AlwaysReturn(0);
+	When(Method(mockDeviceDirectory, addOrReplaceDevice)).AlwaysDo([&addDeviceName](byte* name, DeviceDirectoryRow row)
+	{
+		addDeviceName.get().method(stringifyCharArray(6, (char*)name));
+		return 0;
+	});
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
 	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
@@ -671,18 +698,12 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 	});
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
-	stack<tuple<word, word*>> regsStack;
-	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 2, 1, 9, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('C' << 8), 0 })));
-	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 2, 1, 8, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('B' << 8), 0 })));
-	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 2, 1, 7, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('A' << 8), 0 })));
-	regsStack.push(make_tuple(7, tracker.addArray(new word[8]{ 0, 1 << 8, 3, 6, 22, 0, 0, 0 })));
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
-		auto next = regsStack.top();
-		regsStack.pop();
-		regCount = get<0>(next);
-		regs = get<1>(next);
-		return true;
-	});
+	RegsStack regsStack;
+	regsStack.push(withString(REGS(3, 2, 1, 9), "TEAM C"));
+	regsStack.push(withString(REGS(3, 2, 1, 8), "TEAM B"));
+	regsStack.push(withString(REGS(3, 2, 1, 7), "TEAM A"));
+	regsStack.push(REGS(8, 0, 1 << 8, 3, 6, 22, 0, 0, 0));
+	isRegsResponse_UseMockData(modbusBaseMock, regsStack);
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
@@ -695,6 +716,9 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), DeviceDirectoryRow(13, 0, 7, 22))).Once();
 	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), DeviceDirectoryRow(13, 1, 8, 22))).Once();
 	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), DeviceDirectoryRow(13, 2, 9, 22))).Once();
+	Verify(Method(addDeviceName, method).Using("TEAM A") +
+		Method(addDeviceName, method).Using("TEAM B") +
+		Method(addDeviceName, method).Using("TEAM C")).Once();
 
 	// Slave ID set to 13
 	ASSERT_EQ(curSlaveId, 13);
@@ -909,17 +933,11 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
 	RegsStack regsStack;
-	PUSH_REGS(7, regsStack, 2, 1, 9, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('B' << 8), 0);
-	PUSH_REGS(7, regsStack, 2, 1, 8, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('C' << 8), 0);
-	PUSH_REGS(7, regsStack, 2, 1, 7, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('A' << 8), 0);
-	PUSH_REGS(8, regsStack, 0, 1 << 8, 3, 6, 47, 0, 0, 0);
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
-		auto next = regsStack.top();
-		regsStack.pop();
-		regCount = get<0>(next);
-		regs = get<1>(next);
-		return true;
-	});
+	regsStack.push(withString(REGS(3, 2, 1, 9), "TEAM B"));
+	regsStack.push(withString(REGS(3, 2, 1, 8), "TEAM C"));
+	regsStack.push(withString(REGS(3, 2, 1, 7), "TEAM A"));
+	regsStack.push(REGS(8, 0, 1 << 8, 3, 6, 47, 0, 0, 0));
+	isRegsResponse_UseMockData(modbusBaseMock, regsStack);
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
