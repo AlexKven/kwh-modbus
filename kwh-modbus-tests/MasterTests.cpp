@@ -27,6 +27,8 @@ T_MODBUS_BASE & mModbusBase = modbusBaseMock.get(); \
 Mock<T_MODBUS_TASK> modbusTaskMock(*(T_MODBUS_TASK*)modbus); \
 T_MODBUS_TASK & mModbusTask = modbusTaskMock.get()
 
+#define PUSH_REGS(COUNT, STACK, ...) STACK.push(make_tuple(COUNT, tracker.addArray(new word[COUNT] { __VA_ARGS__})))
+
 class MasterTests : public ::testing::Test
 {
 protected:
@@ -38,6 +40,8 @@ protected:
 	Mock<DeviceDirectory<byte*>> mockDeviceDirectory;
 
 	PointerTracker tracker;
+
+	typedef stack<tuple<word, word*>> RegsStack;
 
 	void SetupOutOfRangeRegisterArray()
 	{
@@ -89,6 +93,8 @@ protected:
 
 		return devices;
 	}
+
+
 
 	static DeviceDirectoryRow* getDevicePtr(vector<tuple<byte*, DeviceDirectoryRow>>* devices, int index)
 	{
@@ -666,10 +672,10 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
 	stack<tuple<word, word*>> regsStack;
-	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 9, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('C' << 8), 0 }));
-	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 8, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('B' << 8), 0 }));
-	regsStack.push(make_tuple(7, new word[7]{ 2, 1, 7, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('A' << 8), 0 }));
-	regsStack.push(make_tuple(7, new word[8]{ 0, 1 << 8, 3, 6, 22, 0, 0, 0 }));
+	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 2, 1, 9, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('C' << 8), 0 })));
+	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 2, 1, 8, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('B' << 8), 0 })));
+	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 2, 1, 7, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('A' << 8), 0 })));
+	regsStack.push(make_tuple(7, tracker.addArray(new word[8]{ 0, 1 << 8, 3, 6, 22, 0, 0, 0 })));
 	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
 		auto next = regsStack.top();
 		regsStack.pop();
@@ -902,11 +908,11 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 	});
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
-	stack<tuple<word, word*>> regsStack;
-	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 2, 1, 9, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('B' << 8), 0 })));
-	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 2, 1, 8, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('C' << 8), 0 })));
-	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 2, 1, 7, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('A' << 8), 0 })));
-	regsStack.push(make_tuple(7, tracker.addArray(new word[8]{ 0, 1 << 8, 3, 6, 47, 0, 0, 0 })));
+	RegsStack regsStack;
+	PUSH_REGS(7, regsStack, 2, 1, 9, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('B' << 8), 0);
+	PUSH_REGS(7, regsStack, 2, 1, 8, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('C' << 8), 0);
+	PUSH_REGS(7, regsStack, 2, 1, 7, 'T' + ('E' << 8), 'A' + ('M' << 8), ' ' + ('A' << 8), 0);
+	PUSH_REGS(8, regsStack, 0, 1 << 8, 3, 6, 47, 0, 0, 0);
 	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
 		auto next = regsStack.top();
 		regsStack.pop();
@@ -1088,4 +1094,26 @@ TEST_F(MasterTests, transferPendingData_1SecMax_NoDevices)
 	Verify(Method(readAndSendDeviceDataMock, func)).Never();
 	assertArrayEq<uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t>(
 		master->lastUpdateTimes, 20, 20, 7, 8, 9, 10, 11, 12);
+}
+
+TEST_F(MasterTests, readAndSendDeviceData_Success)
+{
+	MOCK_MODBUS;
+	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
+	auto devices = Setup_DataCollectorsAndTransmitters();
+
+	Mock<IMockedTask<void, uint32_t, byte, TimeScale, word, byte*, byte*>> sendDataToSlavesMock;
+	T_MASTER::sendDataToSlaves_Task::mock = &sendDataToSlavesMock.get();
+	When(Method(sendDataToSlavesMock, func)).AlwaysReturn(true);
+	Fake(Method(sendDataToSlavesMock, result));
+
+	for (int i = 0; i < 8; i++)
+	{
+		master->lastUpdateTimes[i] = i + 5;
+	}
+
+	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::sec1, 20);
+	ASSERT_TRUE(task());
+
+	Verify(Method(sendDataToSlavesMock, func)).Never();
 }
