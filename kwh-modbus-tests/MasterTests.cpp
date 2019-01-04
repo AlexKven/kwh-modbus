@@ -105,6 +105,23 @@ protected:
 		});
 	}
 
+	void completeWriteRegs_UseRegsStack_Passthrough(Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> &mock, RegsStack &stack, function<bool(byte, word, word, word*)> alwaysDo)
+	{
+		When(Method(mock, func)).AlwaysDo([&stack, this, alwaysDo](byte slaveId, word start, word count, word* data)
+		{
+			word *regs = tracker.addArray(new word[count]);
+			BitFunctions::copyBits(data, regs, 0, 0, 16 * count);
+			stack.push(make_tuple(count, regs));
+			return alwaysDo(slaveId, start, count, data);
+		});
+	}
+
+	void completeWriteRegs_UseRegsStack(Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> &mock, RegsStack &stack)
+	{
+		completeWriteRegs_UseRegsStack_Passthrough(mock, stack,
+			[](byte slaveId, word start, word count, word* data) { return true; });
+	}
+
 	tuple<int, word*> withString(tuple<int, word*> regs, const char* str)
 	{
 		int strLen = 0;
@@ -116,6 +133,18 @@ protected:
 		BitFunctions::copyBits(get<1>(regs), result, 0, 0, 16 * get<0>(regs));
 		BitFunctions::copyBits(str, result, 0, 16 * get<0>(regs), strLen * 8);
 		return make_tuple(count, result);
+	}
+
+	void assertPopRegsStack(RegsStack &regsStack, tuple<int, word*> regs)
+	{
+		auto top = regsStack.top();
+		regsStack.pop();
+
+		ASSERT_EQ(get<0>(top), get<0>(regs));
+		for (int i = 0; i < get<0>(top); i++)
+		{
+			ASSERT_EQ(get<1>(top)[i], get<1>(regs)[i]);
+		}
 	}
 
 	static DeviceDirectoryRow* getDevicePtr(vector<tuple<byte*, DeviceDirectoryRow>>* devices, int index)
