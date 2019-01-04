@@ -748,15 +748,9 @@ TEST_F(MasterTests, processNewSlave_Reject_ByRequest)
 	});
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
-	stack<tuple<word, word*>> regsStack;
-	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 0, 1 << 8, 3, 6, 0, 0, 0 })));
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
-		auto next = regsStack.top();
-		regsStack.pop();
-		regCount = get<0>(next);
-		regs = get<1>(next);
-		return true;
-	});
+	RegsStack regsStack;
+	regsStack.push(REGS(7, 0, 1 << 8, 3, 6, 0, 0, 0));
+	isRegsResponse_UseMockData(modbusBaseMock, regsStack);
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, true);
 	ASSERT_TRUE(task());
@@ -793,15 +787,9 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryAlreadyFull)
 	});
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
-	stack<tuple<word, word*>> regsStack;
-	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 0, 1 << 8, 3, 6, 0, 0, 0 })));
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
-		auto next = regsStack.top();
-		regsStack.pop();
-		regCount = get<0>(next);
-		regs = get<1>(next);
-		return true;
-	});
+	RegsStack regsStack;
+	regsStack.push(REGS(7, 0, 1 << 8, 3, 6, 0, 0, 0 ));
+	isRegsResponse_UseMockData(modbusBaseMock, regsStack);
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
@@ -838,15 +826,9 @@ TEST_F(MasterTests, processNewSlave_Reject_SlaveVersionMismatch)
 	});
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
-	stack<tuple<word, word*>> regsStack;
-	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 0, 0, 3, 6, 0, 0, 0 })));
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
-		auto next = regsStack.top();
-		regsStack.pop();
-		regCount = get<0>(next);
-		regs = get<1>(next);
-		return true;
-	});
+	RegsStack regsStack;
+	regsStack.push(REGS(7, 0, 0, 3, 6, 0, 0, 0));
+	isRegsResponse_UseMockData(modbusBaseMock, regsStack);
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
@@ -883,15 +865,9 @@ TEST_F(MasterTests, processNewSlave_Reject_ZeroDevices)
 	});
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
-	stack<tuple<word, word*>> regsStack;
-	regsStack.push(make_tuple(7, tracker.addArray(new word[7]{ 0, 1 << 8, 0, 6, 0, 0, 0 })));
-	When(Method(modbusBaseMock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
-		auto next = regsStack.top();
-		regsStack.pop();
-		regCount = get<0>(next);
-		regs = get<1>(next);
-		return true;
-	});
+	RegsStack regsStack;
+	regsStack.push(REGS(7,0, 1 << 8, 0, 6, 0, 0, 0));
+	isRegsResponse_UseMockData(modbusBaseMock, regsStack);
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
@@ -908,11 +884,19 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 {
 	byte curSlaveId = 1;
 	MOCK_MODBUS;
+	MockNewMethod(addDeviceName, string name);
 
 	When(Method(mockDeviceDirectory, findFreeSlaveID)).Return(13);
-	When(Method(mockDeviceDirectory, addOrReplaceDevice)).
-		Return(0).
-		Return(-1);
+
+	int callCount = 0;
+	When(Method(mockDeviceDirectory, addOrReplaceDevice)).AlwaysDo(
+		[&addDeviceName, &callCount](byte* name, DeviceDirectoryRow row)
+	{
+		addDeviceName.get().method(stringifyCharArray(6, (char*)name));
+		
+		// Only work on the first call
+		return (callCount++ == 0) ? 0 : -1;
+	});
 	When(Method(mockDeviceDirectory, filterDevicesForSlave)).Return(1);
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
@@ -952,6 +936,10 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), DeviceDirectoryRow(13, 2, 9, 47))).Never();
 
 	Verify(Method(mockDeviceDirectory, filterDevicesForSlave).Using(nullptr, 0, 13)).Once();
+
+	Verify(Method(addDeviceName, method).Using("TEAM A") +
+		Method(addDeviceName, method).Using("TEAM C")).Once();
+	Verify(Method(addDeviceName, method).Using("TEAM B")).Never();
 
 	// Slave ID set to 13
 	ASSERT_EQ(curSlaveId, 255);
