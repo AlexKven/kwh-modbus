@@ -1,0 +1,63 @@
+#define _C ,
+#define ESCAPE(...) __VA_ARGS__
+#define VARS(...) Tuple<__VA_ARGS__>
+#define DEFINE_TASK(FNAME, T_RET, TUPLE_VAR, ...) \
+using FNAME ## _Task = AsyncTaskSpecific<T_RET, TUPLE_VAR, ##__VA_ARGS__>; \
+using FNAME ## _Param = StateParam<T_RET, TUPLE_VAR>
+
+#define DEFINE_CLASS_TASK(CNAME, FNAME, T_RET, TUPLE_VAR, ...) \
+using FNAME ## _Task = AsyncClassTaskSpecific<CNAME, T_RET, TUPLE_VAR, ##__VA_ARGS__>; \
+using FNAME ## _Param = StateParam<T_RET, TUPLE_VAR>
+
+#define ASYNC_FUNC(FNAME, ...) \
+static bool FNAME(FNAME ## _Param &state, ##__VA_ARGS__)
+
+#define ASYNC_CLASS_FUNC(CNAME, FNAME, ...) \
+bool FNAME(FNAME ## _Param &state, ##__VA_ARGS__)
+
+#define CREATE_TASK(FNAME, ...) FNAME ## _Task(FNAME, ##__VA_ARGS__);
+
+#define CREATE_ASSIGN_TASK(VNAME, FNAME, ...) VNAME = FNAME ## _Task(FNAME, ##__VA_ARGS__);
+
+#define CREATE_CLASS_TASK(CNAME, CVALUE, FNAME, ...) FNAME ## _Task(&CNAME::FNAME, CVALUE, ##__VA_ARGS__);
+
+#define CREATE_ASSIGN_CLASS_TASK(VNAME, CNAME, CVALUE, FNAME, ...) VNAME = FNAME ## _Task(&CNAME::FNAME, CVALUE, ##__VA_ARGS__);
+
+#define AWAIT_RESULT(TASK) \
+*state._line = __LINE__; \
+case __LINE__: \
+if (TASK()) { \
+*state._result = TNAME.result(); \
+return true; \
+} \
+else \
+return false
+
+#define AWAIT_RETURN(TASK) \
+*state._line = __LINE__; \
+case __LINE__: \
+return (TASK())
+
+#define AWAIT(TASK) \
+*state._line = __LINE__; \
+case __LINE__: \
+if (!TASK()) return false
+
+#define ASYNC_VAR(NUM, NAME) auto &NAME = Get<NUM>(*state._variables);
+#define ASYNC_VAR_INIT(NUM, NAME, INIT) auto &NAME = Get<NUM>(*state._variables); \
+if (*state._line == 0) NAME = INIT;
+
+#define RETURN_ASYNC return true;
+#define RESULT_ASYNC(TYPE, RESULT) *state._result = (TYPE)RESULT; \
+return true;
+
+#define START_ASYNC \
+switch (*state._line) \
+{ \
+	case 0:
+
+#define YIELD_ASYNC *state._line = __LINE__; \
+return false; \
+case __LINE__:
+
+#define END_ASYNC } return true

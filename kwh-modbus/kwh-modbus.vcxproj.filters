@@ -205,4 +205,9 @@
       <UniqueIdentifier>{51098368-c398-4355-ae02-273a94fb7c38}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="libraries\master\cpp.hint">
+      <Filter>libraries\master</Filter>
+    </None>
+  </ItemGroup>
 </Project>

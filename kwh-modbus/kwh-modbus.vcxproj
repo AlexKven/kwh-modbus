@@ -110,6 +110,9 @@
     <ClInclude Include="noArduino\ModbusMemory.h" />
     <ClInclude Include="noArduino\TestHelpers.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="libraries\master\cpp.hint" />
+  </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
     <ClCompile />
