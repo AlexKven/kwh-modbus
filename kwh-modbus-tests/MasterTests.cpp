@@ -1130,25 +1130,25 @@ TEST_F(MasterTests, transferPendingData_1SecMax_NoDevices)
 	assertArrayEq<uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t>(
 		master->lastUpdateTimes, 20, 20, 7, 8, 9, 10, 11, 12);
 }
-
-TEST_F(MasterTests, readAndSendDeviceData_Success)
-{
-	MOCK_MODBUS;
-	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
-	auto devices = Setup_DataCollectorsAndTransmitters();
-
-	Mock<IMockedTask<void, uint32_t, byte, TimeScale, word, byte*, byte*>> sendDataToSlavesMock;
-	T_MASTER::sendDataToSlaves_Task::mock = &sendDataToSlavesMock.get();
-	When(Method(sendDataToSlavesMock, func)).AlwaysReturn(true);
-	Fake(Method(sendDataToSlavesMock, result));
-
-	for (int i = 0; i < 8; i++)
-	{
-		master->lastUpdateTimes[i] = i + 5;
-	}
-
-	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::sec1, 20);
-	ASSERT_TRUE(task());
-
-	Verify(Method(sendDataToSlavesMock, func)).Never();
-}
+//
+//TEST_F(MasterTests, readAndSendDeviceData_Success)
+//{
+//	MOCK_MODBUS;
+//	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
+//	auto devices = Setup_DataCollectorsAndTransmitters();
+//
+//	Mock<IMockedTask<void, uint32_t, byte, TimeScale, word, byte*, byte*>> sendDataToSlavesMock;
+//	T_MASTER::sendDataToSlaves_Task::mock = &sendDataToSlavesMock.get();
+//	When(Method(sendDataToSlavesMock, func)).AlwaysReturn(true);
+//	Fake(Method(sendDataToSlavesMock, result));
+//
+//	for (int i = 0; i < 8; i++)
+//	{
+//		master->lastUpdateTimes[i] = i + 5;
+//	}
+//
+//	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::sec1, 20);
+//	ASSERT_TRUE(task());
+//
+//	Verify(Method(sendDataToSlavesMock, func)).Never();
+//}
