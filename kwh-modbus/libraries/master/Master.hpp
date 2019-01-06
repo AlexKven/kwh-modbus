@@ -457,7 +457,7 @@ protected_testable:
 	if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(deviceRow->deviceType, accumulateData, timeScale, dataSize))
 	{
 		begin_read:
-		readStart = lastUpdateTimes[(int)timeScale];
+		readStart = startTime;
 		numDataPoints = (endTime - startTime) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
 		curReadPage = 0;
 		numReadPagesRemaining = 1;

@@ -631,6 +631,7 @@ TEST_F(MasterTests, checkForNewSlaves_Found)
 
 	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
 	ASSERT_TRUE(task());
+
 	Verify(Method(completeReadRegsMock, func).Using(1, 0, 8)).Once();
 	ASSERT_EQ(task.result(), found);
 }
@@ -1085,25 +1086,59 @@ TEST_F(MasterTests, transferPendingData_1SecMax_NoDevices)
 	assertArrayEq<uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t>(
 		master->lastUpdateTimes, 20, 20, 7, 8, 9, 10, 11, 12);
 }
-//
-//TEST_F(MasterTests, readAndSendDeviceData_Success)
-//{
-//	MOCK_MODBUS;
-//	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
-//	auto devices = Setup_DataCollectorsAndTransmitters();
-//
-//	Mock<IMockedTask<void, uint32_t, byte, TimeScale, word, byte*, byte*>> sendDataToSlavesMock;
-//	T_MASTER::sendDataToSlaves_Task::mock = &sendDataToSlavesMock.get();
-//	When(Method(sendDataToSlavesMock, func)).AlwaysReturn(true);
-//	Fake(Method(sendDataToSlavesMock, result));
-//
-//	for (int i = 0; i < 8; i++)
-//	{
-//		master->lastUpdateTimes[i] = i + 5;
-//	}
-//
-//	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::sec1, 20);
-//	ASSERT_TRUE(task());
-//
-//	Verify(Method(sendDataToSlavesMock, func)).Never();
-//}
+
+TEST_F(MasterTests, readAndSendDeviceData_Success_OneReadPage)
+{
+	// Arrange
+	MOCK_MODBUS;
+	MockNewMethod(deviceNameSentToSlaves, string name);
+	MockNewMethod(dataByteSentToSlaves, byte data);
+
+	Mock<IMockedTask<void, uint32_t, byte, TimeScale, word, byte*, byte*>> sendDataToSlavesMock;
+	T_MASTER::sendDataToSlaves_Task::mock = &sendDataToSlavesMock.get();
+	When(Method(sendDataToSlavesMock, func)).AlwaysDo([&deviceNameSentToSlaves, &dataByteSentToSlaves](uint32_t startTime,
+		byte dataSize, TimeScale timeScale, word numDataPoints, byte* name, byte* data)
+	{
+		deviceNameSentToSlaves.get().method(stringifyCharArray(9, (char*)name));
+		for (int i = 0; i < 8; i++)
+			dataByteSentToSlaves.get().method(data[i]);
+		return true;
+	});
+	Fake(Method(sendDataToSlavesMock, result));
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
+	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
+	When(Method(completeReadRegsMock, func)).AlwaysReturn(true);
+	When(Method(completeReadRegsMock, result)).AlwaysReturn(success);
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
+	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
+	RegsQueue writtenRegs;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, writtenRegs);
+	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
+
+	RegsQueue readRegs;
+	readRegs.push(REGS(10, 3, 0, 15000, 0, 8, 0));
+	readRegs.push(REGS(4, 0x4182, 0xB0E1, 0x4468, 0x26));
+	isRegsResponse_UseMockData(modbusBaseMock, readRegs);
+
+	// Act
+	DeviceDirectoryRow inputDeviceRow = DeviceDirectoryRow(5, 3, DataCollectorDeviceType(true, TimeScale::min10, 7), 14);
+	auto name = (byte*)"Meter 001";
+	T_MASTER::readAndSendDeviceData_Task::mock = nullptr; // Needed, otherwise previous tests crash this one.
+	T_MASTER::readAndSendDeviceData_Task task(&T_MASTER::readAndSendDeviceData, master, &inputDeviceRow, 9, name, 15000, 20000);
+	ASSERT_TRUE(task());
+
+	// Assert
+	assertPopRegsQueue(writtenRegs, REGS(7, 1, 3, 3, 15000, 0, 8, 11 << 8));
+	Verify(Method(completeWriteRegsMock, func).Using(5, 0, 7, Any<word*>())).Once();
+	Verify(Method(sendDataToSlavesMock, func).Using(15000, 7, TimeScale::min10, 8, Any<byte*>(), Any<byte*>())).Once();
+	Verify(Method(deviceNameSentToSlaves, method).Using("Meter 001")).Once();
+	Verify(Method(dataByteSentToSlaves, method).Using(0x82) +
+		Method(dataByteSentToSlaves, method).Using(0x41) +
+		Method(dataByteSentToSlaves, method).Using(0xE1) +
+		Method(dataByteSentToSlaves, method).Using(0xB0) +
+		Method(dataByteSentToSlaves, method).Using(0x68) +
+		Method(dataByteSentToSlaves, method).Using(0x44) +
+		Method(dataByteSentToSlaves, method).Using(0x26)).Once();
+}
