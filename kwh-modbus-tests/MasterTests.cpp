@@ -10,7 +10,7 @@
 #include "test_helpers.h"
 #include "PointerTracker.h"
 
-#include <stack>
+#include <queue>
 #include <tuple>
 
 using namespace fakeit;
@@ -41,7 +41,7 @@ protected:
 
 	PointerTracker tracker;
 
-	typedef stack<tuple<word, word*>> RegsStack;
+	typedef queue<tuple<word, word*>> RegsQueue;
 
 	void SetupOutOfRangeRegisterArray()
 	{
@@ -94,31 +94,31 @@ protected:
 		return devices;
 	}
 
-	void isRegsResponse_UseMockData(Mock<T_MODBUS_BASE> &mock, RegsStack &regsStack)
+	void isRegsResponse_UseMockData(Mock<T_MODBUS_BASE> &mock, RegsQueue &regsQueue)
 	{
-		When(Method(mock, isReadRegsResponse)).AlwaysDo([&regsStack](word &regCount, word *&regs) {
-			auto next = regsStack.top();
-			regsStack.pop();
+		When(Method(mock, isReadRegsResponse)).AlwaysDo([&regsQueue](word &regCount, word *&regs) {
+			auto next = regsQueue.front();
+			regsQueue.pop();
 			regCount = get<0>(next);
 			regs = get<1>(next);
 			return true;
 		});
 	}
 
-	void completeWriteRegs_UseRegsStack_Passthrough(Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> &mock, RegsStack &stack, function<bool(byte, word, word, word*)> alwaysDo)
+	void completeWriteRegs_UseRegsQueue_Passthrough(Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> &mock, RegsQueue &queue, function<bool(byte, word, word, word*)> alwaysDo)
 	{
-		When(Method(mock, func)).AlwaysDo([&stack, this, alwaysDo](byte slaveId, word start, word count, word* data)
+		When(Method(mock, func)).AlwaysDo([&queue, this, alwaysDo](byte slaveId, word start, word count, word* data)
 		{
 			word *regs = tracker.addArray(new word[count]);
 			BitFunctions::copyBits(data, regs, 0, 0, 16 * count);
-			stack.push(make_tuple(count, regs));
+			queue.push(make_tuple(count, regs));
 			return alwaysDo(slaveId, start, count, data);
 		});
 	}
 
-	void completeWriteRegs_UseRegsStack(Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> &mock, RegsStack &stack)
+	void completeWriteRegs_UseRegsQueue(Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> &mock, RegsQueue &queue)
 	{
-		completeWriteRegs_UseRegsStack_Passthrough(mock, stack,
+		completeWriteRegs_UseRegsQueue_Passthrough(mock, queue,
 			[](byte slaveId, word start, word count, word* data) { return true; });
 	}
 
@@ -135,10 +135,10 @@ protected:
 		return make_tuple(count, result);
 	}
 
-	void assertPopRegsStack(RegsStack &regsStack, tuple<int, word*> regs)
+	void assertPopRegsQueue(RegsQueue &regsQueue, tuple<int, word*> regs)
 	{
-		auto top = regsStack.top();
-		regsStack.pop();
+		auto top = regsQueue.front();
+		regsQueue.pop();
 
 		ASSERT_EQ(get<0>(top), get<0>(regs));
 		for (int i = 0; i < get<0>(top); i++)
@@ -716,15 +716,15 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
 	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
-	RegsStack writtenRegs;
-	completeWriteRegs_UseRegsStack(completeWriteRegsMock, writtenRegs);
+	RegsQueue writtenRegs;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, writtenRegs);
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
-	RegsStack readRegs;
-	readRegs.push(withString(REGS(3, 2, 1, 9), "TEAM C"));
-	readRegs.push(withString(REGS(3, 2, 1, 8), "TEAM B"));
-	readRegs.push(withString(REGS(3, 2, 1, 7), "TEAM A"));
+	RegsQueue readRegs;
 	readRegs.push(REGS(8, 0, 1 << 8, 3, 6, 22, 0, 0, 0));
+	readRegs.push(withString(REGS(3, 2, 1, 7), "TEAM A"));
+	readRegs.push(withString(REGS(3, 2, 1, 8), "TEAM B"));
+	readRegs.push(withString(REGS(3, 2, 1, 9), "TEAM C"));
 	isRegsResponse_UseMockData(modbusBaseMock, readRegs);
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
@@ -743,10 +743,10 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 		Method(addDeviceName, method).Using("TEAM C")).Once();
 
 	// Slave ID set to 13
-	assertPopRegsStack(writtenRegs, REGS(3, 1, 1, 13));
-	assertPopRegsStack(writtenRegs, REGS(3, 1, 2, 2));
-	assertPopRegsStack(writtenRegs, REGS(3, 1, 2, 1));
-	assertPopRegsStack(writtenRegs, REGS(3, 1, 2, 0));
+	assertPopRegsQueue(writtenRegs, REGS(3, 1, 2, 0));
+	assertPopRegsQueue(writtenRegs, REGS(3, 1, 2, 1));
+	assertPopRegsQueue(writtenRegs, REGS(3, 1, 2, 2));
+	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 13));
 }
 
 TEST_F(MasterTests, processNewSlave_Reject_ByRequest)
@@ -762,13 +762,13 @@ TEST_F(MasterTests, processNewSlave_Reject_ByRequest)
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
 	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
-	RegsStack writtenRegs;
-	completeWriteRegs_UseRegsStack(completeWriteRegsMock, writtenRegs);
+	RegsQueue writtenRegs;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, writtenRegs);
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
-	RegsStack regsStack;
-	regsStack.push(REGS(7, 0, 1 << 8, 3, 6, 0, 0, 0));
-	isRegsResponse_UseMockData(modbusBaseMock, regsStack);
+	RegsQueue regsQueue;
+	regsQueue.push(REGS(7, 0, 1 << 8, 3, 6, 0, 0, 0));
+	isRegsResponse_UseMockData(modbusBaseMock, regsQueue);
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, true);
 	ASSERT_TRUE(task());
@@ -778,7 +778,7 @@ TEST_F(MasterTests, processNewSlave_Reject_ByRequest)
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Once();
 
 	// Slave ID set to 255, rejected
-	assertPopRegsStack(writtenRegs, REGS(3, 1, 1, 255));
+	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
 }
 
 TEST_F(MasterTests, processNewSlave_Reject_DirectoryAlreadyFull)
@@ -794,13 +794,13 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryAlreadyFull)
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
 	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
-	RegsStack writtenRegs;
-	completeWriteRegs_UseRegsStack(completeWriteRegsMock, writtenRegs);
+	RegsQueue writtenRegs;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, writtenRegs);
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
-	RegsStack regsStack;
-	regsStack.push(REGS(7, 0, 1 << 8, 3, 6, 0, 0, 0 ));
-	isRegsResponse_UseMockData(modbusBaseMock, regsStack);
+	RegsQueue regsQueue;
+	regsQueue.push(REGS(7, 0, 1 << 8, 3, 6, 0, 0, 0 ));
+	isRegsResponse_UseMockData(modbusBaseMock, regsQueue);
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
@@ -810,7 +810,7 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryAlreadyFull)
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Once();
 
 	// Slave ID set to 255, rejected
-	assertPopRegsStack(writtenRegs, REGS(3, 1, 1, 255));
+	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
 }
 
 TEST_F(MasterTests, processNewSlave_Reject_SlaveVersionMismatch)
@@ -826,13 +826,13 @@ TEST_F(MasterTests, processNewSlave_Reject_SlaveVersionMismatch)
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
 	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
-	RegsStack writtenRegs;
-	completeWriteRegs_UseRegsStack(completeWriteRegsMock, writtenRegs);
+	RegsQueue writtenRegs;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, writtenRegs);
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
-	RegsStack regsStack;
-	regsStack.push(REGS(7, 0, 0, 3, 6, 0, 0, 0));
-	isRegsResponse_UseMockData(modbusBaseMock, regsStack);
+	RegsQueue regsQueue;
+	regsQueue.push(REGS(7, 0, 0, 3, 6, 0, 0, 0));
+	isRegsResponse_UseMockData(modbusBaseMock, regsQueue);
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
@@ -842,7 +842,7 @@ TEST_F(MasterTests, processNewSlave_Reject_SlaveVersionMismatch)
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Once();
 
 	// Slave ID set to 255, rejected
-	assertPopRegsStack(writtenRegs, REGS(3, 1, 1, 255));
+	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
 }
 
 TEST_F(MasterTests, processNewSlave_Reject_ZeroDevices)
@@ -858,13 +858,13 @@ TEST_F(MasterTests, processNewSlave_Reject_ZeroDevices)
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
 	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
-	RegsStack writtenRegs;
-	completeWriteRegs_UseRegsStack(completeWriteRegsMock, writtenRegs);
+	RegsQueue writtenRegs;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, writtenRegs);
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
-	RegsStack regsStack;
-	regsStack.push(REGS(7,0, 1 << 8, 0, 6, 0, 0, 0));
-	isRegsResponse_UseMockData(modbusBaseMock, regsStack);
+	RegsQueue regsQueue;
+	regsQueue.push(REGS(7,0, 1 << 8, 0, 6, 0, 0, 0));
+	isRegsResponse_UseMockData(modbusBaseMock, regsQueue);
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
@@ -874,7 +874,7 @@ TEST_F(MasterTests, processNewSlave_Reject_ZeroDevices)
 	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Once();
 
 	// Slave ID set to 255, rejected
-	assertPopRegsStack(writtenRegs, REGS(3, 1, 1, 255));
+	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
 }
 
 TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
@@ -902,16 +902,16 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
 	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
-	RegsStack writtenRegs;
-	completeWriteRegs_UseRegsStack(completeWriteRegsMock, writtenRegs);
+	RegsQueue writtenRegs;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, writtenRegs);
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
-	RegsStack regsStack;
-	regsStack.push(withString(REGS(3, 2, 1, 9), "TEAM B"));
-	regsStack.push(withString(REGS(3, 2, 1, 8), "TEAM C"));
-	regsStack.push(withString(REGS(3, 2, 1, 7), "TEAM A"));
-	regsStack.push(REGS(8, 0, 1 << 8, 3, 6, 47, 0, 0, 0));
-	isRegsResponse_UseMockData(modbusBaseMock, regsStack);
+	RegsQueue regsQueue;
+	regsQueue.push(REGS(8, 0, 1 << 8, 3, 6, 47, 0, 0, 0));
+	regsQueue.push(withString(REGS(3, 2, 1, 7), "TEAM A"));
+	regsQueue.push(withString(REGS(3, 2, 1, 8), "TEAM C"));
+	regsQueue.push(withString(REGS(3, 2, 1, 9), "TEAM B"));
+	isRegsResponse_UseMockData(modbusBaseMock, regsQueue);
 
 	T_MASTER::processNewSlave_Task task(&T_MASTER::processNewSlave, master, false);
 	ASSERT_TRUE(task());
@@ -932,9 +932,9 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 	Verify(Method(addDeviceName, method).Using("TEAM B")).Never();
 
 	// Slave ID set to 255, rejected
-	assertPopRegsStack(writtenRegs, REGS(3, 1, 1, 255));
-	assertPopRegsStack(writtenRegs, REGS(3, 1, 2, 1));
-	assertPopRegsStack(writtenRegs, REGS(3, 1, 2, 0));
+	assertPopRegsQueue(writtenRegs, REGS(3, 1, 2, 0));
+	assertPopRegsQueue(writtenRegs, REGS(3, 1, 2, 1));
+	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
 }
 
 TEST_F(MasterTests, broadcastTime_success)
@@ -943,15 +943,15 @@ TEST_F(MasterTests, broadcastTime_success)
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
 	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
-	RegsStack regsStack;
-	completeWriteRegs_UseRegsStack(completeWriteRegsMock, regsStack);
+	RegsQueue regsQueue;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, regsQueue);
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
 	master->setClock(537408000);
 	auto result = master->broadcastTime();
 
 	ASSERT_EQ(result, true);
-	assertPopRegsStack(regsStack, REGS(4, 1, 32770, 0x3200, 0x2008));
+	assertPopRegsQueue(regsQueue, REGS(4, 1, 32770, 0x3200, 0x2008));
 }
 
 TEST_F(MasterTests, broadcastTime_failure)
@@ -960,15 +960,15 @@ TEST_F(MasterTests, broadcastTime_failure)
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
 	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
-	RegsStack regsStack;
-	completeWriteRegs_UseRegsStack(completeWriteRegsMock, regsStack);
+	RegsQueue regsQueue;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, regsQueue);
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(taskFailure);
 
 	master->setClock(537408000);
 	auto result = master->broadcastTime();
 
 	ASSERT_EQ(result, false);
-	assertPopRegsStack(regsStack, REGS(4, 1, 32770, 0x3200, 0x2008));
+	assertPopRegsQueue(regsQueue, REGS(4, 1, 32770, 0x3200, 0x2008));
 }
 
 TEST_F(MasterTests, setClock_SetsTimeUpdatePending)
