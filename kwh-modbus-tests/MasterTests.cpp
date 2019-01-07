@@ -170,6 +170,11 @@ public:
 
 	void TearDown()
 	{
+		// Null the mocks so they don't interfere with other tests.
+		T_MASTER::sendDataToSlaves_Task::mock = nullptr;
+		T_MASTER::completeModbusReadRegisters_Task::mock = nullptr;
+		T_MASTER::completeModbusWriteRegisters_Task::mock = nullptr;
+		T_MASTER::readAndSendDeviceData_Task::mock = nullptr;
 	}
 };
 
