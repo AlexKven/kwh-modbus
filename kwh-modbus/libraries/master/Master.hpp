@@ -468,8 +468,8 @@ protected_testable:
 			_registerBuffer[0] = 1;
 			_registerBuffer[1] = 3;
 			_registerBuffer[2] = deviceRow->deviceNumber;
-			_registerBuffer[3] = (word)readStart;
-			_registerBuffer[4] = (word)(readStart >> 16);
+			_registerBuffer[3] = (word)startTime;
+			_registerBuffer[4] = (word)(startTime >> 16);
 			_registerBuffer[5] = numDataPoints;
 			_registerBuffer[6] = curReadPage + (word)((_dataBufferSize * 8 / dataSize) << 8);
 			completeModbusWriteRegisters(deviceRow->slaveId, 0, 7, _registerBuffer);
@@ -491,13 +491,13 @@ protected_testable:
 				numReadPagesRemaining = (byte)(regs[5] >> 8);
 
 				completeModbusReadRegisters(deviceRow->slaveId, 6,
-					BitFunctions::bitsToStructs<word, word>(numDataPoints * dataSize));
+					BitFunctions::bitsToStructs<word, word>(numPointsInReadPage * dataSize));
 				AWAIT(_completeModbusReadRegisters);
 				ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
 				_modbus->isReadRegsResponse(regCount, regs);
 
 				{
-					word numDataBytes = BitFunctions::bitsToBytes(numDataPoints * dataSize);
+					word numDataBytes = BitFunctions::bitsToBytes(numPointsInReadPage * dataSize);
 					if (numDataBytes > _dataBufferSize)
 					{
 						reportMalfunction(__LINE__);
@@ -512,8 +512,10 @@ protected_testable:
 					}
 				}
 
-				sendDataToSlaves(startTime, dataSize, timeScale, numPointsInReadPage, deviceName, _dataBuffer);
+				sendDataToSlaves(readStart, dataSize, timeScale, numPointsInReadPage, deviceName, _dataBuffer);
 				AWAIT(_sendDataToSlaves);
+
+				readStart += TimeManager::getPeriodFromTimeScale(timeScale) * numPointsInReadPage / 1000;
 
 				curReadPage++;
 			}
