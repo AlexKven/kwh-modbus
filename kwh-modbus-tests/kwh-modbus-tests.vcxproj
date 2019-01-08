@@ -33,6 +33,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
+    <ClInclude Include="GTA_Traits_1.8.0.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PointerTracker.h" />
     <ClInclude Include="WindowsFunctions.h" />

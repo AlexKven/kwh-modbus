@@ -30,6 +30,7 @@
     <ClInclude Include="WindowsFunctions.h" />
     <ClInclude Include="WindowsSystemFunctions.h" />
     <ClInclude Include="PointerTracker.h" />
+    <ClInclude Include="GTA_Traits_1.8.0.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -178,7 +178,7 @@ public:
 	}
 };
 
-TEST_F(MasterTests, ensureTaskNotStarted_NeedsReset_Doesnt)
+TEST_F_TRAITS(MasterTests, ensureTaskNotStarted_NeedsReset_Doesnt, Determinism, Chance, Test_Type, Integration)
 {
 	MOCK_MODBUS;
 	Fake(Method(modbusTaskMock, reset));
@@ -193,7 +193,7 @@ TEST_F(MasterTests, ensureTaskNotStarted_NeedsReset_Doesnt)
 	Verify(Method(modbusTaskMock, reset)).Once();
 }
 
-TEST_F(MasterTests, ensureTaskNotStarted_NeedsReset_Does)
+TEST_F(MasterTests, ensureTaskNotStarted_NeedsReset_Does, Determinism, Chance, Test_Type, Integration)
 {
 	MOCK_MODBUS;
 	Fake(Method(modbusTaskMock, reset));
@@ -211,7 +211,7 @@ TEST_F(MasterTests, ensureTaskNotStarted_NeedsReset_Does)
 	Verify(Method(modbusTaskMock, reset)).Once();
 }
 
-TEST_F(MasterTests, ensureTaskNotStarted_DoesntNeedReset)
+TEST_F_TRAITS(MasterTests, ensureTaskNotStarted_DoesntNeedReset, Determinism, Chance, Test_Type, Unit)
 {
 	MOCK_MODBUS;
 	Fake(Method(modbusTaskMock, reset));
@@ -224,7 +224,7 @@ TEST_F(MasterTests, ensureTaskNotStarted_DoesntNeedReset)
 	Verify(Method(modbusTaskMock, reset)).Never();
 }
 
-TEST_F(MasterTests, completeModbusReadRegisters_CompletesImmediately)
+TEST_F_TRAITS(MasterTests, completeModbusReadRegisters_CompletesImmediately, Determinism, Function, Test_Type, Unit)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
