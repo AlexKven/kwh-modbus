@@ -178,7 +178,8 @@ public:
 	}
 };
 
-TEST_F_TRAITS(MasterTests, ensureTaskNotStarted_NeedsReset_Doesnt, Determinism, Chance, Test_Type, Integration)
+TEST_F_TRAITS(MasterTests, ensureTaskNotStarted_NeedsReset_Doesnt,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MODBUS;
 	Fake(Method(modbusTaskMock, reset));
@@ -193,7 +194,8 @@ TEST_F_TRAITS(MasterTests, ensureTaskNotStarted_NeedsReset_Doesnt, Determinism, 
 	Verify(Method(modbusTaskMock, reset)).Once();
 }
 
-TEST_F(MasterTests, ensureTaskNotStarted_NeedsReset_Does, Determinism, Chance, Test_Type, Integration)
+TEST_F_TRAITS(MasterTests, ensureTaskNotStarted_NeedsReset_Does,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Rare)
 {
 	MOCK_MODBUS;
 	Fake(Method(modbusTaskMock, reset));
@@ -211,7 +213,8 @@ TEST_F(MasterTests, ensureTaskNotStarted_NeedsReset_Does, Determinism, Chance, T
 	Verify(Method(modbusTaskMock, reset)).Once();
 }
 
-TEST_F_TRAITS(MasterTests, ensureTaskNotStarted_DoesntNeedReset, Determinism, Chance, Test_Type, Unit)
+TEST_F_TRAITS(MasterTests, ensureTaskNotStarted_DoesntNeedReset,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MODBUS;
 	Fake(Method(modbusTaskMock, reset));
@@ -224,7 +227,8 @@ TEST_F_TRAITS(MasterTests, ensureTaskNotStarted_DoesntNeedReset, Determinism, Ch
 	Verify(Method(modbusTaskMock, reset)).Never();
 }
 
-TEST_F_TRAITS(MasterTests, completeModbusReadRegisters_CompletesImmediately, Determinism, Function, Test_Type, Unit)
+TEST_F_TRAITS(MasterTests, completeModbusReadRegisters_CompletesImmediately,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -245,7 +249,8 @@ TEST_F_TRAITS(MasterTests, completeModbusReadRegisters_CompletesImmediately, Det
 	Verify(Method(modbusBaseMock, isReadRegsResponse)).Once();
 }
 
-TEST_F(MasterTests, completeModbusReadRegisters_CompletesWithSomeAttempts)
+TEST_F_TRAITS(MasterTests, completeModbusReadRegisters_CompletesWithSomeAttempts,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -271,7 +276,8 @@ TEST_F(MasterTests, completeModbusReadRegisters_CompletesWithSomeAttempts)
 	Verify(Method(modbusBaseMock, isReadRegsResponse)).Once();
 }
 
-TEST_F(MasterTests, completeModbusReadRegisters_MasterFailure)
+TEST_F_TRAITS(MasterTests, completeModbusReadRegisters_MasterFailure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -285,7 +291,8 @@ TEST_F(MasterTests, completeModbusReadRegisters_MasterFailure)
 	Verify(Method(modbusBaseMock, setRequest_ReadRegisters).Using(2, 3, 5)).Once();
 }
 
-TEST_F(MasterTests, completeModbusReadRegisters_TaskFailure)
+TEST_F_TRAITS(MasterTests, completeModbusReadRegisters_TaskFailure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -302,7 +309,8 @@ TEST_F(MasterTests, completeModbusReadRegisters_TaskFailure)
 	Verify(Method(modbusBaseMock, setRequest_ReadRegisters).Using(2, 3, 5)).Once();
 }
 
-TEST_F(MasterTests, completeModbusReadRegisters_IncorrectResponseSize)
+TEST_F_TRAITS(MasterTests, completeModbusReadRegisters_IncorrectResponseSize,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -323,7 +331,8 @@ TEST_F(MasterTests, completeModbusReadRegisters_IncorrectResponseSize)
 	Verify(Method(modbusBaseMock, isReadRegsResponse)).Once();
 }
 
-TEST_F(MasterTests, completeModbusReadRegisters_ExceptionResponse)
+TEST_F_TRAITS(MasterTests, completeModbusReadRegisters_ExceptionResponse,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -342,7 +351,8 @@ TEST_F(MasterTests, completeModbusReadRegisters_ExceptionResponse)
 	Verify(Method(modbusBaseMock, isReadRegsResponse)).Once();
 }
 
-TEST_F(MasterTests, completeModbusReadRegisters_OtherResponse)
+TEST_F_TRAITS(MasterTests, completeModbusReadRegisters_OtherResponse,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Rare)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -361,7 +371,8 @@ TEST_F(MasterTests, completeModbusReadRegisters_OtherResponse)
 	Verify(Method(modbusBaseMock, isReadRegsResponse)).Once();
 }
 
-TEST_F(MasterTests, completeModbusWriteRegisters_single_CompletesImmediately)
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_single_CompletesImmediately,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -381,7 +392,8 @@ TEST_F(MasterTests, completeModbusWriteRegisters_single_CompletesImmediately)
 	Verify(Method(modbusBaseMock, isWriteRegResponse)).Once();
 }
 
-TEST_F(MasterTests, completeModbusWriteRegisters_single_CompletesWithSomeAttempts)
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_single_CompletesWithSomeAttempts,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -406,7 +418,8 @@ TEST_F(MasterTests, completeModbusWriteRegisters_single_CompletesWithSomeAttempt
 	Verify(Method(modbusBaseMock, isWriteRegResponse)).Once();
 }
 
-TEST_F(MasterTests, completeModbusWriteRegisters_single_MasterFailure)
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_single_MasterFailure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -421,7 +434,8 @@ TEST_F(MasterTests, completeModbusWriteRegisters_single_MasterFailure)
 	Verify(Method(modbusBaseMock, setRequest_WriteRegister).Using(2, 3, 6)).Once();
 }
 
-TEST_F(MasterTests, completeModbusWriteRegisters_single_TaskFailure)
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_single_TaskFailure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -439,7 +453,8 @@ TEST_F(MasterTests, completeModbusWriteRegisters_single_TaskFailure)
 	Verify(Method(modbusBaseMock, setRequest_WriteRegister).Using(2, 3, 6)).Once();
 }
 
-TEST_F(MasterTests, completeModbusWriteRegisters_single_ExceptionResponse)
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_single_ExceptionResponse,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -461,7 +476,8 @@ TEST_F(MasterTests, completeModbusWriteRegisters_single_ExceptionResponse)
 	Verify(Method(modbusBaseMock, isExceptionResponse)).Once();
 }
 
-TEST_F(MasterTests, completeModbusWriteRegisters_single_OtherResponse)
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_single_OtherResponse,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Rare)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -483,7 +499,8 @@ TEST_F(MasterTests, completeModbusWriteRegisters_single_OtherResponse)
 	Verify(Method(modbusBaseMock, isExceptionResponse)).Once();
 }
 
-TEST_F(MasterTests, completeModbusWriteRegisters_multiple_CompletesImmediately)
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_multiple_CompletesImmediately,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -503,7 +520,8 @@ TEST_F(MasterTests, completeModbusWriteRegisters_multiple_CompletesImmediately)
 	Verify(Method(modbusBaseMock, isWriteRegsResponse)).Once();
 }
 
-TEST_F(MasterTests, completeModbusWriteRegisters_multiple_CompletesWithSomeAttempts)
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_multiple_CompletesWithSomeAttempts,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -528,7 +546,8 @@ TEST_F(MasterTests, completeModbusWriteRegisters_multiple_CompletesWithSomeAttem
 	Verify(Method(modbusBaseMock, isWriteRegsResponse)).Once();
 }
 
-TEST_F(MasterTests, completeModbusWriteRegisters_multiple_MasterFailure)
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_multiple_MasterFailure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -543,7 +562,8 @@ TEST_F(MasterTests, completeModbusWriteRegisters_multiple_MasterFailure)
 	Verify(Method(modbusBaseMock, setRequest_WriteRegisters).Using(2, 3, 3, (word*)vals)).Once();
 }
 
-TEST_F(MasterTests, completeModbusWriteRegisters_multiple_TaskFailure)
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_multiple_TaskFailure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -561,7 +581,8 @@ TEST_F(MasterTests, completeModbusWriteRegisters_multiple_TaskFailure)
 	Verify(Method(modbusBaseMock, setRequest_WriteRegisters).Using(2, 3, 3, (word*)vals)).Once();
 }
 
-TEST_F(MasterTests, completeModbusWriteRegisters_multiple_ExceptionResponse)
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_multiple_ExceptionResponse,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -583,7 +604,8 @@ TEST_F(MasterTests, completeModbusWriteRegisters_multiple_ExceptionResponse)
 	Verify(Method(modbusBaseMock, isExceptionResponse)).Once();
 }
 
-TEST_F(MasterTests, completeModbusWriteRegisters_multiple_OtherResponse)
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_multiple_OtherResponse,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Rare)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -605,7 +627,8 @@ TEST_F(MasterTests, completeModbusWriteRegisters_multiple_OtherResponse)
 	Verify(Method(modbusBaseMock, isExceptionResponse)).Once();
 }
 
-TEST_F(MasterTests, completeModbusWriteRegisters_broadcast_succeeds)
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_broadcast_succeeds,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -627,7 +650,8 @@ TEST_F(MasterTests, completeModbusWriteRegisters_broadcast_succeeds)
 	Verify(Method(modbusBaseMock, isExceptionResponse)).Never();
 }
 
-TEST_F(MasterTests, checkForNewSlaves_Found)
+TEST_F_TRAITS(MasterTests, checkForNewSlaves_Found,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
 	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
@@ -641,7 +665,8 @@ TEST_F(MasterTests, checkForNewSlaves_Found)
 	ASSERT_EQ(task.result(), found);
 }
 
-TEST_F(MasterTests, checkForNewSlaves_NotFound)
+TEST_F_TRAITS(MasterTests, checkForNewSlaves_NotFound,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MODBUS;
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
@@ -656,7 +681,8 @@ TEST_F(MasterTests, checkForNewSlaves_NotFound)
 	ASSERT_EQ(task.result(), notFound);
 }
 
-TEST_F(MasterTests, checkForNewSlaves_Error_TaskFailure)
+TEST_F_TRAITS(MasterTests, checkForNewSlaves_Error_TaskFailure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_MASTER;
 	MOCK_MODBUS;
@@ -674,7 +700,8 @@ TEST_F(MasterTests, checkForNewSlaves_Error_TaskFailure)
 	Verify(Method(masterMock, reportMalfunction)).Once();
 }
 
-TEST_F(MasterTests, checkForNewSlaves_Error_MasterFailure)
+TEST_F_TRAITS(MasterTests, checkForNewSlaves_Error_MasterFailure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_MASTER;
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
@@ -690,7 +717,8 @@ TEST_F(MasterTests, checkForNewSlaves_Error_MasterFailure)
 	Verify(Method(masterMock, reportMalfunction)).Once();
 }
 
-TEST_F(MasterTests, checkForNewSlaves_BadSlave)
+TEST_F_TRAITS(MasterTests, checkForNewSlaves_BadSlave,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Rare)
 {
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
 	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
@@ -703,7 +731,8 @@ TEST_F(MasterTests, checkForNewSlaves_BadSlave)
 	ASSERT_EQ(task.result(), badSlave);
 }
 
-TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
+TEST_F_TRAITS(MasterTests, processNewSlave_Success_ThreeDevices,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MODBUS;
 	MockNewMethod(addDeviceName, string name);
@@ -755,7 +784,8 @@ TEST_F(MasterTests, processNewSlave_Success_ThreeDevices)
 	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 13));
 }
 
-TEST_F(MasterTests, processNewSlave_Reject_ByRequest)
+TEST_F_TRAITS(MasterTests, processNewSlave_Reject_ByRequest,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MODBUS;
 
@@ -787,7 +817,8 @@ TEST_F(MasterTests, processNewSlave_Reject_ByRequest)
 	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
 }
 
-TEST_F(MasterTests, processNewSlave_Reject_DirectoryAlreadyFull)
+TEST_F_TRAITS(MasterTests, processNewSlave_Reject_DirectoryAlreadyFull,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	MOCK_MODBUS;
 
@@ -819,7 +850,8 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryAlreadyFull)
 	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
 }
 
-TEST_F(MasterTests, processNewSlave_Reject_SlaveVersionMismatch)
+TEST_F_TRAITS(MasterTests, processNewSlave_Reject_SlaveVersionMismatch,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	MOCK_MODBUS;
 
@@ -851,7 +883,8 @@ TEST_F(MasterTests, processNewSlave_Reject_SlaveVersionMismatch)
 	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
 }
 
-TEST_F(MasterTests, processNewSlave_Reject_ZeroDevices)
+TEST_F_TRAITS(MasterTests, processNewSlave_Reject_ZeroDevices,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Rare)
 {
 	MOCK_MODBUS;
 
@@ -883,7 +916,8 @@ TEST_F(MasterTests, processNewSlave_Reject_ZeroDevices)
 	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
 }
 
-TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
+TEST_F_TRAITS(MasterTests, processNewSlave_Reject_DirectoryGetsFilled,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	MOCK_MODBUS;
 	MockNewMethod(addDeviceName, string name);
@@ -943,7 +977,8 @@ TEST_F(MasterTests, processNewSlave_Reject_DirectoryGetsFilled)
 	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
 }
 
-TEST_F(MasterTests, broadcastTime_success)
+TEST_F_TRAITS(MasterTests, broadcastTime_success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MODBUS;
 
@@ -960,7 +995,8 @@ TEST_F(MasterTests, broadcastTime_success)
 	assertPopRegsQueue(regsQueue, REGS(4, 1, 32770, 0x3200, 0x2008));
 }
 
-TEST_F(MasterTests, broadcastTime_failure)
+TEST_F_TRAITS(MasterTests, broadcastTime_failure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_MODBUS;
 
@@ -977,14 +1013,16 @@ TEST_F(MasterTests, broadcastTime_failure)
 	assertPopRegsQueue(regsQueue, REGS(4, 1, 32770, 0x3200, 0x2008));
 }
 
-TEST_F(MasterTests, setClock_SetsTimeUpdatePending)
+TEST_F_TRAITS(MasterTests, setClock_SetsTimeUpdatePending,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	master->setClock(0);
 
 	ASSERT_TRUE(master->_timeUpdatePending);
 }
 
-TEST_F(MasterTests, transferPendingData_AllTimescales_Success)
+TEST_F_TRAITS(MasterTests, transferPendingData_AllTimescales_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MODBUS;
 	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
@@ -1014,7 +1052,8 @@ TEST_F(MasterTests, transferPendingData_AllTimescales_Success)
 		master->lastUpdateTimes, 20, 20, 20, 20, 20, 20, 20, 20);
 }
 
-TEST_F(MasterTests, transferPendingData_30MinMax_Success)
+TEST_F_TRAITS(MasterTests, transferPendingData_30MinMax_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MODBUS;
 	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
@@ -1042,7 +1081,8 @@ TEST_F(MasterTests, transferPendingData_30MinMax_Success)
 		master->lastUpdateTimes, 20, 20, 20, 20, 20, 20, 11, 12);
 }
 
-TEST_F(MasterTests, transferPendingData_1SecMax_Success)
+TEST_F_TRAITS(MasterTests, transferPendingData_1SecMax_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_MODBUS;
 	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
@@ -1067,7 +1107,8 @@ TEST_F(MasterTests, transferPendingData_1SecMax_Success)
 		master->lastUpdateTimes, 20, 20, 7, 8, 9, 10, 11, 12);
 }
 
-TEST_F(MasterTests, transferPendingData_1SecMax_NoDevices)
+TEST_F_TRAITS(MasterTests, transferPendingData_1SecMax_NoDevices,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	MOCK_MODBUS;
 	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
@@ -1092,7 +1133,8 @@ TEST_F(MasterTests, transferPendingData_1SecMax_NoDevices)
 		master->lastUpdateTimes, 20, 20, 7, 8, 9, 10, 11, 12);
 }
 
-TEST_F(MasterTests, readAndSendDeviceData_Success_OneReadPage)
+TEST_F_TRAITS(MasterTests, readAndSendDeviceData_Success_OneReadPage,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	// Arrange
 	MOCK_MODBUS;
@@ -1147,7 +1189,8 @@ TEST_F(MasterTests, readAndSendDeviceData_Success_OneReadPage)
 		Method(dataByteSentToSlaves, method).Using(0x26)).Once();
 }
 
-TEST_F(MasterTests, readAndSendDeviceData_Success_TwoReadPages)
+TEST_F_TRAITS(MasterTests, readAndSendDeviceData_Success_TwoReadPages,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	// Arrange
 	MOCK_MODBUS;

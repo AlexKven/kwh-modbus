@@ -110,7 +110,8 @@ public:
 	};
 };
 
-TEST_F(AsyncAwaitTests, NoParams_FiveYields)
+TEST_F_TRAITS(AsyncAwaitTests, NoParams_FiveYields,
+Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	auto task = CREATE_TASK(noParams_Five);
 	ASSERT_FALSE(task.completed());
@@ -123,14 +124,16 @@ TEST_F(AsyncAwaitTests, NoParams_FiveYields)
 	ASSERT_EQ(task.result(), 5);
 }
 
-TEST_F(AsyncAwaitTests, NoParams_FiveYields_Sync)
+TEST_F_TRAITS(AsyncAwaitTests, NoParams_FiveYields_Sync,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	auto task = CREATE_TASK(noParams_Five);
 	ASSERT_FALSE(task.completed());
 	ASSERT_EQ(task.runSynchronously(), 5);
 }
 
-TEST_F(AsyncAwaitTests, NoParams_FiveYieldsVoid)
+TEST_F_TRAITS(AsyncAwaitTests, NoParams_FiveYieldsVoid,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	auto task = CREATE_TASK(noParams_Void);
 	ASSERT_FALSE(task.completed());
@@ -143,14 +146,16 @@ TEST_F(AsyncAwaitTests, NoParams_FiveYieldsVoid)
 	task.result();
 }
 
-TEST_F(AsyncAwaitTests, NoParams_FiveYieldsVoid_Sync)
+TEST_F_TRAITS(AsyncAwaitTests, NoParams_FiveYieldsVoid_Sync,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	auto task = CREATE_TASK(noParams_Void);
 	ASSERT_FALSE(task.completed());
 	task.runSynchronously();
 }
 
-TEST_F(AsyncAwaitTests, Multiply)
+TEST_F_TRAITS(AsyncAwaitTests, Multiply,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	auto task = CREATE_TASK(multiply, 4, 7);
 	ASSERT_FALSE(task.completed());
@@ -164,14 +169,16 @@ TEST_F(AsyncAwaitTests, Multiply)
 	ASSERT_EQ(task.result(), 28);
 }
 
-TEST_F(AsyncAwaitTests, Multiply_Sync)
+TEST_F_TRAITS(AsyncAwaitTests, Multiply_Sync,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	auto task = CREATE_TASK(multiply, 4, 7);
 	ASSERT_FALSE(task.completed());
 	ASSERT_EQ(task.runSynchronously(), 28);
 }
 
-TEST_F(AsyncAwaitTests, AltMultiply)
+TEST_F_TRAITS(AsyncAwaitTests, AltMultiply,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	auto task = CREATE_TASK(multiply, 4, 7);
 	ASSERT_FALSE(task.completed());
@@ -185,14 +192,16 @@ TEST_F(AsyncAwaitTests, AltMultiply)
 	ASSERT_EQ(task.result(), 28);
 }
 
-TEST_F(AsyncAwaitTests, AltMultiply_Sync)
+TEST_F_TRAITS(AsyncAwaitTests, AltMultiply_Sync,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	auto task = CREATE_TASK(multiply, 4, 7);
 	ASSERT_FALSE(task.completed());
 	ASSERT_EQ(task.runSynchronously(), 28);
 }
 
-TEST_F(AsyncAwaitTests, MultiplyZero)
+TEST_F_TRAITS(AsyncAwaitTests, MultiplyZero,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	auto task = CREATE_TASK(multiply, 0, 7);
 	ASSERT_FALSE(task.completed());
@@ -201,14 +210,16 @@ TEST_F(AsyncAwaitTests, MultiplyZero)
 	ASSERT_EQ(task.result(), 0);
 }
 
-TEST_F(AsyncAwaitTests, MultiplyZero_Sync)
+TEST_F_TRAITS(AsyncAwaitTests, MultiplyZero_Sync,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	auto task = CREATE_TASK(multiply, 0, 7);
 	ASSERT_FALSE(task.completed());
 	ASSERT_EQ(task.runSynchronously(), 0);
 }
 
-TEST_F(AsyncAwaitTests, Power)
+TEST_F_TRAITS(AsyncAwaitTests, Power,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	auto task = CREATE_TASK(power, 2, 3);
 	ASSERT_FALSE(task.completed());
@@ -225,17 +236,19 @@ TEST_F(AsyncAwaitTests, Power)
 	ASSERT_EQ(task.result(), 8);
 }
 
-TEST_F(AsyncAwaitTests, Power_Sync)
+TEST_F_TRAITS(AsyncAwaitTests, Power_Sync,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	auto task = CREATE_TASK(power, 2, 3);
 	ASSERT_FALSE(task.completed());
 	ASSERT_EQ(task.runSynchronously(), 8);
 }
 
-TEST_F(AsyncAwaitTests, ClassTask_Multiply)
+TEST_F_TRAITS(AsyncAwaitTests, ClassTask_Multiply,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Class cls;
-	
+
 	auto task = CREATE_CLASS_TASK(Class, &cls, classMultiply, 7);
 	ASSERT_FALSE(task.completed());
 	ASSERT_FALSE(task());
@@ -249,7 +262,8 @@ TEST_F(AsyncAwaitTests, ClassTask_Multiply)
 	ASSERT_EQ(task.result(), 35);
 }
 
-TEST_F(AsyncAwaitTests, ClassTask_Multiply_Sync)
+TEST_F_TRAITS(AsyncAwaitTests, ClassTask_Multiply_Sync,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Class cls;
 

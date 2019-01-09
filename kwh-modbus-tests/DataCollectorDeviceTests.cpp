@@ -37,7 +37,8 @@ public:
 	}
 };
 
-TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_Case0)
+TEST_F_TRAITS(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_Case0,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	TimeScale scale = TimeScale::ms250;
 	bool accumulate = false;
@@ -49,7 +50,8 @@ TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_Case0)
 	ASSERT_EQ(devType, 0x4010);
 }
 
-TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_Case1)
+TEST_F_TRAITS(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_Case1,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	TimeScale scale = TimeScale::min10;
 	bool accumulate = false;
@@ -61,7 +63,8 @@ TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_Case1)
 	ASSERT_EQ(devType, 0x53F0);
 }
 
-TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_Case2)
+TEST_F_TRAITS(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_Case2,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	TimeScale scale = TimeScale::min10;
 	bool accumulate = true;
@@ -73,7 +76,8 @@ TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_Case2)
 	ASSERT_EQ(devType, 0x73F0);
 }
 
-TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_Case3)
+TEST_F_TRAITS(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_Case3,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	TimeScale scale = TimeScale::hr24;
 	bool accumulate = true;
@@ -85,7 +89,8 @@ TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_Case3)
 	ASSERT_EQ(devType, 0x7FF0);
 }
 
-TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_BadTimeScale)
+TEST_F_TRAITS(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_BadTimeScale,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	TimeScale scale = (TimeScale)8;
 	bool accumulate = false;
@@ -96,7 +101,8 @@ TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_BadTim
 	ASSERT_FALSE(success);
 }
 
-TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_DataPacketSizeZero)
+TEST_F_TRAITS(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_DataPacketSizeZero,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	TimeScale scale = TimeScale::ms250;
 	bool accumulate = false;
@@ -107,7 +113,8 @@ TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_DataPa
 	ASSERT_FALSE(success);
 }
 
-TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_DataPacketSizeTooLarge)
+TEST_F_TRAITS(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_DataPacketSizeTooLarge,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	TimeScale scale = TimeScale::ms250;
 	bool accumulate = false;
@@ -118,7 +125,8 @@ TEST_F(DataCollectorDeviceTests, getDataCollectorDeviceTypeFromParameters_DataPa
 	ASSERT_FALSE(success);
 }
 
-TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Case0)
+TEST_F_TRAITS(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Case0,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	TimeScale scale;
 	bool accumulate;
@@ -132,7 +140,8 @@ TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Case0)
 	ASSERT_EQ(dataSize, 1);
 }
 
-TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Case1)
+TEST_F_TRAITS(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Case1,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	TimeScale scale;
 	bool accumulate;
@@ -146,7 +155,8 @@ TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Case1)
 	ASSERT_EQ(dataSize, 63);
 }
 
-TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Case2)
+TEST_F_TRAITS(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Case2,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	TimeScale scale;
 	bool accumulate;
@@ -160,7 +170,8 @@ TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Case2)
 	ASSERT_EQ(dataSize, 63);
 }
 
-TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Case3)
+TEST_F_TRAITS(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Case3,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	TimeScale scale;
 	bool accumulate;
@@ -174,7 +185,8 @@ TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Case3)
 	ASSERT_EQ(dataSize, 63);
 }
 
-TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Failure_NotPadded)
+TEST_F_TRAITS(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Failure_NotPadded,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	TimeScale scale;
 	bool accumulate;
@@ -185,7 +197,8 @@ TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Failur
 	ASSERT_FALSE(success);
 }
 
-TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Failure_NotDataCollector)
+TEST_F_TRAITS(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Failure_NotDataCollector,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	TimeScale scale;
 	bool accumulate;
@@ -196,7 +209,8 @@ TEST_F(DataCollectorDeviceTests, getParametersFromDataCollectorDeviceType_Failur
 	ASSERT_FALSE(success);
 }
 
-TEST_F(DataCollectorDeviceTests, init_failure)
+TEST_F_TRAITS(DataCollectorDeviceTests, init_failure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	device->_accumulateData = false;
 	device->_dataPacketSize = 1;
@@ -210,7 +224,8 @@ TEST_F(DataCollectorDeviceTests, init_failure)
 	ASSERT_EQ(device->_timeScale, TimeScale::min10);
 }
 
-TEST_F(DataCollectorDeviceTests, init_success)
+TEST_F_TRAITS(DataCollectorDeviceTests, init_success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	device->_accumulateData = false;
 	device->_dataPacketSize = 1;
@@ -224,7 +239,8 @@ TEST_F(DataCollectorDeviceTests, init_success)
 	ASSERT_EQ(device->_timeScale, TimeScale::ms250);
 }
 
-TEST_F(DataCollectorDeviceTests, getType_itworks)
+TEST_F_TRAITS(DataCollectorDeviceTests, getType_itworks,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	bool success = device->init(false, TimeScale::min10, 63);
 
@@ -232,7 +248,8 @@ TEST_F(DataCollectorDeviceTests, getType_itworks)
 	ASSERT_EQ(device->getType(), 0x53F0);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -262,7 +279,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits)
 	ASSERT_EQ(buffer[5], 5);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_1page_15sec_8bits)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_1page_15sec_8bits,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -292,7 +310,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_15sec_8bits)
 	ASSERT_EQ(buffer[5], 75);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_1page_250ms_8bits)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_1page_250ms_8bits,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -322,7 +341,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_250ms_8bits)
 	ASSERT_EQ(buffer[5], 6);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits_largeBuffer)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits_largeBuffer,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -352,7 +372,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits_largeBuffer)
 	ASSERT_EQ(buffer[5], 5);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page0)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page0,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -382,7 +403,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page0)
 	ASSERT_EQ(buffer[5], 5);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page1)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page1,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -412,7 +434,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page1)
 	ASSERT_EQ(buffer[5], 11);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page2)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page2,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -442,7 +465,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_page2)
 	ASSERT_EQ(buffer[5], 17);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_partialPage)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_partialPage,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -468,7 +492,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_1sec_8bits_partialPage)
 	ASSERT_EQ(buffer[1], 13);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page0)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page0,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -497,7 +522,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page0)
 	ASSERT_EQ(buffer[1], 70);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page1)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page1,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -526,7 +552,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_2page_1sec_3bits_page1)
 	ASSERT_EQ(buffer[1], 0);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page0)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page0,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -557,7 +584,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page0)
 	ASSERT_EQ(buffer[2], 3);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page1)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page1,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -588,7 +616,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page1)
 	ASSERT_EQ(buffer[2], 7);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page2)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page2,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -619,7 +648,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_24hr_5bits_page2)
 	ASSERT_EQ(buffer[2], 0);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_1page_1min_8bits_timeOffset)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_1page_1min_8bits_timeOffset,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -651,7 +681,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_1page_1min_8bits_timeOffset)
 	ASSERT_EQ(buffer[7], 234);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits_page0)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits_page0,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -680,7 +711,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits
 	ASSERT_EQ(buffer[1], 0);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits_page1)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits_page1,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {
@@ -709,7 +741,8 @@ TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits
 	ASSERT_EQ(buffer[1], 1);
 }
 
-TEST_F(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits_page2)
+TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_3page_withMaxPoints_1sec_3bits_page2,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_MOCK;
 	When(Method(mock, readDataPoint)).AlwaysDo([](uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits) {

@@ -292,7 +292,8 @@ public:
 
 WindowsSystemFunctions *MasterSlaveIntegrationTests::system;
 
-TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlaves_found)
+TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlaves_found,
+	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Typical)
 {
 	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master);
 	slaveAction = [this]() {
@@ -323,7 +324,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 	ASSERT_EQ(task.result(), found);
 }
 
-TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlaves_notFound)
+TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlaves_notFound,
+	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Typical)
 {
 	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master);
 	slaveAction = [this]() {
@@ -349,7 +351,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlave
 	ASSERT_EQ(task.result(), notFound);
 }
 
-TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
+TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave,
+	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Typical)
 {
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
 	ITask* task1 = tracker.addPointer(getNewSetTestConditionsTask());
@@ -393,7 +396,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave)
 	ASSERT_EQ(row, 1);
 }
 
-TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave_JustReject)
+TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave_JustReject,
+	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Rare)
 {
 	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
 	ITask* task1 = tracker.addPointer(getNewSetTestConditionsTask());
@@ -427,7 +431,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave_
 	ASSERT_EQ(modbusSlave->getSlaveId(), 255);
 }
 
-TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
+TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime,
+	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Typical)
 {
 	slaveAction = [this]() {
 		slave->loop();
@@ -458,7 +463,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_broadcastTime)
 	Verify(Method(device1, setClock).Using(2000000000)).Once();
 }
 
-TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingData_SinglePage_SlaveTimeNotSet)
+TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingData_SinglePage_SlaveTimeNotSet,
+	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Edge)
 {
 	MockNewMethod(mockReadData, uint32_t startTime, word numPoints, byte page, word bufferSize, byte maxPoints);
 	MockNewMethod(mockPrepareReceiveData, word nameLength, uint32_t startTime,
@@ -571,7 +577,8 @@ TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingD
 	assertArrayEq<uint32_t>(master->lastUpdateTimes, 6, 6, 7);
 }
 
-TEST_P(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingData_MultiPage)
+TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferPendingData_MultiPage,
+	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Typical)
 {
 	MockNewMethod(mockReadData, uint32_t startTime, word numPoints, byte page, word bufferSize, byte maxPoints);
 	MockNewMethod(mockPrepareReceiveData, word nameLength, uint32_t startTime,

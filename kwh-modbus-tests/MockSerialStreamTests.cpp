@@ -45,7 +45,8 @@ public:
 	}
 };
 
-TEST_F(MockSerialStreamTests, MockSerialStream_Uninitalized)
+TEST_F_TRAITS(MockSerialStreamTests, MockSerialStream_Uninitalized,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MockSerialStream stream;
 
@@ -56,7 +57,8 @@ TEST_F(MockSerialStreamTests, MockSerialStream_Uninitalized)
 	ASSERT_EQ(stream.listen(), false);
 }
 
-TEST_F(MockSerialStreamTests, MockSerialStream_End)
+TEST_F_TRAITS(MockSerialStreamTests, MockSerialStream_End,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MockSerialStream stream;
 	stream.begin(1200);
@@ -69,7 +71,8 @@ TEST_F(MockSerialStreamTests, MockSerialStream_End)
 	ASSERT_EQ(stream.listen(), false);
 }
 
-TEST_F(MockSerialStreamTests, MockSerialStream_StartStopListening)
+TEST_F_TRAITS(MockSerialStreamTests, MockSerialStream_StartStopListening,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MockSerialStream stream;
 	stream.begin(1200);
@@ -84,7 +87,8 @@ TEST_F(MockSerialStreamTests, MockSerialStream_StartStopListening)
 	ASSERT_FALSE(stream.listen());
 }
 
-TEST_F(MockSerialStreamTests, MockSerialStream_Initalized)
+TEST_F_TRAITS(MockSerialStreamTests, MockSerialStream_Initalized,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MockSerialStream stream;
 	stream.begin(1200);
@@ -96,7 +100,8 @@ TEST_F(MockSerialStreamTests, MockSerialStream_Initalized)
 	ASSERT_EQ(stream.listen(), false);
 }
 
-TEST_F(MockSerialStreamTests, MockSerialStream_Read)
+TEST_F_TRAITS(MockSerialStreamTests, MockSerialStream_Read,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MockSerialStream stream = MockSerialStream(readQueue, writeQueue);
 	stream.begin(1200);
@@ -120,7 +125,8 @@ TEST_F(MockSerialStreamTests, MockSerialStream_Read)
 	ASSERT_EQ(stream.available(), 0);
 }
 
-TEST_F(MockSerialStreamTests, MockSerialStream_Write)
+TEST_F_TRAITS(MockSerialStreamTests, MockSerialStream_Write,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MockSerialStream stream = MockSerialStream(readQueue, writeQueue);
 	stream.begin(1200);
@@ -143,7 +149,8 @@ TEST_F(MockSerialStreamTests, MockSerialStream_Write)
 	ASSERT_EQ(writeQueue->front(), 16);
 }
 
-TEST_F(MockSerialStreamTests, MockSerialStream_ReadWrite_TwoStreams)
+TEST_F_TRAITS(MockSerialStreamTests, MockSerialStream_ReadWrite_TwoStreams,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MockSerialStream stream1 = MockSerialStream(readQueue, writeQueue);
 	MockSerialStream stream2 = MockSerialStream(writeQueue, readQueue);
@@ -195,7 +202,8 @@ TEST_F(MockSerialStreamTests, MockSerialStream_ReadWrite_TwoStreams)
 	ASSERT_EQ(stream2.available(), 0);
 }
 
-TEST_F(MockSerialStreamTests, MockSerialStream_RandomBool)
+TEST_F_TRAITS(MockSerialStreamTests, MockSerialStream_RandomBool,
+	Type, Stress, Threading, Single, Determinism, Chance, Case, Typical)
 {
 	MockSerialStream stream;
 	seedRandom(stream);
@@ -244,7 +252,8 @@ TEST_F(MockSerialStreamTests, MockSerialStream_RandomBool)
 	ASSERT_NEAR(trueCount999, 99900, 75);
 }
 
-TEST_F(MockSerialStreamTests, MockSerialStream_RandomlyErroredByte)
+TEST_F_TRAITS(MockSerialStreamTests, MockSerialStream_RandomlyErroredByte,
+	Type, Stress, Threading, Single, Determinism, Chance, Case, Typical)
 {
 	MockSerialStream stream;
 	seedRandom(stream);
@@ -262,7 +271,8 @@ TEST_F(MockSerialStreamTests, MockSerialStream_RandomlyErroredByte)
 	ASSERT_NEAR(errCount, 500, 50);
 }
 
-TEST_F(MockSerialStreamTests, MockSerialStream_DelayDistribution)
+TEST_F_TRAITS(MockSerialStreamTests, MockSerialStream_DelayDistribution,
+	Type, Stress, Threading, Single, Determinism, Chance, Case, Typical)
 {
 	MockSerialStream stream = MockSerialStream(readQueue, writeQueue);
 	WindowsSystemFunctions wsf();
@@ -294,7 +304,8 @@ TEST_F(MockSerialStreamTests, MockSerialStream_DelayDistribution)
 	ASSERT_NEAR(stdDev, 40, 5);
 }
 
-TEST_F(MockSerialStreamTests, MockSerialStream_DelayQueue_ReadOneByOne)
+TEST_F_TRAITS(MockSerialStreamTests, MockSerialStream_DelayQueue_ReadOneByOne,
+	Type, Stress, Threading, Single, Determinism, Volatile, Case, Typical)
 {
 	MockSerialStream stream = MockSerialStream(readQueue, writeQueue);
 	stream.begin(1200);
@@ -350,7 +361,8 @@ TEST_F(MockSerialStreamTests, MockSerialStream_DelayQueue_ReadOneByOne)
 	ASSERT_EQ(stream.read(), 5)APP_LINE;
 }
 
-TEST_F(MockSerialStreamTests, MockSerialStream_DelayQueue_ReadChunks_A)
+TEST_F_TRAITS(MockSerialStreamTests, MockSerialStream_DelayQueue_ReadChunks_A,
+	Type, Stress, Threading, Single, Determinism, Volatile, Case, Typical)
 {
 	MockSerialStream stream = MockSerialStream(readQueue, writeQueue);
 	stream.begin(1200);
@@ -398,7 +410,8 @@ TEST_F(MockSerialStreamTests, MockSerialStream_DelayQueue_ReadChunks_A)
 	ASSERT_EQ(stream.read(), 5)APP_LINE;
 }
 
-TEST_F(MockSerialStreamTests, MockSerialStream_DelayQueue_ReadChunks_B)
+TEST_F_TRAITS(MockSerialStreamTests, MockSerialStream_DelayQueue_ReadChunks_B,
+	Type, Stress, Threading, Single, Determinism, Volatile, Case, Typical)
 {
 	MockSerialStream stream = MockSerialStream(readQueue, writeQueue);
 	stream.begin(1200);

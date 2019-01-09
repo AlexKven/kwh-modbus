@@ -47,7 +47,8 @@ public:
 	};
 };
 
-TEST_F(DeviceDirectoryTests, getDeviceName)
+TEST_F_TRAITS(DeviceDirectoryTests, getDeviceName,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_deviceNameLength = 5;
 	deviceDirectory->_deviceNames = new byte[100];
@@ -67,7 +68,8 @@ TEST_F(DeviceDirectoryTests, getDeviceName)
 			60, 61, 62, 63, 64);
 }
 
-TEST_F(DeviceDirectoryTests, getNameChar)
+TEST_F_TRAITS(DeviceDirectoryTests, getNameChar,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_deviceNameLength = 7;
 	deviceDirectory->_deviceNames = new byte[100];
@@ -84,7 +86,8 @@ TEST_F(DeviceDirectoryTests, getNameChar)
 	ASSERT_EQ(deviceDirectory->getNameChar(13, 3), 94);
 }
 
-TEST_F(DeviceDirectoryTests, compareName)
+TEST_F_TRAITS(DeviceDirectoryTests, compareName,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_deviceNameLength = 5;
 	deviceDirectory->_deviceNames = (byte*)"dev00dev01dev02dev03dev04dev05dev06oth00oth01oth02oth03";
@@ -112,7 +115,8 @@ TEST_F(DeviceDirectoryTests, compareName)
 	deviceDirectory->_deviceNames = nullptr;
 }
 
-TEST_F(DeviceDirectoryTests, init_default)
+TEST_F_TRAITS(DeviceDirectoryTests, init_default,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->init(11, 5);
 	for (int i = 0; i < 55; i++)
@@ -137,7 +141,8 @@ TEST_F(DeviceDirectoryTests, init_default)
 	ASSERT_EQ(deviceDirectory->_persistentStore, nullptr);
 }
 
-TEST_F(DeviceDirectoryTests, init_persistentStore)
+TEST_F_TRAITS(DeviceDirectoryTests, init_persistentStore,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	byte *persistentStore = new byte();
 
@@ -159,7 +164,8 @@ TEST_F(DeviceDirectoryTests, init_persistentStore)
 	ASSERT_EQ(deviceDirectory->_persistentStore, &persistentStore);
 }
 
-TEST_F(DeviceDirectoryTests, init_maxMemory)
+TEST_F_TRAITS(DeviceDirectoryTests, init_maxMemory,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	Fake(OverloadedMethod(mock, init, void(word, word, byte**)));
@@ -171,7 +177,8 @@ TEST_F(DeviceDirectoryTests, init_maxMemory)
 	Verify(OverloadedMethod(mock, init, void(word, word, byte**)).Using(11, 26, nullptr)).Once();
 }
 
-TEST_F(DeviceDirectoryTests, findDeviceForName_empty)
+TEST_F_TRAITS(DeviceDirectoryTests, findDeviceForName_empty,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	setupCompareName_ReturnTrueOn(mock, 3);
@@ -187,7 +194,8 @@ TEST_F(DeviceDirectoryTests, findDeviceForName_empty)
 	Verify(Method(mock, compareName).Using(Any<word>(), Any<byte*>())).Never();
 }
 
-TEST_F(DeviceDirectoryTests, findDeviceForName_emptyish)
+TEST_F_TRAITS(DeviceDirectoryTests, findDeviceForName_emptyish,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	setupCompareName_ReturnTrueOn(mock, 3);
@@ -207,7 +215,8 @@ TEST_F(DeviceDirectoryTests, findDeviceForName_emptyish)
 	Verify(Method(mock, compareName).Using(Any<word>(), Any<byte*>())).Never();
 }
 
-TEST_F(DeviceDirectoryTests, findDeviceForName_exhaustedList)
+TEST_F_TRAITS(DeviceDirectoryTests, findDeviceForName_exhaustedList,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	setupCompareName_ReturnTrueOn(mock, 6);
@@ -233,7 +242,8 @@ TEST_F(DeviceDirectoryTests, findDeviceForName_exhaustedList)
 	Verify(Method(mock, compareName).Using(5, Any<byte*>())).Once();
 }
 
-TEST_F(DeviceDirectoryTests, findDeviceForName_found)
+TEST_F_TRAITS(DeviceDirectoryTests, findDeviceForName_found,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	setupCompareName_ReturnTrueOn(mock, 3);
@@ -260,7 +270,8 @@ TEST_F(DeviceDirectoryTests, findDeviceForName_found)
 	Verify(Method(mock, compareName).Using(5, Any<byte*>())).Never();
 }
 
-TEST_F(DeviceDirectoryTests, insertIntoRow)
+TEST_F_TRAITS(DeviceDirectoryTests, insertIntoRow,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	deviceDirectory->_maxDevices = 6;
@@ -277,7 +288,8 @@ TEST_F(DeviceDirectoryTests, insertIntoRow)
 		'A', 'l', 'e', 'a', 'h');
 }
 
-TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_notFound)
+TEST_F_TRAITS(DeviceDirectoryTests, updateItemInDeviceDirectory_notFound,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 
@@ -298,7 +310,8 @@ TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_notFound)
 	Verify(Method(mock, insertIntoRow)).Never();
 }
 
-TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_foundButSame)
+TEST_F_TRAITS(DeviceDirectoryTests, updateItemInDeviceDirectory_foundButSame,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Rare)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 
@@ -320,7 +333,8 @@ TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_foundButSame)
 	Verify(Method(mock, insertIntoRow)).Never();
 }
 
-TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_foundAndChanged)
+TEST_F_TRAITS(DeviceDirectoryTests, updateItemInDeviceDirectory_foundAndChanged,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 
@@ -342,7 +356,8 @@ TEST_F(DeviceDirectoryTests, updateItemInDeviceDirectory_foundAndChanged)
 	Verify(Method(mock, insertIntoRow).Using(5, Any<byte*>(), DeviceDirectoryRow(31, 7, 29, 703))).Once();
 }
 
-TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_topDevice)
+TEST_F_TRAITS(DeviceDirectoryTests, clearDeviceDirectoryRow_topDevice,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_devices = new DeviceDirectoryRow[7]
@@ -368,7 +383,8 @@ TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_topDevice)
 		DeviceDirectoryRow());
 }
 
-TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_penultimateDevice)
+TEST_F_TRAITS(DeviceDirectoryTests, clearDeviceDirectoryRow_penultimateDevice,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_devices = new DeviceDirectoryRow[7]
@@ -394,7 +410,8 @@ TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_penultimateDevice)
 		DeviceDirectoryRow());
 }
 
-TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_penultimateDeviceEmptyBelow)
+TEST_F_TRAITS(DeviceDirectoryTests, clearDeviceDirectoryRow_penultimateDeviceEmptyBelow,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_devices = new DeviceDirectoryRow[7]
@@ -420,7 +437,8 @@ TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_penultimateDeviceEmptyBelow
 		DeviceDirectoryRow());
 }
 
-TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_topDeviceEmptyBelow)
+TEST_F_TRAITS(DeviceDirectoryTests, clearDeviceDirectoryRow_topDeviceEmptyBelow,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_devices = new DeviceDirectoryRow[7]
@@ -446,7 +464,8 @@ TEST_F(DeviceDirectoryTests, clearDeviceDirectoryRow_topDeviceEmptyBelow)
 		DeviceDirectoryRow());
 }
 
-TEST_F(DeviceDirectoryTests, findFreeRow_empty)
+TEST_F_TRAITS(DeviceDirectoryTests, findFreeRow_empty,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_devices = new DeviceDirectoryRow[7]
@@ -465,7 +484,8 @@ TEST_F(DeviceDirectoryTests, findFreeRow_empty)
 	ASSERT_EQ(result, 0);
 }
 
-TEST_F(DeviceDirectoryTests, findFreeRow_beginning)
+TEST_F_TRAITS(DeviceDirectoryTests, findFreeRow_beginning,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_devices = new DeviceDirectoryRow[7]
@@ -484,7 +504,8 @@ TEST_F(DeviceDirectoryTests, findFreeRow_beginning)
 	ASSERT_EQ(result, 0);
 }
 
-TEST_F(DeviceDirectoryTests, findFreeRow_middle)
+TEST_F_TRAITS(DeviceDirectoryTests, findFreeRow_middle,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_devices = new DeviceDirectoryRow[7]
@@ -503,7 +524,8 @@ TEST_F(DeviceDirectoryTests, findFreeRow_middle)
 	ASSERT_EQ(result, 3);
 }
 
-TEST_F(DeviceDirectoryTests, findFreeRow_middleWithOthersAfter)
+TEST_F_TRAITS(DeviceDirectoryTests, findFreeRow_middleWithOthersAfter,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_devices = new DeviceDirectoryRow[7]
@@ -522,7 +544,8 @@ TEST_F(DeviceDirectoryTests, findFreeRow_middleWithOthersAfter)
 	ASSERT_EQ(result, 3);
 }
 
-TEST_F(DeviceDirectoryTests, findFreeRow_last)
+TEST_F_TRAITS(DeviceDirectoryTests, findFreeRow_last,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_devices = new DeviceDirectoryRow[7]
@@ -541,7 +564,8 @@ TEST_F(DeviceDirectoryTests, findFreeRow_last)
 	ASSERT_EQ(result, 6);
 }
 
-TEST_F(DeviceDirectoryTests, findFreeRow_full)
+TEST_F_TRAITS(DeviceDirectoryTests, findFreeRow_full,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	deviceDirectory->_maxDevices = 7;
 	deviceDirectory->_devices = new DeviceDirectoryRow[7]
@@ -560,7 +584,8 @@ TEST_F(DeviceDirectoryTests, findFreeRow_full)
 	ASSERT_EQ(result, -1);
 }
 
-TEST_F(DeviceDirectoryTests, findFreeSlaveID_empty)
+TEST_F_TRAITS(DeviceDirectoryTests, findFreeSlaveID_empty,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_maxDevices = 10;
 	deviceDirectory->_devices = new DeviceDirectoryRow[7]
@@ -579,7 +604,8 @@ TEST_F(DeviceDirectoryTests, findFreeSlaveID_empty)
 	ASSERT_EQ(freeSlaveId, 2);
 }
 
-TEST_F(DeviceDirectoryTests, findFreeSlaveID_full)
+TEST_F_TRAITS(DeviceDirectoryTests, findFreeSlaveID_full,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	deviceDirectory->_maxDevices = 246;
 	deviceDirectory->_devices = new DeviceDirectoryRow[246];
@@ -593,7 +619,8 @@ TEST_F(DeviceDirectoryTests, findFreeSlaveID_full)
 	ASSERT_EQ(freeSlaveId, 0);
 }
 
-TEST_F(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case1)
+TEST_F_TRAITS(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case1,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_maxDevices = 10;
 	deviceDirectory->_devices = new DeviceDirectoryRow[10]
@@ -615,7 +642,8 @@ TEST_F(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case1)
 	ASSERT_EQ(freeSlaveId, 4);
 }
 
-TEST_F(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case2)
+TEST_F_TRAITS(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case2,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_maxDevices = 10;
 	deviceDirectory->_devices = new DeviceDirectoryRow[10]
@@ -637,7 +665,8 @@ TEST_F(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case2)
 	ASSERT_EQ(freeSlaveId, 4);
 }
 
-TEST_F(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case3)
+TEST_F_TRAITS(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case3,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_maxDevices = 10;
 	deviceDirectory->_devices = new DeviceDirectoryRow[10]
@@ -659,7 +688,8 @@ TEST_F(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case3)
 	ASSERT_EQ(freeSlaveId, 2);
 }
 
-TEST_F(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case4)
+TEST_F_TRAITS(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case4,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_maxDevices = 10;
 	deviceDirectory->_devices = new DeviceDirectoryRow[10]
@@ -681,7 +711,8 @@ TEST_F(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case4)
 	ASSERT_EQ(freeSlaveId, 2);
 }
 
-TEST_F(DeviceDirectoryTests, addDevice_success)
+TEST_F_TRAITS(DeviceDirectoryTests, addDevice_success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	When(Method(mock, findFreeRow)).Return(6);
@@ -694,7 +725,8 @@ TEST_F(DeviceDirectoryTests, addDevice_success)
 	Verify(Method(mock, insertIntoRow).Using(6, name, DeviceDirectoryRow(6, 7, 8, 9))).Once();
 }
 
-TEST_F(DeviceDirectoryTests, addDevice_failure)
+TEST_F_TRAITS(DeviceDirectoryTests, addDevice_failure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	When(Method(mock, findFreeRow)).Return(-1);
@@ -707,7 +739,8 @@ TEST_F(DeviceDirectoryTests, addDevice_failure)
 	Verify(Method(mock, insertIntoRow)).Never();
 }
 
-TEST_F(DeviceDirectoryTests, addOrReplaceDevice_deviceAdded)
+TEST_F_TRAITS(DeviceDirectoryTests, addOrReplaceDevice_deviceAdded,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	When(Method(mock, findDeviceForName)).Do([](byte* name, int &row)
@@ -724,7 +757,8 @@ TEST_F(DeviceDirectoryTests, addOrReplaceDevice_deviceAdded)
 	Verify(Method(mock, addDevice).Using(name, DeviceDirectoryRow(6, 7, 8, 9))).Once();
 }
 
-TEST_F(DeviceDirectoryTests, addOrReplaceDevice_deviceReplaced)
+TEST_F_TRAITS(DeviceDirectoryTests, addOrReplaceDevice_deviceReplaced,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	auto device = DeviceDirectoryRow(10, 11, 12, 13);
@@ -742,7 +776,8 @@ TEST_F(DeviceDirectoryTests, addOrReplaceDevice_deviceReplaced)
 	Verify(Method(mock, insertIntoRow).Using(23, name, DeviceDirectoryRow(6, 7, 8, 9))).Once();
 }
 
-TEST_F(DeviceDirectoryTests, filterDevicesForSlave_empty)
+TEST_F_TRAITS(DeviceDirectoryTests, filterDevicesForSlave_empty,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	deviceDirectory->_maxDevices = 10;
 	deviceDirectory->_devices = new DeviceDirectoryRow[10]
@@ -766,7 +801,8 @@ TEST_F(DeviceDirectoryTests, filterDevicesForSlave_empty)
 	ASSERT_EQ(numDeleted, 0);
 }
 
-TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_0)
+TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_0,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	byte name[4];
@@ -801,7 +837,8 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_0)
 	assertArrayEq(resultName, 'N', 'm', 'e', '0');
 }
 
-TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_1)
+TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_1,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	byte name[4];
@@ -836,7 +873,8 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_1)
 	assertArrayEq(resultName, 'N', 'm', 'e', '1');
 }
 
-TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_2)
+TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_2,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	byte name[4];
@@ -869,7 +907,8 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_2)
 	ASSERT_EQ(result, nullptr);
 }
 
-TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_0)
+TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_0,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	byte name[4];
@@ -904,7 +943,8 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_0)
 	assertArrayEq(resultName, 'N', 'm', 'e', '0');
 }
 
-TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1a)
+TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1a,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	byte name[4];
@@ -939,7 +979,8 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1a)
 	assertArrayEq(resultName, 'N', 'm', 'e', '2');
 }
 
-TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1b)
+TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1b,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	byte name[4];
@@ -974,7 +1015,8 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1b)
 	assertArrayEq(resultName, 'N', 'm', 'e', '2');
 }
 
-TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_2)
+TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_2,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	byte name[4];
@@ -1007,7 +1049,8 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_2)
 	ASSERT_EQ(result, nullptr);
 }
 
-TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0a)
+TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0a,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	byte name[4];
@@ -1042,7 +1085,8 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0a)
 	assertArrayEq(resultName, 'N', 'm', 'e', '1');
 }
 
-TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0b)
+TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0b,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	byte name[4];
@@ -1077,7 +1121,8 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0b)
 	assertArrayEq(resultName, 'N', 'm', 'e', '1');
 }
 
-TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_1)
+TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_1,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	byte name[4];
@@ -1112,7 +1157,8 @@ TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_1)
 	assertArrayEq(resultName, 'N', 'm', 'e', '2');
 }
 
-TEST_F(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_2)
+TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_2,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	Mock<DeviceDirectory<byte*>> mock = getMock();
 	byte name[4];

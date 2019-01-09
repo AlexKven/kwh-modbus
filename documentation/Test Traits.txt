@@ -1,0 +1,5 @@
+TestType: Unit, Integration
+Threading: Single, Multi
+Determinism: Static, Delay, Chance
+//Conditions: Ideal, Errors, Delays, ErrorsAndDelays
+Case: Normal, Edge, Rare, Failure
