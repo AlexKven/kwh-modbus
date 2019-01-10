@@ -28,7 +28,8 @@ protected:
 	ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory> *modbus = new ModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory>();
 };
 
-TEST_F(ModbusMasterTests, ModbusMaster_sendPDU)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_sendPDU,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -68,7 +69,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_sendPDU)
 	ASSERT_EQ(writeQueue.front(), crc & 0xFF);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_setRequest_ReadRegisters)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_setRequest_ReadRegisters,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	bool success = modbus->setRequest_ReadRegisters(29, 7, 266);
 
@@ -77,7 +79,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_setRequest_ReadRegisters)
 		(modbus->getFramePtr(), 29, MB_FC_READ_REGS, 0, 7, 1, 10);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_setRequest_WriteRegister)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_setRequest_WriteRegister,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	bool success = modbus->setRequest_WriteRegister(29, 7, 266);
 
@@ -86,7 +89,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_setRequest_WriteRegister)
 		(modbus->getFramePtr(), 29, MB_FC_WRITE_REG, 0, 7, 1, 10);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_setRequest_WriteRegisters)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_setRequest_WriteRegisters,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	word registers[4] = { 2, 3, 5, 257 };
 	bool success = modbus->setRequest_WriteRegisters(29, 7, 4, registers);
@@ -96,7 +100,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_setRequest_WriteRegisters)
 		(modbus->getFramePtr(), 29, MB_FC_WRITE_REGS, 0, 7, 0, 4, 8, 0, 2, 0, 3, 0, 5, 1, 1);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_verifyResponseIntegrity_Success)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_verifyResponseIntegrity_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	modbus->resetFrame(5);
 	byte *frame = modbus->getFramePtr();
@@ -109,7 +114,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_verifyResponseIntegrity_Success)
 	ASSERT_TRUE(success);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_verifyResponseIntegrity_Fail_WrongRecipient)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_verifyResponseIntegrity_Fail_WrongRecipient,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	modbus->resetFrame(5);
 	byte *frame = modbus->getFramePtr();
@@ -122,7 +128,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_verifyResponseIntegrity_Fail_WrongRecipie
 	ASSERT_FALSE(success);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_verifyResponseIntegrity_Fail_BadCRC)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_verifyResponseIntegrity_Fail_BadCRC,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	modbus->resetFrame(5);
 	byte *frame = modbus->getFramePtr();
@@ -135,7 +142,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_verifyResponseIntegrity_Fail_BadCRC)
 	ASSERT_FALSE(success);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_isReadRegsResponse_True)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_isReadRegsResponse_True,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	modbus->resetFrame(6);
 	byte *frame = modbus->getFramePtr();
@@ -151,7 +159,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_isReadRegsResponse_True)
 	assertArrayEq<word>(regs, 42 * 256 + 43);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_isReadRegsResponse_False_OddLength)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_isReadRegsResponse_False_OddLength,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	modbus->resetFrame(5);
 	byte *frame = modbus->getFramePtr();
@@ -167,7 +176,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_isReadRegsResponse_False_OddLength)
 	ASSERT_EQ(regs, nullptr);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_isReadRegsResponse_FALSE_WrongFCode)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_isReadRegsResponse_FALSE_WrongFCode,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	modbus->resetFrame(6);
 	byte *frame = modbus->getFramePtr();
@@ -183,7 +193,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_isReadRegsResponse_FALSE_WrongFCode)
 	ASSERT_EQ(regs, nullptr);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_isExceptionResponse_True)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_isExceptionResponse_True,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	modbus->resetFrame(5);
 	byte *frame = modbus->getFramePtr();
@@ -199,7 +210,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_isExceptionResponse_True)
 	ASSERT_EQ(exCode, MB_EX_SLAVE_FAILURE);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_isExceptionResponse_False_WrongLength)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_isExceptionResponse_False_WrongLength,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	modbus->resetFrame(4);
 	byte *frame = modbus->getFramePtr();
@@ -215,7 +227,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_isExceptionResponse_False_WrongLength)
 	ASSERT_EQ(exCode, 0);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_isExceptionResponse_False_ImproperFCode)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_isExceptionResponse_False_ImproperFCode,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	modbus->resetFrame(5);
 	byte *frame = modbus->getFramePtr();
@@ -231,7 +244,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_isExceptionResponse_False_ImproperFCode)
 	ASSERT_EQ(exCode, 0);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegResponse_True)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_isWriteRegResponse_True,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	modbus->resetFrame(6);
 	byte *frame = modbus->getFramePtr();
@@ -242,7 +256,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegResponse_True)
 	ASSERT_TRUE(result);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegResponse_False_WrongFCode)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_isWriteRegResponse_False_WrongFCode,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	modbus->resetFrame(6);
 	byte *frame = modbus->getFramePtr();
@@ -253,7 +268,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegResponse_False_WrongFCode)
 	ASSERT_FALSE(result);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegResponse_False_BadLength)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_isWriteRegResponse_False_BadLength,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	modbus->resetFrame(7);
 	byte *frame = modbus->getFramePtr();
@@ -264,7 +280,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegResponse_False_BadLength)
 	ASSERT_FALSE(result);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegsResponse_True)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_isWriteRegsResponse_True,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	modbus->resetFrame(8);
 	byte *frame = modbus->getFramePtr();
@@ -275,7 +292,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegsResponse_True)
 	ASSERT_TRUE(result);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegsResponse_False_WrongFCode)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_isWriteRegsResponse_False_WrongFCode,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	modbus->resetFrame(6);
 	byte *frame = modbus->getFramePtr();
@@ -286,7 +304,8 @@ TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegsResponse_False_WrongFCode)
 	ASSERT_FALSE(result);
 }
 
-TEST_F(ModbusMasterTests, ModbusMaster_isWriteRegsResponse_False_BadLength)
+TEST_F_TRAITS(ModbusMasterTests, ModbusMaster_isWriteRegsResponse_False_BadLength,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	modbus->resetFrame(7);
 	byte *frame = modbus->getFramePtr();

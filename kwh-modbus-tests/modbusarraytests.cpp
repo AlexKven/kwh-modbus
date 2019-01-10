@@ -33,7 +33,8 @@ public:
 };
 
 
-TEST_F(ModbusArrayTests, ModbusArray_Hreg)
+TEST_F_TRAITS(ModbusArrayTests, ModbusArray_Hreg,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	modbus->Hreg(5, 1);
 	modbus->Hreg(10, 50);
@@ -50,7 +51,8 @@ TEST_F(ModbusArrayTests, ModbusArray_Hreg)
 	ASSERT_EQ(bool2, true);
 }
 
-TEST_F(ModbusArrayTests, ModbusArray_Frame_Byte)
+TEST_F_TRAITS(ModbusArrayTests, ModbusArray_Frame_Byte,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	bool success1 = modbus->resetFrame(10);
 	byte *ptr = modbus->getFramePtr();
@@ -69,7 +71,8 @@ TEST_F(ModbusArrayTests, ModbusArray_Frame_Byte)
 	ASSERT_EQ(regValue, 703);
 }
 
-TEST_F(ModbusArrayTests, ModbusArray_Frame_Byte_BeyondMaxFrame)
+TEST_F_TRAITS(ModbusArrayTests, ModbusArray_Frame_Byte_BeyondMaxFrame,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	bool success1 = modbus->resetFrame(20);
 	byte *ptr = modbus->getFramePtr();
@@ -82,7 +85,8 @@ TEST_F(ModbusArrayTests, ModbusArray_Frame_Byte_BeyondMaxFrame)
 	ASSERT_EQ(success2, false);
 }
 
-TEST_F(ModbusArrayTests, ModbusArray_FrameRegister)
+TEST_F_TRAITS(ModbusArrayTests, ModbusArray_FrameRegister,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	bool success1 = modbus->resetFrameRegs(5, 2);
 	byte *ptr = modbus->getFramePtr();
@@ -100,7 +104,8 @@ TEST_F(ModbusArrayTests, ModbusArray_FrameRegister)
 	ASSERT_EQ(reg, 703);
 }
 
-TEST_F(ModbusArrayTests, ModbusMemory_FrameRegister_BeyondMaxFrame)
+TEST_F_TRAITS(ModbusArrayTests, ModbusMemory_FrameRegister_BeyondMaxFrame,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	bool success1 = modbus->resetFrameRegs(10, 4);
 	byte *ptr = modbus->getFramePtr();
@@ -115,14 +120,16 @@ TEST_F(ModbusArrayTests, ModbusMemory_FrameRegister_BeyondMaxFrame)
 	ASSERT_EQ(success3, false);
 }
 
-TEST_F(ModbusArrayTests, ModbusMemory_ValidRange_True)
+TEST_F_TRAITS(ModbusArrayTests, ModbusMemory_ValidRange_True,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	bool result = modbus->validRange(5, 4);
 
 	ASSERT_TRUE(result);
 }
 
-TEST_F(ModbusArrayTests, ModbusMemory_ValidRange_False)
+TEST_F_TRAITS(ModbusArrayTests, ModbusMemory_ValidRange_False,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	bool result = modbus->validRange(5, 40);
 

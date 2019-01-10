@@ -45,7 +45,8 @@ protected:
 	ModbusSerial<ISerialStream, ISystemFunctions, ModbusMemory> *modbus = new ModbusSerial<ISerialStream, ISystemFunctions, ModbusMemory>();
 };
 
-TEST_F(ModbusSerialTests, ModbusSerial_Config)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_Config,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -55,7 +56,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_Config)
 	ASSERT_EQ(modbus->_t35, 13750 * 3.5);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_Config_HighBaud)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_Config_HighBaud,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	USE_FAKE;
 	Fake(Method(fakeSerial, begin));
@@ -67,7 +69,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_Config_HighBaud)
 	ASSERT_EQ(modbus->_t35, 750 * 3.5);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_Config_TXPin)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_Config_TXPin,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	Fake(Method(fakeSerial, begin));
@@ -81,7 +84,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_Config_TXPin)
 	Verify(Method(fakeSystem, digitalWrite).Using(4, LOW)).Once();
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_Available)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_Available,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -93,7 +97,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_Available)
 	Verify(Method(fakeSerial, available)).Once();
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_Flush)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_Flush,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -104,7 +109,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_Flush)
 	Verify(Method(fakeSerial, flush)).Once();
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_Read)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_Read,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -116,7 +122,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_Read)
 	ASSERT_EQ(result, 5);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_Read_Success)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_Read_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -130,7 +137,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_Read_Success)
 	ASSERT_TRUE(success);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_Read_Failure)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_Read_Failure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -144,7 +152,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_Read_Failure)
 	ASSERT_FALSE(success);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_ReadWord_Success)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_ReadWord_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -158,7 +167,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_ReadWord_Success)
 	ASSERT_TRUE(success);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_ReadWord_Failure_First)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_ReadWord_Failure_First,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -172,7 +182,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_ReadWord_Failure_First)
 	ASSERT_FALSE(success);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_ReadWord_Failure_Second)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_ReadWord_Failure_Second,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -186,7 +197,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_ReadWord_Failure_Second)
 	ASSERT_FALSE(success);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_Write_Success)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_Write_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -199,7 +211,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_Write_Success)
 	ASSERT_TRUE(success);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_WriteWord_Success)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_WriteWord_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -213,7 +226,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_WriteWord_Success)
 	ASSERT_TRUE(success);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_WriteWord_Failure_First)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_WriteWord_Failure_First,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -227,7 +241,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_WriteWord_Failure_First)
 	ASSERT_FALSE(success);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_WriteWord_Failure_Second)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_WriteWord_Failure_Second,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -241,7 +256,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_WriteWord_Failure_Second)
 	ASSERT_FALSE(success);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_Write_Failure)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_Write_Failure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -254,7 +270,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_Write_Failure)
 	ASSERT_FALSE(success);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_FrameDelay)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_FrameDelay,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -266,7 +283,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_FrameDelay)
 	Verify(Method(fakeSystem, delayMicroseconds).Using(delay)).Once();
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_ByteDelay)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_ByteDelay,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -278,7 +296,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_ByteDelay)
 	Verify(Method(fakeSystem, delayMicroseconds).Using(delay)).Once();
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_AwaitIncomingSerial_Nothing)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_AwaitIncomingSerial_Nothing,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -289,7 +308,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_AwaitIncomingSerial_Nothing)
 	ASSERT_EQ(result, 0);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_AwaitIncomingSerial_Something)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_AwaitIncomingSerial_Something,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	CONFIG_MODBUS_FAKE_ALL;
@@ -309,7 +329,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_AwaitIncomingSerial_Something)
 	Verify(Method(fakeSystem, delayMicroseconds).Using(delay)).Exactly(5_Times);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_All)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_readToFrame_All,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -334,7 +355,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_All)
 		(byte)34);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Incomplete)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_readToFrame_Incomplete,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -360,7 +382,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Incomplete)
 		(byte)8);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Lower_Length)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_readToFrame_Lower_Length,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 USE_MOCK_SERIAL;
@@ -390,7 +413,8 @@ assertArrayEq(frame,
 (byte)5);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Offset)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_readToFrame_Offset,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -411,7 +435,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Offset)
 		(byte)8);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Offset_Lower_Length)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_readToFrame_Offset_Lower_Length,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -441,7 +466,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_readToFrame_Offset_Lower_Length)
 		(byte)5);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_All)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_writeFromFrame_All,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -484,7 +510,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_All)
 	ASSERT_EQ(writeQueue.size(), 0);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_Lower_Length)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_writeFromFrame_Lower_Length,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -519,7 +546,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_Lower_Length)
 	ASSERT_EQ(writeQueue.size(), 0);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_Offset)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_writeFromFrame_Offset,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -556,7 +584,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_Offset)
 	ASSERT_EQ(writeQueue.size(), 0);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_Offset_Lower_Length)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_writeFromFrame_Offset_Lower_Length,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -591,7 +620,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_writeFromFrame_Offset_Lower_Length)
 	ASSERT_EQ(writeQueue.size(), 0);
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_WriteTwice_NoBeginTransmission)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_WriteTwice_NoBeginTransmission,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	USE_FAKE;
 	Fake(Method(fakeSerial, begin));
@@ -610,7 +640,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_WriteTwice_NoBeginTransmission)
 	Verify(Method(fakeSystem, digitalWrite).Using(4, HIGH)).Twice();
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_WriteFromFrame_NoBeginTransmission)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_WriteFromFrame_NoBeginTransmission,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	USE_FAKE;
 	Fake(Method(fakeSerial, begin));
@@ -635,7 +666,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_WriteFromFrame_NoBeginTransmission)
 	Verify(Method(fakeSystem, digitalWrite).Using(4, HIGH)).Twice();
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_WriteTwice_BeginTransmission)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_WriteTwice_BeginTransmission,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	Fake(Method(fakeSerial, begin));
@@ -658,7 +690,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_WriteTwice_BeginTransmission)
 	Verify(Method(fakeSystem, digitalWrite).Using(4, HIGH)).Once();
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_WriteFromFrame_BeginTransmission)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_WriteFromFrame_BeginTransmission,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	Fake(Method(fakeSerial, begin));
@@ -687,7 +720,8 @@ TEST_F(ModbusSerialTests, ModbusSerial_WriteFromFrame_BeginTransmission)
 	Verify(Method(fakeSystem, digitalWrite).Using(4, HIGH)).Once();
 }
 
-TEST_F(ModbusSerialTests, ModbusSerial_Begin_End_Transmission)
+TEST_F_TRAITS(ModbusSerialTests, ModbusSerial_Begin_End_Transmission,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE;
 	Fake(Method(fakeSerial, begin));

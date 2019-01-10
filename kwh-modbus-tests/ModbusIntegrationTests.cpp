@@ -177,7 +177,8 @@ public:
 
 WindowsSystemFunctions *ModbusIntegrationTests::system;
 
-TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success)
+TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success,
+	Type, Integration, Threading, Multiple, Determinism, Volatile, Case, Typical)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -205,7 +206,8 @@ TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success)
 	assertArrayEq<word, word>(regPtr, 703, 513);
 }
 
-TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
+TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure,
+	Type, Integration, Threading, Multiple, Determinism, Volatile, Case, Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -233,7 +235,8 @@ TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure)
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
+TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success,
+	Type, Integration, Threading, Multiple, Determinism, Volatile, Case, Typical)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -258,7 +261,8 @@ TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success)
 	ASSERT_EQ(reg, 703);
 }
 
-TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure)
+TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure,
+	Type, Integration, Threading, Multiple, Determinism, Volatile, Case, Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -285,7 +289,8 @@ TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure)
 	ASSERT_EQ(excode, MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
+TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success,
+	Type, Integration, Threading, Multiple, Determinism, Volatile, Case, Typical)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -320,7 +325,8 @@ TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success)
 	ASSERT_EQ(reg5, 703);
 }
 
-TEST_P(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure)
+TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure,
+	Type, Integration, Threading, Multiple, Determinism, Volatile, Case, Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);

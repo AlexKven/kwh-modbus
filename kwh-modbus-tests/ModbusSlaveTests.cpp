@@ -45,7 +45,8 @@ protected:
 	}
 };
 
-TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegister_IllegalAddress)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegister_IllegalAddress,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	modbus->resetFrame(5);
 	byte *frame = modbus->getFramePtr();
@@ -66,7 +67,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegister_IllegalAddress)
 		MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegister_SlaveFailure)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegister_SlaveFailure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	USE_MOCK;
 	When(OverloadedMethod(mock, Hreg, bool(word, word))).Return(true);
@@ -91,7 +93,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegister_SlaveFailure)
 		MB_EX_SLAVE_FAILURE);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegister_Success)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegister_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	modbus->resetFrame(5);
 	modbus->addHreg(5, 3);
@@ -109,7 +112,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegister_Success)
 	ASSERT_EQ(modbus->Reg(5), 703);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_Success)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	modbus->resetFrame(5);
 	setup_FourRegisters();
@@ -133,7 +137,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_Success)
 	}
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_IllegalAddress)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_IllegalAddress,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	modbus->resetFrame(5);
 	setup_FourRegisters(true);
@@ -155,7 +160,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_IllegalAddress)
 		MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_IllegalValue)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_IllegalValue,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	modbus->resetFrame(5);
 	byte *frame = modbus->getFramePtr();
@@ -176,7 +182,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_IllegalValue)
 		MB_EX_ILLEGAL_VALUE);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_SlaveFailure)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_SlaveFailure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	USE_MOCK;
 	modbus->resetFrame(5);
@@ -203,7 +210,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_ReadRegisters_SlaveFailure)
 		MB_EX_SLAVE_FAILURE);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_Success)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	modbus->resetFrame(14);
 	setup_FourRegisters();
@@ -244,7 +252,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_Success)
 	}
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_IllegalAddress)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_IllegalAddress,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	modbus->resetFrame(14);
 	setup_FourRegisters(true);
@@ -275,7 +284,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_IllegalAddress)
 		MB_EX_ILLEGAL_ADDRESS);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_IllegalValue)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_IllegalValue,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	modbus->resetFrame(14);
 	setup_FourRegisters();
@@ -306,7 +316,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_IllegalValue)
 		MB_EX_ILLEGAL_VALUE);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_IllegalValue_BadByteCount)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_IllegalValue_BadByteCount,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	modbus->resetFrame(14);
 	setup_FourRegisters();
@@ -337,7 +348,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_IllegalValue_BadB
 		MB_EX_ILLEGAL_VALUE);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_SlaveFailure)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_SlaveFailure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	USE_MOCK;
 	modbus->resetFrame(14);
@@ -372,7 +384,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_WriteRegisters_SlaveFailure)
 		MB_EX_SLAVE_FAILURE);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_IllegalFunction)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_ReceivePDU_IllegalFunction,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	modbus->resetFrame(5);
 	setup_FourRegisters();
@@ -398,7 +411,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_ReceivePDU_IllegalFunction)
 		MB_EX_ILLEGAL_FUNCTION);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Success)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_readInputFrame_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -426,7 +440,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Success)
 	ASSERT_FALSE(broadcast);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_Broadcast_Success)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_Broadcast_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -455,7 +470,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_Broadcast_Success)
 	ASSERT_EQ(modbus->Hreg(5), 704);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_WrongSlave)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_WrongSlave,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -483,7 +499,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_WrongSlave)
 	ASSERT_FALSE(broadcast);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_BadCRC)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_BadCRC,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -511,7 +528,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_readInputFrame_Failure_BadCRC)
 	ASSERT_FALSE(broadcast);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_sendPDU)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_sendPDU,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -555,7 +573,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_sendPDU)
 	ASSERT_EQ(writeQueue.front(), crc & 0xFF);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_echo_everything)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_echo_everything,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -593,7 +612,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_echo_everything)
 	ASSERT_EQ(writeQueue.front(), 21);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_echo_fCodeOnly)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_echo_fCodeOnly,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -625,7 +645,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_echo_fCodeOnly)
 	ASSERT_EQ(writeQueue.front(), crc & 0xFF);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_task_Success)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_task_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -685,7 +706,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_task_Success)
 	ASSERT_FALSE(broadcast);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_task_FailEmpty)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_task_FailEmpty,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;
@@ -707,7 +729,8 @@ TEST_F(ModbusSlaveTests, ModbusSlave_task_FailEmpty)
 	ASSERT_FALSE(broadcast);
 }
 
-TEST_F(ModbusSlaveTests, ModbusSlave_task_Success_WrongRecipient)
+TEST_F_TRAITS(ModbusSlaveTests, ModbusSlave_task_Success_WrongRecipient,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	USE_FAKE_SYSTEM;
 	USE_MOCK_SERIAL;

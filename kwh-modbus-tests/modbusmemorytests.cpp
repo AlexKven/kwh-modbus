@@ -45,7 +45,8 @@ public:
 };
 
 
-TEST_F(ModbusMemoryTests, ModbusMemory_Hreg)
+TEST_F_TRAITS(ModbusMemoryTests, ModbusMemory_Hreg,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	modbus->addHreg(5, 1);
 	modbus->addHreg(20, 50);
@@ -62,7 +63,8 @@ TEST_F(ModbusMemoryTests, ModbusMemory_Hreg)
 	ASSERT_EQ(bool2, true);
 }
 
-TEST_F(ModbusMemoryTests, ModbusMemory_Frame_Byte)
+TEST_F_TRAITS(ModbusMemoryTests, ModbusMemory_Frame_Byte,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	modbus->resetFrame(13);
 	byte *ptr = modbus->getFramePtr();
@@ -80,7 +82,8 @@ TEST_F(ModbusMemoryTests, ModbusMemory_Frame_Byte)
 	ASSERT_EQ(regValue, 703);
 }
 
-TEST_F(ModbusMemoryTests, ModbusMemory_FrameRegister)
+TEST_F_TRAITS(ModbusMemoryTests, ModbusMemory_FrameRegister,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	modbus->resetFrameRegs(5, 1);
 	byte *ptr = modbus->getFramePtr();
@@ -97,7 +100,8 @@ TEST_F(ModbusMemoryTests, ModbusMemory_FrameRegister)
 	ASSERT_EQ(reg, 703);
 }
 
-TEST_F(ModbusMemoryTests, ModbusMemory_ValidRange_True)
+TEST_F_TRAITS(ModbusMemoryTests, ModbusMemory_ValidRange_True,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	setup_FourRegisters();
 
@@ -106,7 +110,8 @@ TEST_F(ModbusMemoryTests, ModbusMemory_ValidRange_True)
 	ASSERT_TRUE(result);
 }
 
-TEST_F(ModbusMemoryTests, ModbusMemory_ValidRange_False)
+TEST_F_TRAITS(ModbusMemoryTests, ModbusMemory_ValidRange_False,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	setup_FourRegisters(true);
 
