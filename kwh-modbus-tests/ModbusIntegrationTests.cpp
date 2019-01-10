@@ -178,7 +178,7 @@ public:
 WindowsSystemFunctions *ModbusIntegrationTests::system;
 
 TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success,
-	Type, Integration, Threading, Multiple, Determinism, Volatile, Case, Typical)
+	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Typical)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -207,7 +207,7 @@ TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Success,
 }
 
 TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure,
-	Type, Integration, Threading, Multiple, Determinism, Volatile, Case, Failure)
+	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -236,7 +236,7 @@ TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_ReadRegs_Failure,
 }
 
 TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success,
-	Type, Integration, Threading, Multiple, Determinism, Volatile, Case, Typical)
+	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Typical)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -262,7 +262,7 @@ TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Success,
 }
 
 TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure,
-	Type, Integration, Threading, Multiple, Determinism, Volatile, Case, Failure)
+	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -290,7 +290,7 @@ TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_WriteReg_Failure,
 }
 
 TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success,
-	Type, Integration, Threading, Multiple, Determinism, Volatile, Case, Typical)
+	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Typical)
 {
 	// Set slave
 	slave->setSlaveId(23);
@@ -326,7 +326,7 @@ TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Success,
 }
 
 TEST_P_TRAITS(ModbusIntegrationTests, ModbusIntegrationTests_WriteRegs_Failure,
-	Type, Integration, Threading, Multiple, Determinism, Volatile, Case, Failure)
+	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Failure)
 {
 	// Set slave
 	slave->setSlaveId(23);

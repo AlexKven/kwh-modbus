@@ -78,7 +78,8 @@ public:
 	}
 };
 
-TEST_F(ResilientTaskTests, Task_CompletesImmediately)
+TEST_F_TRAITS(ResilientTaskTests, Task_CompletesImmediately,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	bool disposed = false;
 	task->disposedLambda = [&disposed]() { disposed = true; };
@@ -98,7 +99,8 @@ TEST_F(ResilientTaskTests, Task_CompletesImmediately)
 	ASSERT_EQ(workCount, 0);
 }
 
-TEST_F(ResilientTaskTests, Task_CompletesOneCheck)
+TEST_F_TRAITS(ResilientTaskTests, Task_CompletesOneCheck,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	bool disposed = false;
 	task->disposedLambda = [&disposed]() { disposed = true; };
@@ -119,7 +121,8 @@ TEST_F(ResilientTaskTests, Task_CompletesOneCheck)
 	ASSERT_EQ(workCount, 1);
 }
 
-TEST_F(ResilientTaskTests, Task_CompletesThreeChecks)
+TEST_F_TRAITS(ResilientTaskTests, Task_CompletesThreeChecks,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	int checks = 3;
 	bool disposed = false;
@@ -148,7 +151,8 @@ TEST_F(ResilientTaskTests, Task_CompletesThreeChecks)
 	ASSERT_EQ(workCount, 3);
 }
 
-TEST_F(ResilientTaskTests, Task_CompletesThreeChecks_FourAttempts)
+TEST_F_TRAITS(ResilientTaskTests, Task_CompletesThreeChecks_FourAttempts,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	int checks = 3;
 	int attempts = 4;
@@ -192,7 +196,8 @@ TEST_F(ResilientTaskTests, Task_CompletesThreeChecks_FourAttempts)
 	ASSERT_EQ(workCount, 15);
 }
 
-TEST_F(ResilientTaskTests, Task_ExceededMaxTries)
+TEST_F_TRAITS(ResilientTaskTests, Task_ExceededMaxTries,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	int checks = 3;
 	int attempts = 4;
@@ -238,7 +243,8 @@ TEST_F(ResilientTaskTests, Task_ExceededMaxTries)
 	ASSERT_EQ(workCount, 12);
 }
 
-TEST_F(ResilientTaskTests, Task_ExceededMaxTries_Stubborn)
+TEST_F_TRAITS(ResilientTaskTests, Task_ExceededMaxTries_Stubborn,
+	Type, Stress, Threading, Single, Determinism, Static, Case, Rare)
 {
 	int checks = 3;
 	int attempts = 4;
@@ -293,7 +299,8 @@ TEST_F(ResilientTaskTests, Task_ExceededMaxTries_Stubborn)
 	ASSERT_EQ(workCount, 13);
 }
 
-TEST_F(ResilientTaskTests, Task_ExceededMaxTime)
+TEST_F_TRAITS(ResilientTaskTests, Task_ExceededMaxTime,
+	Type, Unit, Threading, Single, Determinism, Volatile, Case, Failure)
 {
 	task->setMaxTimeMicros(175000);
 	bool disposed = false;
@@ -323,7 +330,8 @@ TEST_F(ResilientTaskTests, Task_ExceededMaxTime)
 	ASSERT_NEAR(workCount, 4, 1);
 }
 
-TEST_F(ResilientTaskTests, Task_ExceededMaxTimePerTry)
+TEST_F_TRAITS(ResilientTaskTests, Task_ExceededMaxTimePerTry,
+	Type, Unit, Threading, Single, Determinism, Volatile, Case, Failure)
 {
 	task->setMaxTimePerTryMicros(50000);
 	bool disposed = false;
@@ -365,7 +373,8 @@ TEST_F(ResilientTaskTests, Task_ExceededMaxTimePerTry)
 	ASSERT_NEAR(workCount, 6, 1);
 }
 
-TEST_F(ResilientTaskTests, Task_ExceededMaxTimePerTryAndTotal)
+TEST_F_TRAITS(ResilientTaskTests, Task_ExceededMaxTimePerTryAndTotal,
+	Type, Unit, Threading, Single, Determinism, Volatile, Case, Failure)
 {
 	task->setMaxTimePerTryMicros(50000);
 	task->setMaxTimeMicros(105000);
@@ -406,7 +415,8 @@ TEST_F(ResilientTaskTests, Task_ExceededMaxTimePerTryAndTotal)
 	ASSERT_NEAR(workCount, 5, 1);
 }
 
-TEST_F(ResilientTaskTests, Task_MinTimePerAttempt)
+TEST_F_TRAITS(ResilientTaskTests, Task_MinTimePerAttempt,
+	Type, Unit, Threading, Single, Determinism, Volatile, Case, Typical)
 {
 	int checks = 2;
 	int attempts = 4;

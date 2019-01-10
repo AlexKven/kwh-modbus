@@ -74,7 +74,8 @@ public:
 	}
 };
 
-TEST_F(SlaveTests, SlaveTests_setOutgoingState_Idle_Success)
+TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_Idle_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	slave->displayedStateInvalid = true;
 	slave->_state = sIdle;
@@ -90,7 +91,8 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_Idle_Success)
 	ASSERT_EQ(registerArray[3], 703);
 }
 
-TEST_F(SlaveTests, SlaveTests_setOutgoingState_Idle_Failure)
+TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_Idle_Failure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	slave->displayedStateInvalid = true;
 	SetupOutOfRangeRegisterArray();
@@ -103,7 +105,8 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_Idle_Failure)
 	ASSERT_EQ(slave->displayedStateInvalid, true);
 }
 
-TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
+TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	slave->_state = sDisplayDevInfo;
 	slave->displayedStateInvalid = true;
@@ -138,7 +141,8 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevInfo_Success)
 		(word)0);
 }
 
-TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_TimeNotSet)
+TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_TimeNotSet,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	slave->_state = sDisplayDevData;
 	slave->displayedStateInvalid = true;
@@ -171,7 +175,8 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_TimeNotSet)
 		sDisplayDevData, (word)1);
 }
 
-TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_DeviceDoesntSendData)
+TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_DeviceDoesntSendData,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	slave->_state = sDisplayDevData;
 	slave->displayedStateInvalid = true;
@@ -207,7 +212,8 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_DeviceDoesntSendDa
 		sDisplayDevData, (word)2);
 }
 
-TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_4bitData)
+TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_4bitData,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	slave->_state = sDisplayDevData;
 	slave->displayedStateInvalid = true;
@@ -277,7 +283,8 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_4bitData)
 		(word)0x7654);
 }
 
-TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_5bitData)
+TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_5bitData,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	slave->_state = sDisplayDevData;
 	slave->displayedStateInvalid = true;
@@ -347,7 +354,8 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_5bitData)
 		(word)0x0A41);
 }
 
-TEST_F(SlaveTests, SlaveTests_processIncomingState_Idle)
+TEST_F_TRAITS(SlaveTests, SlaveTests_processIncomingState_Idle,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_SLAVE;
 	mSlave.displayedStateInvalid = false;
@@ -366,7 +374,8 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_Idle)
 	ASSERT_EQ(mSlave.displayedStateInvalid, true);
 }
 
-TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId)
+TEST_F_TRAITS(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_SLAVE;
 	mSlave.displayedStateInvalid = false;
@@ -390,7 +399,8 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId)
 	ASSERT_EQ(mSlave.displayedStateInvalid, true);
 }
 
-TEST_F(SlaveTests, SlaveTests_processIncomingState_Nothing)
+TEST_F_TRAITS(SlaveTests, SlaveTests_processIncomingState_Nothing,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_SLAVE;
 	mSlave.displayedStateInvalid = false;
@@ -407,7 +417,8 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_Nothing)
 	ASSERT_EQ(mSlave.displayedStateInvalid, false);
 }
 
-TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId_Failure)
+TEST_F_TRAITS(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId_Failure,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_SLAVE;
 	SetupOutOfRangeRegisterArray();
@@ -430,7 +441,8 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_ChangeSlaveId_Failure)
 	ASSERT_EQ(mSlave.displayedStateInvalid, false);
 }
 
-TEST_F(SlaveTests, SlaveTests_processIncomingState_SetClock)
+TEST_F_TRAITS(SlaveTests, SlaveTests_processIncomingState_SetClock,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_SLAVE;
 	Spy(Method(mock, setClock));
@@ -467,7 +479,8 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_SetClock)
 	ASSERT_EQ(mSlave.displayedStateInvalid, true);
 }
 
-TEST_F(SlaveTests, SlaveTests_processIncomingState_PrepareWriteData)
+TEST_F_TRAITS(SlaveTests, SlaveTests_processIncomingState_PrepareWriteData,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_SLAVE;
 	MockNewMethod(prepareReceiveData, word nameLength, uint32_t startTime,
@@ -523,7 +536,8 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_PrepareWriteData)
 	ASSERT_EQ(mSlave._stateDetail, 768);
 }
 
-TEST_F(SlaveTests, SlaveTests_processIncomingState_PrepareWriteData_nameTooLong)
+TEST_F_TRAITS(SlaveTests, SlaveTests_processIncomingState_PrepareWriteData_nameTooLong,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_SLAVE;
 	MockNewMethod(prepareReceiveData, word nameLength, uint32_t startTime,
@@ -576,7 +590,8 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_PrepareWriteData_nameTooLong)
 	ASSERT_EQ(mSlave._stateDetail, 2);
 }
 
-TEST_F(SlaveTests, SlaveTests_processIncomingState_PrepareWriteData_otherError)
+TEST_F_TRAITS(SlaveTests, SlaveTests_processIncomingState_PrepareWriteData_otherError,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_SLAVE;
 	MockNewMethod(prepareReceiveData, word nameLength, uint32_t startTime,
@@ -628,7 +643,8 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_PrepareWriteData_otherError)
 	ASSERT_EQ(mSlave._stateDetail, 4);
 }
 
-TEST_F(SlaveTests, SlaveTests_setOutgoingState_PrepareWriteData)
+TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_PrepareWriteData,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	slave->displayedStateInvalid = true;
 	slave->_state = sPreparingToReceiveDevData;
@@ -641,7 +657,8 @@ TEST_F(SlaveTests, SlaveTests_setOutgoingState_PrepareWriteData)
 	ASSERT_EQ(registerArray[1], 703);
 }
 
-TEST_F(SlaveTests, SlaveTests_processIncomingState_WriteData)
+TEST_F_TRAITS(SlaveTests, SlaveTests_processIncomingState_WriteData,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	MOCK_SLAVE;
 	MockNewMethod(mockReceiveData, byte dataPointsInPage, byte dataPointSize,
@@ -695,7 +712,8 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_WriteData)
 	ASSERT_EQ(mSlave.displayedStateInvalid, true);
 }
 
-TEST_F(SlaveTests, SlaveTests_processIncomingState_WriteData_DataTooLong)
+TEST_F_TRAITS(SlaveTests, SlaveTests_processIncomingState_WriteData_DataTooLong,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
 	MOCK_SLAVE;
 	MockNewMethod(mockReceiveData, byte dataPointsInPage, byte dataPointSize,
@@ -744,7 +762,8 @@ TEST_F(SlaveTests, SlaveTests_processIncomingState_WriteData_DataTooLong)
 	ASSERT_EQ(mSlave.displayedStateInvalid, false);
 }
 
-TEST_F(SlaveTests, SlaveTests_init)
+TEST_F_TRAITS(SlaveTests, SlaveTests_init,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	slave->_state = sIdle;
 	slave->_modbus->setSlaveId(17);
@@ -775,7 +794,8 @@ TEST_F(SlaveTests, SlaveTests_init)
 	ASSERT_EQ(slave->_dataBufferSize, 30);
 }
 
-TEST_F(SlaveTests, SlaveTests_clearDevices)
+TEST_F_TRAITS(SlaveTests, SlaveTests_clearDevices,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	slave->_state = sIdle;
 	slave->_modbus->setSlaveId(17);

@@ -1,1 +1,0 @@
-<Playlist Version="1.0"><Add Test="MockSerialStreamTests.MockSerialStream_DelayDistribution" /><Add Test="MockSerialStreamTests.MockSerialStream_RandomlyErroredByte" /><Add Test="MockSerialStreamTests.MockSerialStream_RandomBool" /></Playlist>
