@@ -1165,7 +1165,7 @@ TEST_F_TRAITS(MasterTests, readAndSendDeviceData_Success_OneReadPage,
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
 	RegsQueue readRegs;
-	readRegs.push(REGS(10, 3, 0, 15000, 0, 8, 0));
+	readRegs.push(REGS(6, 3, 0, 15000, 0, 8, 0));
 	readRegs.push(REGS(4, 0x4182, 0xB0E1, 0x4468, 0x26));
 	isRegsResponse_UseMockData(modbusBaseMock, readRegs);
 
@@ -1221,9 +1221,9 @@ TEST_F_TRAITS(MasterTests, readAndSendDeviceData_Success_TwoReadPages,
 	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
 
 	RegsQueue readRegs;
-	readRegs.push(REGS(10, 3, 0, 15000, 0, 5, 1 << 8));
+	readRegs.push(REGS(6, 3, 0, 15000, 0, 5, 1 << 8));
 	readRegs.push(REGS(3, 0x4182, 0xB0E1, 0x0));
-	readRegs.push(REGS(10, 3, 0, 15000, 0, 3, 1));
+	readRegs.push(REGS(6, 3, 0, 15000, 0, 3, 1));
 	readRegs.push(REGS(2, 0xC88D, 0x4));
 	isRegsResponse_UseMockData(modbusBaseMock, readRegs);
 
