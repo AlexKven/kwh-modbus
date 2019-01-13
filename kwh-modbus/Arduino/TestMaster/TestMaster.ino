@@ -69,7 +69,7 @@ void setup() {
   modbus.setMaxTimePerTryMicros(300000);
   modbus.setMaxTries(15);
   directory.init(8, 20);
-  master.config(&functions, &modbus, &directory);
+  master.config(&functions, &modbus, &directory, 40);
   Serial.println("Master initialized");
   Serial.print("Initial Memory: ");
   Serial.println(getMemAllocation());

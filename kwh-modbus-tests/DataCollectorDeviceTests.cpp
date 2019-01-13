@@ -259,6 +259,7 @@ TEST_F_TRAITS(DataCollectorDeviceTests, readData_Success_1page_1sec_8bits,
 	});
 
 	device->init(false, TimeScale::sec1, 8);
+	auto type = device->getType();
 	byte* buffer = tracker.addArray(new byte[6]);
 	byte dummy;
 	byte numDataPointsInPage;

@@ -62,7 +62,8 @@ private_testable:
 protected_testable:
 	virtual void reportMalfunction(int line)
 	{
-
+		Serial.print("Malfunction line ");
+		Serial.println(line);
 	}
 
 	virtual uint32_t getPollPeriodForTimeScale(TimeScale timeScale)
@@ -351,6 +352,10 @@ protected_testable:
 			{
 				if (DataTransmitterDevice::isDataTransmitterDeviceType(device->deviceType))
 				{
+					Serial.print("Send to device ");
+					for (int i = 0; i < _deviceDirectory->getDeviceNameLength(); i++)
+						Serial.write(dummyName[i]);
+					Serial.println();
 				begin_write:
 					_registerBuffer[0] = 1;
 					_registerBuffer[1] = 4;
@@ -381,7 +386,10 @@ protected_testable:
 					completeModbusWriteRegisters(device->slaveId, 0,
 						9 + (_deviceDirectory->getDeviceNameLength() - 1) / 2, _registerBuffer);
 					AWAIT(_completeModbusWriteRegisters);
-					ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+					Serial.print("This malfunction: ");
+					Serial.println(_completeModbusWriteRegisters.result());
+
+					//ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 					completeModbusReadRegisters(device->slaveId, 0, 2);
 					AWAIT(_completeModbusReadRegisters);
 					ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
@@ -456,6 +464,10 @@ protected_testable:
 	word regCount;
 	word *regs;
 	START_ASYNC;
+	Serial.print("Update device ");
+	for (int i = 0; i < deviceNameLength; i++)
+		Serial.write(deviceName[i]);
+	Serial.println();
 	if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(deviceRow->deviceType, accumulateData, timeScale, dataSize))
 	{
 		begin_read:
@@ -463,6 +475,9 @@ protected_testable:
 		numDataPoints = (endTime - startTime) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
 		curReadPage = 0;
 		numReadPagesRemaining = 1;
+
+		Serial.print("numDataPoints: ");
+		Serial.println(numDataPoints);
 
 		while (numReadPagesRemaining > 0)
 		{
@@ -494,6 +509,8 @@ protected_testable:
 
 				completeModbusReadRegisters(deviceRow->slaveId, 6,
 					BitFunctions::bitsToStructs<word, word>(numPointsInReadPage * dataSize));
+				Serial.println(numPointsInReadPage);
+				Serial.println(dataSize);
 				AWAIT(_completeModbusReadRegisters);
 				ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
 				_modbus->isReadRegsResponse(regCount, regs);
@@ -546,7 +563,6 @@ protected_testable:
 		byte *deviceName, uint32_t startTime, uint32_t endTime)
 	{
 		_readAndSendDeviceData = readAndSendDeviceData_Task(&THIS_T::readAndSendDeviceData, this, deviceRow, deviceNameLength, deviceName, startTime, endTime);
-		//CREATE_ASSIGN_CLASS_TASK(_readAndSendDeviceData, THIS_T, this, readAndSendDeviceData, deviceRow, deviceNameLength, deviceName, startTime, endTime);
 		return _readAndSendDeviceData;
 	}
 
@@ -575,6 +591,10 @@ protected_testable:
 					{
 						{
 							readStart = lastUpdateTimes[(int)timeScale];
+							Serial.print("readStart ");
+							Serial.println(readStart);
+							Serial.print("currentTime ");
+							Serial.println(currentTime);
 							word numDataPoints = (currentTime - readStart) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
 							readAndSendDeviceData(deviceRow, _deviceDirectory->getDeviceNameLength(), deviceName,
 								readStart, currentTime);
@@ -593,38 +613,56 @@ protected_testable:
 		RETURN_ASYNC;
 		END_ASYNC;
 	}
+	transferPendingData_Task& transferPendingData(TimeScale maxTimeScale, uint32_t currentTime)
+	{
+		_transferPendingData = transferPendingData_Task(&THIS_T::transferPendingData, this, maxTimeScale, currentTime);
+		return _transferPendingData;
+	}
 
-	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, bool));
+	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, unsigned long, unsigned long, bool));
 	loop_Task _loop;
 	virtual ASYNC_CLASS_FUNC(THIS_T, loop)
 	{
-		tick(_system->millis());
-
 		ASYNC_VAR_INIT(0, lastActivityTime, 0);
-		ASYNC_VAR(1, something);
+		ASYNC_VAR_INIT(1, lastSyncTime, 0);
+		ASYNC_VAR(2, curTime);
+		ASYNC_VAR(3, something);
 		START_ASYNC;
 		for (;;)
 		{
+			tick(_system->millis());
+			curTime = getCurTime();
 			if (_timeUpdatePending)
 			{
 				_timeUpdatePending = false;
 				broadcastTime();
 			}
-			if (lastActivityTime == 0 || (getCurTime() - lastActivityTime > 2000))
+			if (lastActivityTime == 0 || (curTime - lastActivityTime > 2000))
 			{
 				checkForNewSlaves();
 				AWAIT(_checkForNewSlaves);
 				something = (_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave);
 				while (something)
 				{
+					Serial.println("Slave found");
+					Serial.println(_system->millis());
 					processNewSlave(_checkForNewSlaves.result() == badSlave);
 					AWAIT(_processNewSlave);
 					checkForNewSlaves();
 					AWAIT(_checkForNewSlaves);
 					something = (_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave);
 				}
-				lastActivityTime = getCurTime();
+				lastActivityTime = curTime;
 			}
+			if (lastSyncTime == 0 || (curTime - lastSyncTime > 5000))
+			{
+				Serial.println("Update");
+				Serial.println(curTime);
+				transferPendingData(TimeScale::sec1, curTime);
+				AWAIT(_transferPendingData);
+				lastSyncTime = curTime;
+			}
+
 			YIELD_ASYNC;
 		}
 		END_ASYNC;
