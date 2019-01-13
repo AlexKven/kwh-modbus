@@ -410,17 +410,19 @@ protected_testable:
 								_registerBuffer[2] = device->deviceNumber;
 								_registerBuffer[3] = curNumPoints + ((word)dataSize << 8);
 								_registerBuffer[4] = (word)timeScale + ((word)curPage << 8);
+								// Zero out last buffer index for testing
+								_registerBuffer[BitFunctions::bitsToStructs<word, word>(curNumPoints * dataSize) + 4] = 0;
 								word bitsToCopy = curNumPoints * dataSize;
 								word bitStart = curPage * numPointsInPage * dataSize;
 								BitFunctions::copyBits<byte, word, word>(data, _registerBuffer, bitStart, 80, bitsToCopy);
 								completeModbusWriteRegisters(device->slaveId, 0,
-									5 + BitFunctions::bitsToBytes(curNumPoints * dataSize), _registerBuffer);
+									5 + BitFunctions::bitsToStructs<word, word>(curNumPoints * dataSize), _registerBuffer);
 							}
 							AWAIT(_completeModbusWriteRegisters);
 							ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 						}
 					}
-					else
+					else if ((regs[1] & 0xFF) > 4)
 					{
 						reportMalfunction(__LINE__);
 						return true;
