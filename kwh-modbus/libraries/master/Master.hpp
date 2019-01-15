@@ -183,6 +183,11 @@ protected_testable:
 		}
 		if (_modbus->getStatus() != TaskComplete)
 		{
+			Serial.println("task status");
+			Serial.println(_modbus->getStatus());
+			Serial.println("reg count");
+			Serial.println(regCount);
+			_modbus->reset();
 			RESULT_ASYNC(ModbusRequestStatus, taskFailure);
 		}
 		if (recipientId == 0)
@@ -383,13 +388,15 @@ protected_testable:
 							}
 						}
 					}
+					Serial.print("Slave ID ");
+					Serial.println(device->slaveId);
 					completeModbusWriteRegisters(device->slaveId, 0,
 						9 + (_deviceDirectory->getDeviceNameLength() - 1) / 2, _registerBuffer);
 					AWAIT(_completeModbusWriteRegisters);
 					Serial.print("This malfunction: ");
 					Serial.println(_completeModbusWriteRegisters.result());
 
-					//ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+					ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 					completeModbusReadRegisters(device->slaveId, 0, 2);
 					AWAIT(_completeModbusReadRegisters);
 					ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
@@ -473,6 +480,10 @@ protected_testable:
 		begin_read:
 		readStart = startTime;
 		numDataPoints = (endTime - startTime) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
+		Serial.print("start & end ");
+		Serial.print(startTime);
+		Serial.print(" ");
+		Serial.println(endTime);
 		curReadPage = 0;
 		numReadPagesRemaining = 1;
 
@@ -491,6 +502,8 @@ protected_testable:
 			_registerBuffer[6] = curReadPage + (word)((_dataBufferSize * 8 / dataSize) << 8);
 			completeModbusWriteRegisters(deviceRow->slaveId, 0, 7, _registerBuffer);
 			AWAIT(_completeModbusWriteRegisters);
+			Serial.print("503 malfunction: ");
+			Serial.println(_completeModbusWriteRegisters.result());
 			ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 			completeModbusReadRegisters(deviceRow->slaveId, 0, 6);
 			AWAIT(_completeModbusReadRegisters);
@@ -512,6 +525,15 @@ protected_testable:
 				Serial.println(numPointsInReadPage);
 				Serial.println(dataSize);
 				AWAIT(_completeModbusReadRegisters);
+				Serial.print("Other malfunction: ");
+				Serial.println(_completeModbusReadRegisters.result());
+				byte fcode;
+				byte excode;
+				_modbus->isExceptionResponse(fcode, excode);
+				Serial.print("fcode ");
+				Serial.print(fcode);
+				Serial.print(" excode ");
+				Serial.println(excode);
 				ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
 				_modbus->isReadRegsResponse(regCount, regs);
 
@@ -619,26 +641,30 @@ protected_testable:
 		return _transferPendingData;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, unsigned long, unsigned long, bool));
+	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, unsigned long, unsigned long, uint32_t, bool));
 	loop_Task _loop;
 	virtual ASYNC_CLASS_FUNC(THIS_T, loop)
 	{
 		ASYNC_VAR_INIT(0, lastActivityTime, 0);
 		ASYNC_VAR_INIT(1, lastSyncTime, 0);
 		ASYNC_VAR(2, curTime);
-		ASYNC_VAR(3, something);
+		ASYNC_VAR(3, curClock);
+		ASYNC_VAR(4, something);
 		START_ASYNC;
 		for (;;)
 		{
-			tick(_system->millis());
+			tick(_system->micros());
 			curTime = getCurTime();
+			curClock = getClock();
 			if (_timeUpdatePending)
 			{
 				_timeUpdatePending = false;
 				broadcastTime();
 			}
-			if (lastActivityTime == 0 || (curTime - lastActivityTime > 2000))
+			if (lastActivityTime == 0 || (curTime - lastActivityTime > 2000000))
 			{
+				Serial.println("CurClock");
+				Serial.println(curClock);
 				checkForNewSlaves();
 				AWAIT(_checkForNewSlaves);
 				something = (_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave);
@@ -654,13 +680,15 @@ protected_testable:
 				}
 				lastActivityTime = curTime;
 			}
-			if (lastSyncTime == 0 || (curTime - lastSyncTime > 5000))
+			if (lastSyncTime == 0)
 			{
-				Serial.println("Update");
-				Serial.println(curTime);
-				transferPendingData(TimeScale::sec1, curTime);
+				lastSyncTime = curClock;
+			}
+			else if (curClock - lastSyncTime > 5)
+			{
+				transferPendingData(TimeScale::sec1, curClock);
 				AWAIT(_transferPendingData);
-				lastSyncTime = curTime;
+				lastSyncTime = curClock;
 			}
 
 			YIELD_ASYNC;

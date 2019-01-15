@@ -151,9 +151,21 @@ public:
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
 		if (length != 4 && length != 6)
+		{
+			Serial.println("Not write regs bad length");
+			for (int i = 0; i < length; i++)
+				Serial.println(frame[i]);
+			Serial.println();
 			return false;
+		}
 		if (frame[1] != MB_FC_WRITE_REG)
+		{
+			Serial.println("Not write regs bad func");
+			for (int i = 0; i < length; i++)
+				Serial.println(frame[i]);
+			Serial.println();
 			return false;
+		}
 		return true;
 	}
 
@@ -163,9 +175,21 @@ public:
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
 		if (length < 4 || length % 2 != 0)
+		{
+			Serial.println("Not write regs bad length");
+			for (int i = 0; i < length; i++)
+				Serial.println(frame[i]);
+			Serial.println();
 			return false;
+		}
 		if (frame[1] != MB_FC_WRITE_REGS)
+		{
+			Serial.println("Not write regs bad func");
+			for (int i = 0; i < length; i++)
+				Serial.println(frame[i]);
+			Serial.println();
 			return false;
+		}
 		return true;
 	}
 

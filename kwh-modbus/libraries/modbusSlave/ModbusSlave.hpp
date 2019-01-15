@@ -24,6 +24,8 @@ private:
 	bool readRegisters(word startreg, word numregs) {
 		//Check value (numregs)
 		if (numregs < 0x0001 || numregs > 0x007D) {
+			Serial.print("numregs ");
+			Serial.println(numregs);
 			this->exceptionResponse(MB_FC_READ_REGS, MB_EX_ILLEGAL_VALUE);
 			return false;
 		}
@@ -183,11 +185,14 @@ public:
 			broadcast_out = true;
 		}
 		else if (address != this->getSlaveId()) {
+			Serial.print("Not for me ");
+			Serial.println(address);
 			return false;
 		}
 
 		//CRC Check
 		if (crc != this->calcCrc(frame[0], frame + 1, length - 3)) {
+			Serial.println("bad CRC");
 			return false;
 		}
 
@@ -197,6 +202,7 @@ public:
 		this->receivePDU(frame + 1);
 		//No reply to Broadcasts
 		if (address == 0xFF) this->_reply = MB_REPLY_OFF;
+		Serial.print("success ");
 		return true;
 	}
 
