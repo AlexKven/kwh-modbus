@@ -130,6 +130,9 @@
     <ClInclude Include="libraries\bitFunctions\BitFunctions.hpp">
       <Filter>libraries\bitFunctions</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\arduinoDebugger\arduinoDebugger.hpp">
+      <Filter>libraries\arduinoDebugger</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -203,6 +206,9 @@
     </Filter>
     <Filter Include="libraries\deviceDirectoryRow">
       <UniqueIdentifier>{51098368-c398-4355-ae02-273a94fb7c38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\arduinoDebugger">
+      <UniqueIdentifier>{b52872c0-2d30-44ce-916b-0f5db45565c9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

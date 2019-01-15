@@ -83,6 +83,7 @@
     <ClInclude Include="interfaces\ISystemFunctions.h" />
     <ClInclude Include="libraries\arduinoClasses\ArduinoSerial.h" />
     <ClInclude Include="libraries\arduinoClasses\ArduinoSystem.h" />
+    <ClInclude Include="libraries\arduinoDebugger\arduinoDebugger.hpp" />
     <ClInclude Include="libraries\asyncAwait\AsyncAwait.hpp" />
     <ClInclude Include="libraries\bitFunctions\BitFunctions.hpp" />
     <ClInclude Include="libraries\communicator\SystemParameters.h" />
