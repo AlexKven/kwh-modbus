@@ -605,6 +605,19 @@ protected_testable:
 		while (deviceIndex != -1)
 		{
 			deviceRow = _deviceDirectory->findNextDevice(deviceName, deviceIndex);
+			if (deviceRow == nullptr)
+			{
+				Serial.println("No more devices.");
+			}
+			else
+			{
+				Serial.print("Device slave: ");
+				Serial.print(deviceRow->slaveId);
+				Serial.print(" Device number: ");
+				Serial.print(deviceRow->deviceNumber);
+				Serial.print(" Device type: ");
+				Serial.println(deviceRow->deviceType);
+			}
 			if (deviceRow != nullptr)
 			{
 				if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(deviceRow->deviceType, accumulateData, timeScale, dataSize))
@@ -686,6 +699,8 @@ protected_testable:
 			}
 			else if (curClock - lastSyncTime > 5)
 			{
+				Serial.println("Sync at clock");
+				Serial.println(curClock);
 				transferPendingData(TimeScale::sec1, curClock);
 				AWAIT(_transferPendingData);
 				lastSyncTime = curClock;

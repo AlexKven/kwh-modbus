@@ -90,15 +90,17 @@ class DestinationDevice : public Device
    {
     for (int i = 0; i <dataPointsInPage; i++)
     {
+      Serial.println();
       Serial.print("Time: ");
       Serial.print(pageNumber * 10 + i);
       Serial.print(" Data value: ");
+      Serial.println(dataPoints[i]);
     }
     return RecieveDataStatus::success;
    }
 };
 
-word *registers = new word[40];
+word *registers = new word[60];
 typedef ModbusSlave<SoftwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
 typedef Slave<ModbusSlave<SoftwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions> T_Slave;
 T_Modbus modbus;
@@ -110,7 +112,7 @@ ArduinoFunctions functions;
 int interval = 0;
 
 void setup() {
-  for (int i = 0; i < 40; i++)
+  for (int i = 0; i < 60; i++)
   {
     registers[i] = 0;
   }
@@ -120,7 +122,7 @@ void setup() {
   
   modbus.config(&mySerial, &functions, 9600, 4);
   Serial.println("Slave initialized");
-  modbus.init(registers, 0, 40, 30);
+  modbus.init(registers, 0, 60, 80);
   modbus.setSlaveId(1);
   slave.config(&functions, &modbus);
   
@@ -132,18 +134,18 @@ void setup() {
   names[0] = (byte*)"device00";
   names[1] = (byte*)"device01";
 
-  slave.init(2, 8, 20, 20, devices, names);
+  slave.init(2, 8, 15, 20, devices, names);
 }
 
 void loop() {
 //  // put your main code here, to run repeatedly:
 //  Serial.println(Serial1.available());12
 
-//  Serial.println("");
-//  Serial.println("");
-//  Serial.println("");
-//  Serial.print("Slave ID: ");
-//  Serial.println(slave.getSlaveId());
+  Serial.println("");
+  Serial.println("");
+  Serial.println("");
+  Serial.print("Slave ID: ");
+  Serial.println(slave.getSlaveId());
 
 for (int i = 0; i < 1000; i++)
 {

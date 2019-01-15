@@ -65,8 +65,9 @@ void setup() {
   Serial.println("Starting...");
 
   modbus.config(&Serial1, &functions, 9600, 4);
-  modbus.init(registers, 0, 50, 50);
-  modbus.setMaxTimePerTryMicros(50000);
+  modbus.init(registers, 0, 50, 80);
+  modbus.setMinTimePerTryMicros(100000);
+  modbus.setMaxTimePerTryMicros(200000);
   modbus.setMaxTries(15);
   directory.init(8, 20);
   master.config(&functions, &modbus, &directory, 40);

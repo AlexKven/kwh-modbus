@@ -136,12 +136,20 @@ public:
 		broadcast_out = false;
 		processed_out = false;
 
+		Serial.println("Begin processing modbus data.");
+
 		word length = awaitIncomingSerial();
 		if (length == 0)
+		{
+			Serial.println("Length is 0.");
 			return false;
+		}
 
 		if (!this->resetFrame(length))
+		{
+			Serial.println("Can't reset frame.");
 			return false;
+		}
 		readToFrame();
 
 		if (this->readInputFrame(broadcast_out))
