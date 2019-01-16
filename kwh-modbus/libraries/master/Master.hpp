@@ -62,8 +62,8 @@ private_testable:
 protected_testable:
 	virtual void reportMalfunction(int line)
 	{
-		Serial.print("Malfunction line ");
-		Serial.println(line);
+		//Serial.print("Malfunction line ");
+		//Serial.println(line);
 	}
 
 	virtual uint32_t getPollPeriodForTimeScale(TimeScale timeScale)
