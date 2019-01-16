@@ -151,9 +151,13 @@ public:
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
 		if (length != 4 && length != 6)
+		{
 			return false;
+		}
 		if (frame[1] != MB_FC_WRITE_REG)
+		{
 			return false;
+		}
 		return true;
 	}
 
@@ -163,9 +167,13 @@ public:
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
 		if (length < 4 || length % 2 != 0)
+		{
 			return false;
+		}
 		if (frame[1] != MB_FC_WRITE_REGS)
+		{
 			return false;
+		}
 		return true;
 	}
 

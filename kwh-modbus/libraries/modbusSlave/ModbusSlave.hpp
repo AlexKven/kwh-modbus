@@ -136,10 +136,14 @@ public:
 
 		word length = awaitIncomingSerial();
 		if (length == 0)
+		{
 			return false;
+		}
 
 		if (!this->resetFrame(length))
+		{
 			return false;
+		}
 		readToFrame();
 
 		if (this->readInputFrame(broadcast_out))

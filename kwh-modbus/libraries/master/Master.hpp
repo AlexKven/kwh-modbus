@@ -62,7 +62,8 @@ private_testable:
 protected_testable:
 	virtual void reportMalfunction(int line)
 	{
-
+		Serial.print("Malfunction line ");
+		Serial.println(line);
 	}
 
 	virtual uint32_t getPollPeriodForTimeScale(TimeScale timeScale)
@@ -182,6 +183,7 @@ protected_testable:
 		}
 		if (_modbus->getStatus() != TaskComplete)
 		{
+			_modbus->reset();
 			RESULT_ASYNC(ModbusRequestStatus, taskFailure);
 		}
 		if (recipientId == 0)
@@ -381,6 +383,7 @@ protected_testable:
 					completeModbusWriteRegisters(device->slaveId, 0,
 						9 + (_deviceDirectory->getDeviceNameLength() - 1) / 2, _registerBuffer);
 					AWAIT(_completeModbusWriteRegisters);
+
 					ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 					completeModbusReadRegisters(device->slaveId, 0, 2);
 					AWAIT(_completeModbusReadRegisters);
@@ -495,6 +498,9 @@ protected_testable:
 				completeModbusReadRegisters(deviceRow->slaveId, 6,
 					BitFunctions::bitsToStructs<word, word>(numPointsInReadPage * dataSize));
 				AWAIT(_completeModbusReadRegisters);
+				byte fcode;
+				byte excode;
+				_modbus->isExceptionResponse(fcode, excode);
 				ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
 				_modbus->isReadRegsResponse(regCount, regs);
 
@@ -546,7 +552,6 @@ protected_testable:
 		byte *deviceName, uint32_t startTime, uint32_t endTime)
 	{
 		_readAndSendDeviceData = readAndSendDeviceData_Task(&THIS_T::readAndSendDeviceData, this, deviceRow, deviceNameLength, deviceName, startTime, endTime);
-		//CREATE_ASSIGN_CLASS_TASK(_readAndSendDeviceData, THIS_T, this, readAndSendDeviceData, deviceRow, deviceNameLength, deviceName, startTime, endTime);
 		return _readAndSendDeviceData;
 	}
 
@@ -593,24 +598,33 @@ protected_testable:
 		RETURN_ASYNC;
 		END_ASYNC;
 	}
+	transferPendingData_Task& transferPendingData(TimeScale maxTimeScale, uint32_t currentTime)
+	{
+		_transferPendingData = transferPendingData_Task(&THIS_T::transferPendingData, this, maxTimeScale, currentTime);
+		return _transferPendingData;
+	}
 
-	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, bool));
+	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, unsigned long, unsigned long, uint32_t, bool));
 	loop_Task _loop;
 	virtual ASYNC_CLASS_FUNC(THIS_T, loop)
 	{
-		tick(_system->millis());
-
 		ASYNC_VAR_INIT(0, lastActivityTime, 0);
-		ASYNC_VAR(1, something);
+		ASYNC_VAR_INIT(1, lastSyncTime, 0);
+		ASYNC_VAR(2, curTime);
+		ASYNC_VAR(3, curClock);
+		ASYNC_VAR(4, something);
 		START_ASYNC;
 		for (;;)
 		{
+			tick(_system->micros());
+			curTime = getCurTime();
+			curClock = getClock();
 			if (_timeUpdatePending)
 			{
 				_timeUpdatePending = false;
 				broadcastTime();
 			}
-			if (lastActivityTime == 0 || (getCurTime() - lastActivityTime > 2000))
+			if (lastActivityTime == 0 || (curTime - lastActivityTime > 2000000))
 			{
 				checkForNewSlaves();
 				AWAIT(_checkForNewSlaves);
@@ -623,8 +637,19 @@ protected_testable:
 					AWAIT(_checkForNewSlaves);
 					something = (_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave);
 				}
-				lastActivityTime = getCurTime();
+				lastActivityTime = curTime;
 			}
+			if (lastSyncTime == 0)
+			{
+				lastSyncTime = curClock;
+			}
+			else if (curClock - lastSyncTime > 5)
+			{
+				transferPendingData(TimeScale::sec1, curClock);
+				AWAIT(_transferPendingData);
+				lastSyncTime = curClock;
+			}
+
 			YIELD_ASYNC;
 		}
 		END_ASYNC;
