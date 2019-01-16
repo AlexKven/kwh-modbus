@@ -92,7 +92,7 @@ class DestinationDevice : public Device
     {
       Serial.println();
       Serial.print("Time: ");
-      Serial.print(pageNumber * 10 + i);
+      Serial.print(pageNumber * 10 + i + curStart);
       Serial.print(" Data value: ");
       Serial.println(dataPoints[i]);
     }
@@ -140,12 +140,6 @@ void setup() {
 void loop() {
 //  // put your main code here, to run repeatedly:
 //  Serial.println(Serial1.available());12
-
-  Serial.println("");
-  Serial.println("");
-  Serial.println("");
-  Serial.print("Slave ID: ");
-  Serial.println(slave.getSlaveId());
 
 for (int i = 0; i < 1000; i++)
 {

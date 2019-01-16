@@ -183,10 +183,6 @@ protected_testable:
 		}
 		if (_modbus->getStatus() != TaskComplete)
 		{
-			Serial.println("task status");
-			Serial.println(_modbus->getStatus());
-			Serial.println("reg count");
-			Serial.println(regCount);
 			_modbus->reset();
 			RESULT_ASYNC(ModbusRequestStatus, taskFailure);
 		}
@@ -357,10 +353,6 @@ protected_testable:
 			{
 				if (DataTransmitterDevice::isDataTransmitterDeviceType(device->deviceType))
 				{
-					Serial.print("Send to device ");
-					for (int i = 0; i < _deviceDirectory->getDeviceNameLength(); i++)
-						Serial.write(dummyName[i]);
-					Serial.println();
 				begin_write:
 					_registerBuffer[0] = 1;
 					_registerBuffer[1] = 4;
@@ -388,13 +380,9 @@ protected_testable:
 							}
 						}
 					}
-					Serial.print("Slave ID ");
-					Serial.println(device->slaveId);
 					completeModbusWriteRegisters(device->slaveId, 0,
 						9 + (_deviceDirectory->getDeviceNameLength() - 1) / 2, _registerBuffer);
 					AWAIT(_completeModbusWriteRegisters);
-					Serial.print("This malfunction: ");
-					Serial.println(_completeModbusWriteRegisters.result());
 
 					ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 					completeModbusReadRegisters(device->slaveId, 0, 2);
@@ -471,24 +459,13 @@ protected_testable:
 	word regCount;
 	word *regs;
 	START_ASYNC;
-	Serial.print("Update device ");
-	for (int i = 0; i < deviceNameLength; i++)
-		Serial.write(deviceName[i]);
-	Serial.println();
 	if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(deviceRow->deviceType, accumulateData, timeScale, dataSize))
 	{
 		begin_read:
 		readStart = startTime;
 		numDataPoints = (endTime - startTime) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
-		Serial.print("start & end ");
-		Serial.print(startTime);
-		Serial.print(" ");
-		Serial.println(endTime);
 		curReadPage = 0;
 		numReadPagesRemaining = 1;
-
-		Serial.print("numDataPoints: ");
-		Serial.println(numDataPoints);
 
 		while (numReadPagesRemaining > 0)
 		{
@@ -502,8 +479,6 @@ protected_testable:
 			_registerBuffer[6] = curReadPage + (word)((_dataBufferSize * 8 / dataSize) << 8);
 			completeModbusWriteRegisters(deviceRow->slaveId, 0, 7, _registerBuffer);
 			AWAIT(_completeModbusWriteRegisters);
-			Serial.print("503 malfunction: ");
-			Serial.println(_completeModbusWriteRegisters.result());
 			ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 			completeModbusReadRegisters(deviceRow->slaveId, 0, 6);
 			AWAIT(_completeModbusReadRegisters);
@@ -522,18 +497,10 @@ protected_testable:
 
 				completeModbusReadRegisters(deviceRow->slaveId, 6,
 					BitFunctions::bitsToStructs<word, word>(numPointsInReadPage * dataSize));
-				Serial.println(numPointsInReadPage);
-				Serial.println(dataSize);
 				AWAIT(_completeModbusReadRegisters);
-				Serial.print("Other malfunction: ");
-				Serial.println(_completeModbusReadRegisters.result());
 				byte fcode;
 				byte excode;
 				_modbus->isExceptionResponse(fcode, excode);
-				Serial.print("fcode ");
-				Serial.print(fcode);
-				Serial.print(" excode ");
-				Serial.println(excode);
 				ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
 				_modbus->isReadRegsResponse(regCount, regs);
 
@@ -605,19 +572,6 @@ protected_testable:
 		while (deviceIndex != -1)
 		{
 			deviceRow = _deviceDirectory->findNextDevice(deviceName, deviceIndex);
-			if (deviceRow == nullptr)
-			{
-				Serial.println("No more devices.");
-			}
-			else
-			{
-				Serial.print("Device slave: ");
-				Serial.print(deviceRow->slaveId);
-				Serial.print(" Device number: ");
-				Serial.print(deviceRow->deviceNumber);
-				Serial.print(" Device type: ");
-				Serial.println(deviceRow->deviceType);
-			}
 			if (deviceRow != nullptr)
 			{
 				if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(deviceRow->deviceType, accumulateData, timeScale, dataSize))
@@ -626,10 +580,6 @@ protected_testable:
 					{
 						{
 							readStart = lastUpdateTimes[(int)timeScale];
-							Serial.print("readStart ");
-							Serial.println(readStart);
-							Serial.print("currentTime ");
-							Serial.println(currentTime);
 							word numDataPoints = (currentTime - readStart) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
 							readAndSendDeviceData(deviceRow, _deviceDirectory->getDeviceNameLength(), deviceName,
 								readStart, currentTime);
@@ -676,15 +626,11 @@ protected_testable:
 			}
 			if (lastActivityTime == 0 || (curTime - lastActivityTime > 2000000))
 			{
-				Serial.println("CurClock");
-				Serial.println(curClock);
 				checkForNewSlaves();
 				AWAIT(_checkForNewSlaves);
 				something = (_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave);
 				while (something)
 				{
-					Serial.println("Slave found");
-					Serial.println(_system->millis());
 					processNewSlave(_checkForNewSlaves.result() == badSlave);
 					AWAIT(_processNewSlave);
 					checkForNewSlaves();
@@ -699,8 +645,6 @@ protected_testable:
 			}
 			else if (curClock - lastSyncTime > 5)
 			{
-				Serial.println("Sync at clock");
-				Serial.println(curClock);
 				transferPendingData(TimeScale::sec1, curClock);
 				AWAIT(_transferPendingData);
 				lastSyncTime = curClock;

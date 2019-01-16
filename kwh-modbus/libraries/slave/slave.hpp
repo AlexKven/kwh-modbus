@@ -166,8 +166,6 @@ private_testable:
 			case 1:
 				_state = sIdle;
 				_modbus->setSlaveId((byte)_modbus->Hreg(2));
-				Serial.print("Slave ID is now ");
-				Serial.println(_modbus->getSlaveId());
 				displayedStateInvalid = true;
 				break;
 			case 2:
