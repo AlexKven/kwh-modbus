@@ -16,7 +16,7 @@
 #include "../bitFunctions/BitFunctions.hpp"
 
 #define ENSURE(statement) if (!(statement)) return false
-#define ENSURE_NONMALFUNCTION(modbus_task) if (modbus_task.result() != success) \
+#define ENSURE_NONMALFUNCTION(modbus_task) if (modbus_task.result() != success && modbus_task.result() != noResponse) \
 { \
 	reportMalfunction(__LINE__); \
 	return true; \
@@ -37,7 +37,8 @@ enum ModbusRequestStatus : byte
 	taskFailure = 2,
 	exceptionResponse = 3,
 	incorrectResponseSize = 4,
-	otherResponse = 5
+	otherResponse = 5,
+	noResponse = 6
 };
 
 template<class M, class S, class D>
@@ -120,7 +121,11 @@ protected_testable:
 		{
 			YIELD_ASYNC;
 		}
-		if (_modbus->getStatus() != TaskComplete)
+		if (_modbus->getStatus() == TaskFullyAttempted)
+		{
+			RESULT_ASYNC(ModbusRequestStatus, noResponse);
+		}
+		else if (_modbus->getStatus() != TaskComplete)
 		{
 			RESULT_ASYNC(ModbusRequestStatus, taskFailure);
 		}
@@ -181,7 +186,11 @@ protected_testable:
 		{
 			YIELD_ASYNC;
 		}
-		if (_modbus->getStatus() != TaskComplete)
+		if (_modbus->getStatus() == TaskFullyAttempted)
+		{
+			RESULT_ASYNC(ModbusRequestStatus, noResponse);
+		}
+		else if (_modbus->getStatus() != TaskComplete)
 		{
 			_modbus->reset();
 			RESULT_ASYNC(ModbusRequestStatus, taskFailure);
