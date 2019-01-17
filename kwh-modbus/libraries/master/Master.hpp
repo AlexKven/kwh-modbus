@@ -481,6 +481,8 @@ protected_testable:
 	word regCount;
 	word *regs;
 	START_ASYNC;
+	if (startTime == endTime)
+		RETURN_ASYNC;
 	if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(deviceRow->deviceType, accumulateData, timeScale, dataSize))
 	{
 		begin_read:
@@ -526,6 +528,9 @@ protected_testable:
 				numPointsInReadPage = (byte)regs[4];
 				curReadPage = (byte)regs[5];
 				numReadPagesRemaining = (byte)(regs[5] >> 8);
+
+				if (numPointsInReadPage == 0)
+					RETURN_ASYNC;
 
 				completeModbusReadRegisters(deviceRow->slaveId, 6,
 					BitFunctions::bitsToStructs<word, word>(numPointsInReadPage * dataSize));

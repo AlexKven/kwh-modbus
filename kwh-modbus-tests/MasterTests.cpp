@@ -1535,6 +1535,101 @@ TEST_F_TRAITS(MasterTests, readAndSendDeviceData_Alert_DeviceNotResponding,
 	Verify(Method(deviceNameSentToSlaves, method).Using("Meter 001")).Once();
 }
 
+TEST_F_TRAITS(MasterTests, readAndSendDeviceData_DoNothing_ZeroTimeSpan,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Rare)
+{
+	// Arrange
+	MOCK_MODBUS;
+	MockNewMethod(deviceNameSentToSlaves, string name);
+
+	Mock<IMockedTask<void, uint32_t, byte, TimeScale, word, byte*, byte*>> sendDataToSlavesMock;
+	T_MASTER::sendDataToSlaves_Task::mock = &sendDataToSlavesMock.get();
+	When(Method(sendDataToSlavesMock, func)).AlwaysDo([&deviceNameSentToSlaves](uint32_t startTime,
+		byte dataSize, TimeScale timeScale, word numDataPoints, byte* name, byte* data)
+	{
+		deviceNameSentToSlaves.get().method(stringifyCharArray(9, (char*)name));
+		return true;
+	});
+	Fake(Method(sendDataToSlavesMock, result));
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
+	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
+	When(Method(completeReadRegsMock, func)).AlwaysReturn(true);
+	When(Method(completeReadRegsMock, result)).AlwaysReturn(noResponse);
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
+	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
+	RegsQueue writtenRegs;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, writtenRegs);
+	When(Method(completeWriteRegsMock, result)).AlwaysReturn(noResponse);
+
+	RegsQueue readRegs;
+	readRegs.push(REGS(6, 3, 0, 15000, 0, 8, 0));
+	readRegs.push(REGS(4, 0x4182, 0xB0E1, 0x4468, 0x26));
+	isRegsResponse_UseMockData(modbusBaseMock, readRegs);
+	master->setClock(5);
+
+	// Act
+	DeviceDirectoryRow inputDeviceRow = DeviceDirectoryRow(5, 3, DataCollectorDeviceType(true, TimeScale::min10, 7), 14);
+	auto name = (byte*)"Meter 001";
+	T_MASTER::readAndSendDeviceData_Task task(&T_MASTER::readAndSendDeviceData, master, &inputDeviceRow, 9, name, 15000, 15000);
+	ASSERT_TRUE(task());
+
+	// Assert
+	Verify(Method(completeWriteRegsMock, func)).Never();
+	Verify(Method(sendDataToSlavesMock, func)).Never();
+	Verify(Method(deviceNameSentToSlaves, method)).Never();
+}
+
+TEST_F_TRAITS(MasterTests, readAndSendDeviceData_DoNothing_ZeroPoints,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
+{
+	// Arrange
+	MOCK_MODBUS;
+	MockNewMethod(deviceNameSentToSlaves, string name);
+	MockNewMethod(dataByteSentToSlaves, byte data);
+
+	Mock<IMockedTask<void, uint32_t, byte, TimeScale, word, byte*, byte*>> sendDataToSlavesMock;
+	T_MASTER::sendDataToSlaves_Task::mock = &sendDataToSlavesMock.get();
+	When(Method(sendDataToSlavesMock, func)).AlwaysDo([&deviceNameSentToSlaves, &dataByteSentToSlaves](uint32_t startTime,
+		byte dataSize, TimeScale timeScale, word numDataPoints, byte* name, byte* data)
+	{
+		deviceNameSentToSlaves.get().method(stringifyCharArray(9, (char*)name));
+		for (int i = 0; i < 8; i++)
+			dataByteSentToSlaves.get().method(data[i]);
+		return true;
+	});
+	Fake(Method(sendDataToSlavesMock, result));
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
+	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
+	When(Method(completeReadRegsMock, func)).AlwaysReturn(true);
+	When(Method(completeReadRegsMock, result)).AlwaysReturn(success);
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
+	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
+	RegsQueue writtenRegs;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, writtenRegs);
+	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
+
+	RegsQueue readRegs;
+	readRegs.push(REGS(6, 3, 0, 15000, 0, 0, 0));
+	isRegsResponse_UseMockData(modbusBaseMock, readRegs);
+
+	// Act
+	DeviceDirectoryRow inputDeviceRow = DeviceDirectoryRow(5, 3, DataCollectorDeviceType(true, TimeScale::min10, 7), 14);
+	auto name = (byte*)"Meter 001";
+	T_MASTER::readAndSendDeviceData_Task task(&T_MASTER::readAndSendDeviceData, master, &inputDeviceRow, 9, name, 15000, 20000);
+	ASSERT_TRUE(task());
+
+	// Assert
+	assertPopRegsQueue(writtenRegs, REGS(7, 1, 3, 3, 15000, 0, 8, 11 << 8));
+	Verify(Method(completeWriteRegsMock, func).Using(5, 0, 7, Any<word*>())).Once();
+	Verify(Method(sendDataToSlavesMock, func)).Never();
+	Verify(Method(deviceNameSentToSlaves, method)).Never();
+	Verify(Method(dataByteSentToSlaves, method)).Never();
+}
+
 TEST_F_TRAITS(MasterTests, sendDataToSlaves_Success_OnePageEach,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
