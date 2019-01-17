@@ -205,9 +205,17 @@ private_testable:
 							curReg >>= 8;
 						_dataBuffer[i] = (byte)(curReg & 0xFF);
 					}
-					byte dataPointsPerPage = 0;
-					status = device->prepareReceiveData(nameLength, _dataBuffer, startTime, dataPointSize, dataTimeScale, dataPointsCount, dataPointsPerPage);
-					_stateDetail = (word)status + ((word)dataPointsPerPage << 8);
+					if (dataPointsCount > 0)
+					{
+						byte dataPointsPerPage = 0;
+						status = device->prepareReceiveData(nameLength, _dataBuffer, startTime, dataPointSize, dataTimeScale, dataPointsCount, dataPointsPerPage);
+						_stateDetail = (word)status + ((word)dataPointsPerPage << 8);
+					}
+					else
+					{
+						device->deviceNotResponding(nameLength, _dataBuffer, startTime);
+						_stateDetail = 0;
+					}
 				}
 				displayedStateInvalid = true;
 			}

@@ -643,6 +643,59 @@ TEST_F_TRAITS(SlaveTests, SlaveTests_processIncomingState_PrepareWriteData_other
 	ASSERT_EQ(mSlave._stateDetail, 4);
 }
 
+TEST_F_TRAITS(SlaveTests, SlaveTests_processIncomingState_PrepareWriteData_reportDeviceNotResponding,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
+{
+	MOCK_SLAVE;
+	MockNewMethod(deviceNotResponding, word nameLength, uint32_t startTime);
+	Mock<Device> mDevice0;
+	Mock<Device> mDevice1;
+	Device **deviceArray = new Device*[2];
+	deviceArray[0] = &mDevice0.get();
+	deviceArray[1] = &mDevice1.get();
+	string actualName;
+
+	When(Method(mDevice1, deviceNotResponding)).Do([&actualName, &deviceNotResponding](word nameLength, byte* name, uint32_t reportedTime)
+	{
+		deviceNotResponding.get().method(nameLength, reportedTime);
+		actualName = stringifyCharArray(nameLength, (char*)name);
+	});
+
+	mSlave.displayedStateInvalid = false;
+
+	mSlave._state = sIdle;
+	mSlave._deviceCount = 2;
+	mSlave._deviceNameLength = 703;
+	mSlave._modbus->setSlaveId(14);
+	mSlave._devices = deviceArray;
+	mSlave._dataBuffer = new byte[15];
+	mSlave._dataBufferSize = 15;
+
+	registerArray[0] = sReceivedRequest;
+	registerArray[1] = 4;
+	registerArray[2] = 1;
+	registerArray[3] = 7;
+	registerArray[4] = 50;
+	registerArray[5] = 4;
+	registerArray[6] = 0;
+	registerArray[7] = 0;
+	registerArray[8] = (word)'D' + ((word)'e' << 8);
+	registerArray[9] = (word)'v' + ((word)'i' << 8);
+	registerArray[10] = (word)'c' + ((word)'e' << 8);
+	registerArray[11] = (word)'0';
+
+	bool processed;
+	bool success = mSlave.processIncomingState(processed);
+
+	ASSERT_TRUE(processed);
+	ASSERT_TRUE(success);
+	Verify(Method(deviceNotResponding, method).Using(7, 262194)).Once();
+	ASSERT_EQ(actualName, "Device0");
+	ASSERT_EQ(mSlave.displayedStateInvalid, true);
+	ASSERT_EQ(mSlave._state, sPreparingToReceiveDevData);
+	ASSERT_EQ(mSlave._stateDetail, 0);
+}
+
 TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_PrepareWriteData,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {

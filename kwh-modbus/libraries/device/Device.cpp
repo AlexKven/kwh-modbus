@@ -18,3 +18,7 @@ RecieveDataStatus Device::receiveDeviceData(byte dataPointsInPage, byte dataPoin
 {
 	return RecieveDataStatus::notSupported;
 }
+
+void Device::deviceNotResponding(word nameLength, byte * name, uint32_t reportTime)
+{
+}

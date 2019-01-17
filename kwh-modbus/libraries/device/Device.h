@@ -28,4 +28,5 @@ public:
 		byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount, byte &outDataPointsPerPage);
 	virtual RecieveDataStatus receiveDeviceData(byte dataPointsInPage, byte dataPointSize,
 		TimeScale timesScale, byte pageNumber, byte* dataPoints);
+	virtual void deviceNotResponding(word nameLength, byte* name, uint32_t reportTime);
 };

@@ -1774,3 +1774,42 @@ TEST_F_TRAITS(MasterTests, sendDataToSlaves_Failure_OnePageEach_Malfunction,
 	assertPopRegsQueue(writtenRegs, withString(REGS(8, 1, 4, 1, 7, 0x5678, 0x1234, 5 + (6 << 8), 8), "Meter01"));
 	Verify(Method(completeWriteRegsMock, func).Using(5, 0, 12, Any<word*>())).Once();
 }
+
+TEST_F_TRAITS(MasterTests, sendDataToSlaves_Success_ReportDeviceNotResponding,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
+{
+	// Arrange
+	MOCK_MODBUS;
+	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
+	auto devices = Setup_DataCollectorsAndTransmitters();
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
+	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
+	When(Method(completeReadRegsMock, func)).AlwaysReturn(true);
+	When(Method(completeReadRegsMock, result)).AlwaysReturn(success);
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
+	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
+	RegsQueue writtenRegs;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, writtenRegs);
+	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
+
+	RegsQueue readRegs;
+	readRegs.push(REGS(2, 4, 0));
+	readRegs.push(REGS(2, 4, 0));
+	isRegsResponse_UseMockData(modbusBaseMock, readRegs);
+
+	// Act
+	auto name = (byte*)"Meter01";
+	byte* data = nullptr;
+	T_MASTER::sendDataToSlaves_Task task(&T_MASTER::sendDataToSlaves, master, 0x12345678, 0, TimeScale::ms250, 0, name, data);
+	ASSERT_TRUE(task());
+
+	// Assert
+	assertPopRegsQueue(writtenRegs, withString(REGS(8, 1, 4, 1, 7, 0x5678, 0x1234, 0, 0), "Meter01"));
+	assertPopRegsQueue(writtenRegs, withString(REGS(8, 1, 4, 2, 7, 0x5678, 0x1234, 0, 0), "Meter01"));
+	Verify(Method(completeWriteRegsMock, func).Using(5, 0, 12, Any<word*>()) +
+		Method(completeWriteRegsMock, result) +
+		Method(completeWriteRegsMock, func).Using(6, 0, 12, Any<word*>()) +
+		Method(completeWriteRegsMock, result)).Once();
+}

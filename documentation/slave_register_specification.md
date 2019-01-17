@@ -106,6 +106,7 @@ Here is a listing of each request type:
     * 3.5: Data point timescale (8 bits)
     * 4: Data points count
     * 5 to end: Name
+  * If the number of data points is 0, then a non-responsive device is being reported.  The slave shall respond with a state of 0.
 * 5: Write data
   * This is to send actual data to the receiving slave.
   * You must call `4: Prepare to write data` before calling `5: Write data`.
