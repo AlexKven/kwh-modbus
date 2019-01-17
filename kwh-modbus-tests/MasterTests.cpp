@@ -304,7 +304,7 @@ TEST_F_TRAITS(MasterTests, completeModbusReadRegisters_TaskFailure,
 	T_MASTER::completeModbusReadRegisters_Task task(&T_MASTER::completeModbusReadRegisters, master, 2, 3, 5);
 	ASSERT_TRUE(task());
 
-	ASSERT_EQ(task.result(), TaskFailure);
+	ASSERT_EQ(task.result(), taskFailure);
 	Verify(OverloadedMethod(modbusTaskMock, work, bool())).Once();
 	Verify(Method(modbusBaseMock, setRequest_ReadRegisters).Using(2, 3, 5)).Once();
 }
@@ -466,7 +466,7 @@ TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_single_TaskFailure,
 	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 1, &val);
 	ASSERT_TRUE(task());
 
-	ASSERT_EQ(task.result(), TaskFailure);
+	ASSERT_EQ(task.result(), taskFailure);
 	Verify(OverloadedMethod(modbusTaskMock, work, bool())).Once();
 	Verify(Method(modbusBaseMock, setRequest_WriteRegister).Using(2, 3, 6)).Once();
 }
@@ -613,7 +613,7 @@ TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_multiple_TaskFailure,
 	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 3, (word*)vals);
 	ASSERT_TRUE(task());
 
-	ASSERT_EQ(task.result(), TaskFailure);
+	ASSERT_EQ(task.result(), taskFailure);
 	Verify(OverloadedMethod(modbusTaskMock, work, bool())).Once();
 	Verify(Method(modbusBaseMock, setRequest_WriteRegisters).Using(2, 3, 3, (word*)vals)).Once();
 }
