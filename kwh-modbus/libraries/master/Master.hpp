@@ -451,7 +451,7 @@ protected_testable:
 		return _sendDataToSlaves;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, readAndSendDeviceData, void, VARS(bool, TimeScale, byte, uint32_t, word, byte, byte, byte),
+	DEFINE_CLASS_TASK(THIS_T, readAndSendDeviceData, void, VARS(bool, TimeScale, byte, uint32_t, word, byte, byte, byte, bool),
 		DeviceDirectoryRow*, word, byte*, uint32_t, uint32_t);
 	readAndSendDeviceData_Task _readAndSendDeviceData;
 	virtual ASYNC_CLASS_FUNC(THIS_T, readAndSendDeviceData, DeviceDirectoryRow* deviceRow, word deviceNameLength,
@@ -465,6 +465,7 @@ protected_testable:
 	ASYNC_VAR(5, numReadPagesRemaining);
 	ASYNC_VAR(6, curReadPage);
 	ASYNC_VAR(7, numPointsInReadPage);
+	ASYNC_VAR_INIT(8, notResponding, false);
 	word regCount;
 	word *regs;
 	START_ASYNC;
@@ -489,9 +490,19 @@ protected_testable:
 			completeModbusWriteRegisters(deviceRow->slaveId, 0, 7, _registerBuffer);
 			AWAIT(_completeModbusWriteRegisters);
 			ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+			if (_completeModbusWriteRegisters.result() == noResponse)
+			{
+				notResponding = true;
+				goto not_responding;
+			}
 			completeModbusReadRegisters(deviceRow->slaveId, 0, 6);
 			AWAIT(_completeModbusReadRegisters);
 			ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
+			if (_completeModbusReadRegisters.result() == noResponse)
+			{
+				notResponding = true;
+				goto not_responding;
+			}
 			_modbus->isReadRegsResponse(regCount, regs);
 			if (regs[0] != 3)
 			{
@@ -507,12 +518,13 @@ protected_testable:
 				completeModbusReadRegisters(deviceRow->slaveId, 6,
 					BitFunctions::bitsToStructs<word, word>(numPointsInReadPage * dataSize));
 				AWAIT(_completeModbusReadRegisters);
-				byte fcode;
-				byte excode;
-				_modbus->isExceptionResponse(fcode, excode);
 				ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
+				if (_completeModbusReadRegisters.result() == noResponse)
+				{
+					notResponding = true;
+					goto not_responding;
+				}
 				_modbus->isReadRegsResponse(regCount, regs);
-
 				{
 					word numDataBytes = BitFunctions::bitsToBytes(numPointsInReadPage * dataSize);
 					if (numDataBytes > _dataBufferSize)
@@ -545,12 +557,21 @@ protected_testable:
 			else if (regs[1] == 2)
 			{
 				// We were mistaken; move on to other senders
+				return true;
 			}
 			else
 			{
 				// wtf
 				reportMalfunction(__LINE__);
 				return true;
+			}
+			not_responding:
+			if (notResponding)
+			{
+				// Used to indicate that the device is not responding
+				sendDataToSlaves(getClock(), 0, (TimeScale)0, 0, deviceName, _dataBuffer);
+				AWAIT(_sendDataToSlaves);
+				RETURN_ASYNC;
 			}
 		}
 	}
