@@ -371,6 +371,24 @@ TEST_F_TRAITS(MasterTests, completeModbusReadRegisters_OtherResponse,
 	Verify(Method(modbusBaseMock, isReadRegsResponse)).Once();
 }
 
+TEST_F_TRAITS(MasterTests, completeModbusReadRegisters_NoResponse,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
+{
+	MOCK_MASTER;
+	MOCK_MODBUS;
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
+	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
+	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskFullyAttempted);
+	When(Method(modbusBaseMock, setRequest_ReadRegisters)).AlwaysReturn(true);
+
+	T_MASTER::completeModbusReadRegisters_Task task(&T_MASTER::completeModbusReadRegisters, master, 2, 3, 5);
+	ASSERT_TRUE(task());
+
+	ASSERT_EQ(task.result(), noResponse);
+	Verify(OverloadedMethod(modbusTaskMock, work, bool())).Once();
+	Verify(Method(modbusBaseMock, setRequest_ReadRegisters).Using(2, 3, 5)).Once();
+}
+
 TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_single_CompletesImmediately,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
@@ -499,6 +517,25 @@ TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_single_OtherResponse,
 	Verify(Method(modbusBaseMock, isExceptionResponse)).Once();
 }
 
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_single_NoResponse,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
+{
+	MOCK_MASTER;
+	MOCK_MODBUS;
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
+	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
+	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskFullyAttempted);
+	When(Method(modbusBaseMock, setRequest_WriteRegister)).AlwaysReturn(true);
+
+	word val = 6;
+	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 1, &val);
+	ASSERT_TRUE(task());
+
+	ASSERT_EQ(task.result(), noResponse);
+	Verify(OverloadedMethod(modbusTaskMock, work, bool())).Once();
+	Verify(Method(modbusBaseMock, setRequest_WriteRegister).Using(2, 3, 6)).Once();
+}
+
 TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_multiple_CompletesImmediately,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
@@ -625,6 +662,25 @@ TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_multiple_OtherResponse,
 	Verify(Method(modbusBaseMock, setRequest_WriteRegisters).Using(2, 3, 3, (word*)vals)).Once();
 	Verify(Method(modbusBaseMock, isWriteRegsResponse)).Once();
 	Verify(Method(modbusBaseMock, isExceptionResponse)).Once();
+}
+
+TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_multiple_NoResponse,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
+{
+	MOCK_MASTER;
+	MOCK_MODBUS;
+	When(OverloadedMethod(masterMock, ensureTaskNotStarted, bool(T_MASTER::ensureTaskNotStarted_Param&))).Return(true);
+	When(OverloadedMethod(modbusTaskMock, work, bool())).AlwaysReturn(true);
+	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskFullyAttempted);
+	When(Method(modbusBaseMock, setRequest_WriteRegisters)).AlwaysReturn(true);
+
+	word vals[3] = { 1, 2, 3 };
+	T_MASTER::completeModbusWriteRegisters_Task task(&T_MASTER::completeModbusWriteRegisters, master, 2, 3, 3, (word*)vals);
+	ASSERT_TRUE(task());
+
+	ASSERT_EQ(task.result(), noResponse);
+	Verify(OverloadedMethod(modbusTaskMock, work, bool())).Once();
+	Verify(Method(modbusBaseMock, setRequest_WriteRegisters).Using(2, 3, 3, (word*)vals)).Once();
 }
 
 TEST_F_TRAITS(MasterTests, completeModbusWriteRegisters_broadcast_succeeds,
