@@ -268,7 +268,7 @@ protected_testable:
 		ASYNC_VAR(2, numDevices);
 		ASYNC_VAR(3, deviceNameLength);
 		ASYNC_VAR(4, slaveRegisters)
-			START_ASYNC;
+		START_ASYNC;
 		word regCount;
 		word *regs;
 		numDevices = 0;
@@ -311,12 +311,17 @@ protected_testable:
 			completeModbusWriteRegisters(1, 0, 3, _registerBuffer);
 			AWAIT(_completeModbusWriteRegisters);
 			ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+			if (_completeModbusReadRegisters.result() == noResponse)
+				goto reject_new_slave;
 			completeModbusReadRegisters(1, 0, 4 + (deviceNameLength + 1) / 2);
 			AWAIT(_completeModbusReadRegisters);
 			ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
+			if (_completeModbusReadRegisters.result() == noResponse)
+				goto reject_new_slave;
 			_modbus->isReadRegsResponse(regCount, regs);
 			if (_deviceDirectory->addOrReplaceDevice((byte*)(regs + 3), DeviceDirectoryRow(slaveId, i, regs[2], slaveRegisters)) == -1)
 			{
+				reject_new_slave:
 				_registerBuffer[0] = 1;
 				_registerBuffer[1] = 1;
 				_registerBuffer[2] = 255;
@@ -394,9 +399,13 @@ protected_testable:
 					AWAIT(_completeModbusWriteRegisters);
 
 					ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+					if (_completeModbusReadRegisters.result() == noResponse)
+						continue;
 					completeModbusReadRegisters(device->slaveId, 0, 2);
 					AWAIT(_completeModbusReadRegisters);
 					ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
+					if (_completeModbusReadRegisters.result() == noResponse)
+						continue;
 					_modbus->isReadRegsResponse(regCount, regs);
 					if ((regs[1] & 0xFF) == 3)
 					{
