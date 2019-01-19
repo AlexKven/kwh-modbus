@@ -224,12 +224,12 @@ protected_testable:
 		return _completeModbusWriteRegisters;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, checkForNewSlaves, SearchResultCode, VARS());
+	DEFINE_CLASS_TASK(THIS_T, checkForNewSlaves, SearchResultCode, VARS(), byte);
 	checkForNewSlaves_Task _checkForNewSlaves;
-	virtual ASYNC_CLASS_FUNC(THIS_T, checkForNewSlaves)
+	virtual ASYNC_CLASS_FUNC(THIS_T, checkForNewSlaves, byte slaveId)
 	{
 		START_ASYNC;
-		completeModbusReadRegisters(1, 0, 8);
+		completeModbusReadRegisters(slaveId, 0, 8);
 		AWAIT(_completeModbusReadRegisters);
 		switch (_completeModbusReadRegisters.result())
 		{
@@ -253,13 +253,13 @@ protected_testable:
 		}
 		END_ASYNC;
 	}
-	checkForNewSlaves_Task &checkForNewSlaves()
+	checkForNewSlaves_Task &checkForNewSlaves(byte slaveId)
 	{
-		CREATE_ASSIGN_CLASS_TASK(_checkForNewSlaves, THIS_T, this, checkForNewSlaves);
+		CREATE_ASSIGN_CLASS_TASK(_checkForNewSlaves, THIS_T, this, checkForNewSlaves, slaveId);
 		return _checkForNewSlaves;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, processNewSlave, void, VARS(byte, word, byte, word, word), bool);
+	DEFINE_CLASS_TASK(THIS_T, processNewSlave, void, VARS(byte, word, byte, word, word, byte), bool);
 	processNewSlave_Task _processNewSlave;
 	virtual ASYNC_CLASS_FUNC(THIS_T, processNewSlave, bool justReject)
 	{
@@ -267,7 +267,8 @@ protected_testable:
 		ASYNC_VAR(1, i);
 		ASYNC_VAR(2, numDevices);
 		ASYNC_VAR(3, deviceNameLength);
-		ASYNC_VAR(4, slaveRegisters)
+		ASYNC_VAR(4, slaveRegisters);
+		ASYNC_VAR(5, initialSlaveId);
 		START_ASYNC;
 		word regCount;
 		word *regs;
@@ -277,6 +278,7 @@ protected_testable:
 			reportMalfunction(__LINE__);
 			RETURN_ASYNC;
 		}
+		initialSlaveId = _modbus->getRecipientId();
 		numDevices = regs[2];
 		deviceNameLength = regs[3];
 		slaveRegisters = regs[4];
@@ -298,7 +300,7 @@ protected_testable:
 			_registerBuffer[0] = 1;
 			_registerBuffer[1] = 1;
 			_registerBuffer[2] = 255;
-			completeModbusWriteRegisters(1, 0, 3, _registerBuffer);
+			completeModbusWriteRegisters(initialSlaveId, 0, 3, _registerBuffer);
 			AWAIT(_completeModbusWriteRegisters);
 			ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 			RETURN_ASYNC;
@@ -308,12 +310,12 @@ protected_testable:
 			_registerBuffer[0] = 1;
 			_registerBuffer[1] = 2;
 			_registerBuffer[2] = i;
-			completeModbusWriteRegisters(1, 0, 3, _registerBuffer);
+			completeModbusWriteRegisters(initialSlaveId, 0, 3, _registerBuffer);
 			AWAIT(_completeModbusWriteRegisters);
 			ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 			if (_completeModbusReadRegisters.result() == noResponse)
 				goto reject_new_slave;
-			completeModbusReadRegisters(1, 0, 4 + (deviceNameLength + 1) / 2);
+			completeModbusReadRegisters(initialSlaveId, 0, 4 + (deviceNameLength + 1) / 2);
 			AWAIT(_completeModbusReadRegisters);
 			ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
 			if (_completeModbusReadRegisters.result() == noResponse)
@@ -325,7 +327,7 @@ protected_testable:
 				_registerBuffer[0] = 1;
 				_registerBuffer[1] = 1;
 				_registerBuffer[2] = 255;
-				completeModbusWriteRegisters(1, 0, 3, _registerBuffer);
+				completeModbusWriteRegisters(initialSlaveId, 0, 3, _registerBuffer);
 				AWAIT(_completeModbusWriteRegisters);
 				ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 				_deviceDirectory->filterDevicesForSlave(nullptr, 0, slaveId);
@@ -335,7 +337,7 @@ protected_testable:
 		_registerBuffer[0] = 1;
 		_registerBuffer[1] = 1;
 		_registerBuffer[2] = slaveId;
-		completeModbusWriteRegisters(1, 0, 3, _registerBuffer);
+		completeModbusWriteRegisters(initialSlaveId, 0, 3, _registerBuffer);
 		AWAIT(_completeModbusWriteRegisters);
 		ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
 		_timeUpdatePending = true;
@@ -673,14 +675,14 @@ protected_testable:
 			}
 			if (lastActivityTime == 0 || (curTime - lastActivityTime > 2000000))
 			{
-				checkForNewSlaves();
+				checkForNewSlaves(1);
 				AWAIT(_checkForNewSlaves);
 				something = (_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave);
 				while (something)
 				{
 					processNewSlave(_checkForNewSlaves.result() == badSlave);
 					AWAIT(_processNewSlave);
-					checkForNewSlaves();
+					checkForNewSlaves(1);
 					AWAIT(_checkForNewSlaves);
 					something = (_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave);
 				}

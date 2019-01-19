@@ -714,10 +714,10 @@ TEST_F_TRAITS(MasterTests, checkForNewSlaves_Found,
 	When(Method(completeReadRegsMock, func)).Return(true);
 	When(Method(completeReadRegsMock, result)).Return(success);
 
-	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master, 71);
 	ASSERT_TRUE(task());
 
-	Verify(Method(completeReadRegsMock, func).Using(1, 0, 8)).Once();
+	Verify(Method(completeReadRegsMock, func).Using(71, 0, 8)).Once();
 	ASSERT_EQ(task.result(), found);
 }
 
@@ -731,9 +731,9 @@ TEST_F_TRAITS(MasterTests, checkForNewSlaves_NotFound,
 	When(Method(completeReadRegsMock, result)).Return(taskFailure);
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskTimeOut);
 
-	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master, 53);
 	ASSERT_TRUE(task());
-	Verify(Method(completeReadRegsMock, func).Using(1, 0, 8)).Once();
+	Verify(Method(completeReadRegsMock, func).Using(53, 0, 8)).Once();
 	ASSERT_EQ(task.result(), notFound);
 }
 
@@ -749,9 +749,9 @@ TEST_F_TRAITS(MasterTests, checkForNewSlaves_Error_TaskFailure,
 	When(Method(modbusTaskMock, getStatus)).AlwaysReturn(TaskFatal);
 	Fake(Method(masterMock, reportMalfunction));
 
-	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master, 80);
 	ASSERT_TRUE(task());
-	Verify(Method(completeReadRegsMock, func).Using(1, 0, 8)).Once();
+	Verify(Method(completeReadRegsMock, func).Using(80, 0, 8)).Once();
 	ASSERT_EQ(task.result(), error);
 	Verify(Method(masterMock, reportMalfunction)).Once();
 }
@@ -766,9 +766,9 @@ TEST_F_TRAITS(MasterTests, checkForNewSlaves_Error_MasterFailure,
 	When(Method(completeReadRegsMock, result)).Return(masterFailure);
 	Fake(Method(masterMock, reportMalfunction));
 
-	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master, 32);
 	ASSERT_TRUE(task());
-	Verify(Method(completeReadRegsMock, func).Using(1, 0, 8)).Once();
+	Verify(Method(completeReadRegsMock, func).Using(32, 0, 8)).Once();
 	ASSERT_EQ(task.result(), error);
 	Verify(Method(masterMock, reportMalfunction)).Once();
 }
@@ -781,9 +781,9 @@ TEST_F_TRAITS(MasterTests, checkForNewSlaves_BadSlave,
 	When(Method(completeReadRegsMock, func)).Return(true);
 	When(Method(completeReadRegsMock, result)).Return(exceptionResponse);
 
-	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master);
+	T_MASTER::checkForNewSlaves_Task task(&T_MASTER::checkForNewSlaves, master, 71);
 	ASSERT_TRUE(task());
-	Verify(Method(completeReadRegsMock, func).Using(1, 0, 8)).Once();
+	Verify(Method(completeReadRegsMock, func).Using(71, 0, 8)).Once();
 	ASSERT_EQ(task.result(), badSlave);
 }
 
@@ -792,6 +792,7 @@ TEST_F_TRAITS(MasterTests, processNewSlave_Reject_DeviceStopsResponding,
 {
 	MOCK_MODBUS;
 	MockNewMethod(addDeviceName, string name);
+	When(Method(modbusBaseMock, getRecipientId)).Return(5);
 
 	When(Method(mockDeviceDirectory, findFreeSlaveID)).Return(13);
 	When(Method(mockDeviceDirectory, addOrReplaceDevice)).AlwaysDo([&addDeviceName](byte* name, DeviceDirectoryRow row)
@@ -823,7 +824,7 @@ TEST_F_TRAITS(MasterTests, processNewSlave_Reject_DeviceStopsResponding,
 
 
 	// One write to look for active slaves, and one to set slave ID.
-	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Twice();
+	Verify(Method(completeWriteRegsMock, func).Using(5, 0, 3, Any<word*>())).Twice();
 
 
 	// Device directory filtered
@@ -840,6 +841,7 @@ TEST_F_TRAITS(MasterTests, processNewSlave_Reject_ByRequest,
 	MOCK_MODBUS;
 
 	When(Method(mockDeviceDirectory, findFreeSlaveID)).Return(13);
+	When(Method(modbusBaseMock, getRecipientId)).Return(5);
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
 	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
@@ -861,7 +863,7 @@ TEST_F_TRAITS(MasterTests, processNewSlave_Reject_ByRequest,
 	ASSERT_FALSE(master->_timeUpdatePending);
 
 	// Three requests for device data, plus write new slave ID
-	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Once();
+	Verify(Method(completeWriteRegsMock, func).Using(5, 0, 3, Any<word*>())).Once();
 
 	// Slave ID set to 255, rejected
 	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
@@ -873,6 +875,7 @@ TEST_F_TRAITS(MasterTests, processNewSlave_Reject_DirectoryAlreadyFull,
 	MOCK_MODBUS;
 
 	When(Method(mockDeviceDirectory, findFreeSlaveID)).Return(0);
+	When(Method(modbusBaseMock, getRecipientId)).Return(5);
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
 	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
@@ -894,7 +897,7 @@ TEST_F_TRAITS(MasterTests, processNewSlave_Reject_DirectoryAlreadyFull,
 	ASSERT_FALSE(master->_timeUpdatePending);
 
 	// Three requests for device data, plus write new slave ID
-	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Once();
+	Verify(Method(completeWriteRegsMock, func).Using(5, 0, 3, Any<word*>())).Once();
 
 	// Slave ID set to 255, rejected
 	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
@@ -906,6 +909,7 @@ TEST_F_TRAITS(MasterTests, processNewSlave_Reject_SlaveVersionMismatch,
 	MOCK_MODBUS;
 
 	When(Method(mockDeviceDirectory, findFreeSlaveID)).Return(13);
+	When(Method(modbusBaseMock, getRecipientId)).Return(5);
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
 	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
@@ -927,7 +931,7 @@ TEST_F_TRAITS(MasterTests, processNewSlave_Reject_SlaveVersionMismatch,
 	ASSERT_FALSE(master->_timeUpdatePending);
 
 	// Three requests for device data, plus write new slave ID
-	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Once();
+	Verify(Method(completeWriteRegsMock, func).Using(5, 0, 3, Any<word*>())).Once();
 
 	// Slave ID set to 255, rejected
 	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
@@ -939,6 +943,7 @@ TEST_F_TRAITS(MasterTests, processNewSlave_Reject_ZeroDevices,
 	MOCK_MODBUS;
 
 	When(Method(mockDeviceDirectory, findFreeSlaveID)).Return(13);
+	When(Method(modbusBaseMock, getRecipientId)).Return(5);
 
 	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
 	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
@@ -960,7 +965,7 @@ TEST_F_TRAITS(MasterTests, processNewSlave_Reject_ZeroDevices,
 	ASSERT_FALSE(master->_timeUpdatePending);
 
 	// Three requests for device data, plus write new slave ID
-	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Once();
+	Verify(Method(completeWriteRegsMock, func).Using(5, 0, 3, Any<word*>())).Once();
 
 	// Slave ID set to 255, rejected
 	assertPopRegsQueue(writtenRegs, REGS(3, 1, 1, 255));
@@ -973,6 +978,7 @@ TEST_F_TRAITS(MasterTests, processNewSlave_Reject_DirectoryGetsFilled,
 	MockNewMethod(addDeviceName, string name);
 
 	When(Method(mockDeviceDirectory, findFreeSlaveID)).Return(13);
+	When(Method(modbusBaseMock, getRecipientId)).Return(5);
 
 	int callCount = 0;
 	When(Method(mockDeviceDirectory, addOrReplaceDevice)).AlwaysDo(
@@ -1008,7 +1014,7 @@ TEST_F_TRAITS(MasterTests, processNewSlave_Reject_DirectoryGetsFilled,
 	ASSERT_FALSE(master->_timeUpdatePending);
 
 	// Two requests for device data, plus write new slave ID
-	Verify(Method(completeWriteRegsMock, func).Using(1, 0, 3, Any<word*>())).Exactly(3);
+	Verify(Method(completeWriteRegsMock, func).Using(5, 0, 3, Any<word*>())).Exactly(3);
 
 	// Add two new devices to device directory, failed one never gets added
 	Verify(Method(mockDeviceDirectory, addOrReplaceDevice).Using(Any<byte*>(), DeviceDirectoryRow(13, 0, 7, 47))).Once();

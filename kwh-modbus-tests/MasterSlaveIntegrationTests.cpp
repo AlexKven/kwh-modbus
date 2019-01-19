@@ -295,7 +295,7 @@ WindowsSystemFunctions *MasterSlaveIntegrationTests::system;
 TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlaves_found,
 	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Typical)
 {
-	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master);
+	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master, 1);
 	slaveAction = [this]() {
 		slave->loop();
 		return slaveComplete;
@@ -327,7 +327,7 @@ TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForN
 TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForNewSlaves_notFound,
 	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Typical)
 {
-	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master);
+	T_Master::checkForNewSlaves_Task task(&T_Master::checkForNewSlaves, master, 1);
 	slaveAction = [this]() {
 		//return true;
 		slave->loop();
@@ -354,7 +354,7 @@ TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_checkForN
 TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave,
 	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Typical)
 {
-	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
+	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master, 1);
 	ITask* task1 = tracker.addPointer(getNewSetTestConditionsTask());
 	T_Master::processNewSlave_Task task2(&T_Master::processNewSlave, master, false);
 
@@ -399,7 +399,7 @@ TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNe
 TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_processNewSlave_JustReject,
 	Type, Integration, Threading, Multi, Determinism, Volatile, Case, Rare)
 {
-	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
+	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master, 1);
 	ITask* task1 = tracker.addPointer(getNewSetTestConditionsTask());
 	T_Master::processNewSlave_Task task2(&T_Master::processNewSlave, master, true);
 
@@ -525,7 +525,7 @@ TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferP
 	// Master receives two pages of data points, {0, 1, 2, 3}, and {4, 5, 6, 7}
 	// For each page, master sends two pages to receiving device, {{0, 1, 2}, {3}}, {{4, 5, 6}, {7}}
 
-	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
+	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master, 1);
 	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, false);
 	auto task2 = tracker.addPointer(getNewSetTestConditionsTask());
 	task2->isLongTest = true;
@@ -627,7 +627,7 @@ TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferP
 	// Master requests 4 data points, which are 0, 1, 2, 3
 	// Master receives and sends one page of data, containing all four data points
 
-	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master);
+	T_Master::checkForNewSlaves_Task task0(&T_Master::checkForNewSlaves, master, 1);
 	T_Master::processNewSlave_Task task1(&T_Master::processNewSlave, master, false);
 	auto task2 = tracker.addPointer(getNewSetTestConditionsTask());
 	task2->isLongTest = true;

@@ -181,4 +181,10 @@ public:
 	{
 		return isWriteRegResponse() || isWriteRegsResponse();
 	}
+
+	// Not tested, trivial
+	virtual byte getRecipientId()
+	{
+		return _recipientId;
+	}
 };
