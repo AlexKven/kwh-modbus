@@ -653,7 +653,7 @@ protected_testable:
 		return _transferPendingData;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, unsigned long, unsigned long, uint32_t, bool));
+	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, unsigned long, unsigned long, uint32_t, bool, int));
 	loop_Task _loop;
 	virtual ASYNC_CLASS_FUNC(THIS_T, loop)
 	{
@@ -662,7 +662,19 @@ protected_testable:
 		ASYNC_VAR(2, curTime);
 		ASYNC_VAR(3, curClock);
 		ASYNC_VAR(4, something);
+		ASYNC_VAR(5, i);
 		START_ASYNC;
+		// Initialize existing slaves on startup
+		for (i = 2; i <= 246; i++)
+		{
+			checkForNewSlaves(i);
+			AWAIT(_checkForNewSlaves);
+			if ((_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave))
+			{
+				processNewSlave(_checkForNewSlaves.result() == badSlave);
+			}
+		}
+
 		for (;;)
 		{
 			tick(_system->micros());
