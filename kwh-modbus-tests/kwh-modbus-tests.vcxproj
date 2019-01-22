@@ -44,6 +44,7 @@
     <ClCompile Include="BitFunctionsTests.cpp" />
     <ClCompile Include="DataCollectorDeviceTests.cpp" />
     <ClCompile Include="DeviceDirectoryTests.cpp" />
+    <ClCompile Include="DiscriminatedUnionTests.cpp" />
     <ClCompile Include="MasterSlaveIntegrationTests.cpp" />
     <ClCompile Include="MasterTests.cpp" />
     <ClCompile Include="MockSerialStreamTests.cpp" />
