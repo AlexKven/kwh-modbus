@@ -130,9 +130,6 @@
     <ClInclude Include="libraries\bitFunctions\BitFunctions.hpp">
       <Filter>libraries\bitFunctions</Filter>
     </ClInclude>
-    <ClInclude Include="libraries\discriminatedUnion\DiscriminatedUnion.hpp">
-      <Filter>libraries\discriminatedUnion</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -206,9 +203,6 @@
     </Filter>
     <Filter Include="libraries\deviceDirectoryRow">
       <UniqueIdentifier>{51098368-c398-4355-ae02-273a94fb7c38}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="libraries\discriminatedUnion">
-      <UniqueIdentifier>{130f283a-dca7-4e03-94d0-ea716dce1746}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
