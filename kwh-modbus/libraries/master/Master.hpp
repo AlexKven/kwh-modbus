@@ -10,6 +10,7 @@
 #include "../device/Device.h"
 #include "../device/DataCollectorDevice.h"
 #include "../device/DataTransmitterDevice.h"
+#include "../discriminatedUnion/DiscriminatedUnion.hpp"
 #include "../asyncAwait/AsyncAwait.hpp"
 #include "../timeManager/TimeManager.h"
 #include "../deviceDirectoryRow/DeviceDirectoryRow.h"
@@ -83,7 +84,19 @@ protected_testable:
 		}
 	}
 
+
 	DEFINE_CLASS_TASK(THIS_T, ensureTaskNotStarted, void, VARS());
+	DEFINE_CLASS_TASK(THIS_T, completeModbusReadRegisters, ModbusRequestStatus, VARS(), byte, word, word);
+	DEFINE_CLASS_TASK(THIS_T, completeModbusWriteRegisters, ModbusRequestStatus, VARS(), byte, word, word, word*);
+	DEFINE_CLASS_TASK(THIS_T, checkForNewSlaves, SearchResultCode, VARS(), byte);
+	DEFINE_CLASS_TASK(THIS_T, processNewSlave, void, VARS(byte, word, byte, word, word, byte), bool);
+	DEFINE_CLASS_TASK(THIS_T, sendDataToSlaves, void, VARS(int, DeviceDirectoryRow*, byte, byte), uint32_t, byte, TimeScale, word, byte*, byte*);
+	DEFINE_CLASS_TASK(THIS_T, readAndSendDeviceData, void, VARS(bool, TimeScale, byte, uint32_t, word, byte, byte, byte, bool),
+		DeviceDirectoryRow*, word, byte*, uint32_t, uint32_t);
+	DEFINE_CLASS_TASK(THIS_T, transferPendingData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t), TimeScale, uint32_t);
+	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, unsigned long, unsigned long, uint32_t, bool, int));
+	
+
 	ensureTaskNotStarted_Task _ensureTaskNotStarted;
 	virtual ASYNC_CLASS_FUNC(THIS_T, ensureTaskNotStarted)
 	{
@@ -104,7 +117,6 @@ protected_testable:
 		return _ensureTaskNotStarted;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, completeModbusReadRegisters, ModbusRequestStatus, VARS(), byte, word, word);
 	completeModbusReadRegisters_Task _completeModbusReadRegisters;
 	virtual ASYNC_CLASS_FUNC(THIS_T, completeModbusReadRegisters, byte recipientId, word regStart, word regCount)
 	{
@@ -160,7 +172,6 @@ protected_testable:
 		return _completeModbusReadRegisters;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, completeModbusWriteRegisters, ModbusRequestStatus, VARS(), byte, word, word, word*);
 	completeModbusWriteRegisters_Task _completeModbusWriteRegisters;
 	virtual ASYNC_CLASS_FUNC(THIS_T, completeModbusWriteRegisters, byte recipientId, word regStart, word regCount, word *regValues)
 	{
@@ -224,7 +235,6 @@ protected_testable:
 		return _completeModbusWriteRegisters;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, checkForNewSlaves, SearchResultCode, VARS(), byte);
 	checkForNewSlaves_Task _checkForNewSlaves;
 	virtual ASYNC_CLASS_FUNC(THIS_T, checkForNewSlaves, byte slaveId)
 	{
@@ -259,7 +269,6 @@ protected_testable:
 		return _checkForNewSlaves;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, processNewSlave, void, VARS(byte, word, byte, word, word, byte), bool);
 	processNewSlave_Task _processNewSlave;
 	virtual ASYNC_CLASS_FUNC(THIS_T, processNewSlave, bool justReject)
 	{
@@ -349,7 +358,6 @@ protected_testable:
 		return _processNewSlave;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, sendDataToSlaves, void, VARS(int, DeviceDirectoryRow*, byte, byte), uint32_t, byte, TimeScale, word, byte*, byte*);
 	sendDataToSlaves_Task _sendDataToSlaves;
 	virtual ASYNC_CLASS_FUNC(THIS_T, sendDataToSlaves, uint32_t startTime,
 		byte dataSize, TimeScale timeScale, word numDataPoints, byte* name, byte* data)
@@ -465,8 +473,6 @@ protected_testable:
 		return _sendDataToSlaves;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, readAndSendDeviceData, void, VARS(bool, TimeScale, byte, uint32_t, word, byte, byte, byte, bool),
-		DeviceDirectoryRow*, word, byte*, uint32_t, uint32_t);
 	readAndSendDeviceData_Task _readAndSendDeviceData;
 	virtual ASYNC_CLASS_FUNC(THIS_T, readAndSendDeviceData, DeviceDirectoryRow* deviceRow, word deviceNameLength,
 		byte *deviceName, uint32_t startTime, uint32_t endTime)
@@ -604,7 +610,6 @@ protected_testable:
 		return _readAndSendDeviceData;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, transferPendingData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t), TimeScale, uint32_t);
 	transferPendingData_Task _transferPendingData;
 	virtual ASYNC_CLASS_FUNC(THIS_T, transferPendingData, TimeScale maxTimeScale, uint32_t currentTime)
 	{
@@ -653,7 +658,6 @@ protected_testable:
 		return _transferPendingData;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, unsigned long, unsigned long, uint32_t, bool, int));
 	loop_Task _loop;
 	virtual ASYNC_CLASS_FUNC(THIS_T, loop)
 	{

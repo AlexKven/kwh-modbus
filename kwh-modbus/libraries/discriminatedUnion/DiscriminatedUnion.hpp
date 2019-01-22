@@ -14,15 +14,15 @@ public:
 	}
 
 	template <int = 0>
-	static constexpr std::size_t maxSizeOf()
+	static constexpr int maxSizeOf()
 	{
 		return 0u;
 	};
 
 	template <typename T, typename ... Ts>
-	static constexpr std::size_t maxSizeOf()
+	static constexpr int maxSizeOf()
 	{
-		return static_max(sizeof(T), maxSizeOf<Ts...>());
+		return static_max((int)sizeof(T), maxSizeOf<Ts...>());
 	};
 
 private:
