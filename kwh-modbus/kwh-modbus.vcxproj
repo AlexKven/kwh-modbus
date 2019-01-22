@@ -91,6 +91,7 @@
     <ClInclude Include="libraries\device\DataCollectorDevice.h" />
     <ClInclude Include="libraries\device\DataTransmitterDevice.h" />
     <ClInclude Include="libraries\device\Device.h" />
+    <ClInclude Include="libraries\discriminatedUnion\DiscriminatedUnion.hpp" />
     <ClInclude Include="libraries\master\Master.hpp" />
     <ClInclude Include="libraries\modbusMaster\ModbusMaster.hpp" />
     <ClInclude Include="libraries\modbusSlave\ModbusSlave.hpp" />
