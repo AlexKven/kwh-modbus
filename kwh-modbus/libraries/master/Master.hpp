@@ -14,6 +14,7 @@
 #include "../timeManager/TimeManager.h"
 #include "../deviceDirectoryRow/DeviceDirectoryRow.h"
 #include "../bitFunctions/BitFunctions.hpp"
+#include "../debugMacros/DebugMacros.h"
 
 #define ENSURE(statement) if (!(statement)) return false
 #define ENSURE_NONMALFUNCTION(modbus_task) if (modbus_task.result() != success && modbus_task.result() != noResponse) \
@@ -745,6 +746,7 @@ public:
 	{
 		if (!started)
 		{
+			DEBUG(| , PRINTLN("Loop started."));
 			CREATE_ASSIGN_CLASS_TASK(_loop, THIS_T, this, loop);
 			started = true;
 		}
