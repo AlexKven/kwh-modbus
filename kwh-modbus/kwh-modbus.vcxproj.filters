@@ -130,6 +130,9 @@
     <ClInclude Include="libraries\bitFunctions\BitFunctions.hpp">
       <Filter>libraries\bitFunctions</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\debugMacros\DebugMacros.h">
+      <Filter>libraries\debugMacros</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -203,6 +206,9 @@
     </Filter>
     <Filter Include="libraries\deviceDirectoryRow">
       <UniqueIdentifier>{51098368-c398-4355-ae02-273a94fb7c38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\debugMacros">
+      <UniqueIdentifier>{25770e78-1795-421c-b7de-f44d986538c8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

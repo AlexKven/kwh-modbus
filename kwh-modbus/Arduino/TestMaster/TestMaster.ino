@@ -1,3 +1,7 @@
+#define CONSOLE_DEBUG
+#define PRINTLN(MSG) Serial.println(MSG)
+#define PRINT(MSG) Serial.print(MSG)
+
 #include "Arduino.h"
 #include "Modbus.h"
 #include "ModbusArray.h"
@@ -10,6 +14,8 @@
 #include "Master.hpp"
 #include "DeviceDirectory.hpp"
 #include "SoftwareSerial.h"
+
+DEBUG_CATEGORY_NONE
 
 class ArduinoFunctions
 {

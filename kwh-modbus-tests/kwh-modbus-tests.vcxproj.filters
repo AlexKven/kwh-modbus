@@ -24,6 +24,7 @@
     <ClCompile Include="DataCollectorDeviceTests.cpp" />
     <ClCompile Include="BitFunctionsTests.cpp" />
     <ClCompile Include="test_helpers.cpp" />
+    <ClCompile Include="DebugMacrosTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

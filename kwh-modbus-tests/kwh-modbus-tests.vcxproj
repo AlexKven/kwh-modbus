@@ -43,6 +43,7 @@
     <ClCompile Include="AsyncAwaitTests.cpp" />
     <ClCompile Include="BitFunctionsTests.cpp" />
     <ClCompile Include="DataCollectorDeviceTests.cpp" />
+    <ClCompile Include="DebugMacrosTests.cpp" />
     <ClCompile Include="DeviceDirectoryTests.cpp" />
     <ClCompile Include="MasterSlaveIntegrationTests.cpp" />
     <ClCompile Include="MasterTests.cpp" />
