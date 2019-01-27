@@ -230,10 +230,10 @@ protected_testable:
 	virtual ASYNC_CLASS_FUNC(THIS_T, checkForNewSlaves, byte slaveId)
 	{
 		START_ASYNC;
-		DEBUG(checkForSlaves, P_TIME(); PRINT("checkForSlaves: slaveId = "); PRINTLN(slaveId));
+		VERBOSE(checkForSlaves, P_TIME(); PRINT("checkForSlaves: slaveId = "); PRINTLN(slaveId));
 		completeModbusReadRegisters(slaveId, 0, 8);
 		AWAIT(_completeModbusReadRegisters);
-		DEBUG(checkForSlaves, P_TIME(); PRINT("checkForSlaves: read task result = "); PRINTLN(_completeModbusReadRegisters.result()));
+		VERBOSE(checkForSlaves, P_TIME(); PRINT("checkForSlaves: read task result = "); PRINTLN(_completeModbusReadRegisters.result()));
 		switch (_completeModbusReadRegisters.result())
 		{
 		case success:
@@ -492,6 +492,7 @@ protected_testable:
 	word regCount;
 	word *regs;
 	START_ASYNC;
+	VERBOSE(readAndSendData, P_TIME(); PRINT("Reading data from device "); for (int i = 0; i < deviceNameLength; i++) { WRITE(deviceName[i]); } PRINTLN());
 	if (startTime == endTime)
 		RETURN_ASYNC;
 	if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(deviceRow->deviceType, accumulateData, timeScale, dataSize))
@@ -674,17 +675,17 @@ protected_testable:
 		ASYNC_VAR(5, i);
 		START_ASYNC;
 		// Initialize existing slaves on startup
-		for (i = 2; i <= 246; i++)
-		{
-			DEBUG(loop, P_TIME(); PRINT("loop: Checking for slave at "); PRINTLN(i));
-			checkForNewSlaves(i);
-			AWAIT(_checkForNewSlaves);
-			if ((_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave))
-			{
-				DEBUG(loop, P_TIME(); PRINT("loop: Found slave at "); PRINT(i); PRINT(" badSlave = "); PRINTLN(_checkForNewSlaves.result() == badSlave));
-				processNewSlave(_checkForNewSlaves.result() == badSlave);
-			}
-		}
+		//for (i = 2; i <= 246; i++)
+		//{
+		//	VERBOSE(loop, P_TIME(); PRINT("loop: Checking for slave at "); PRINTLN(i));
+		//	checkForNewSlaves(i);
+		//	AWAIT(_checkForNewSlaves);
+		//	if ((_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave))
+		//	{
+		//		DEBUG(loop, P_TIME(); PRINT("loop: Found slave at "); PRINT(i); PRINT(" badSlave = "); PRINTLN(_checkForNewSlaves.result() == badSlave));
+		//		processNewSlave(_checkForNewSlaves.result() == badSlave);
+		//	}
+		//}
 
 		for (;;)
 		{
@@ -698,7 +699,7 @@ protected_testable:
 			}
 			if (lastActivityTime == 0 || (curTime - lastActivityTime > 2000000))
 			{
-				DEBUG(loop, P_TIME(); PRINTLN("loop: Checking for unassigned slave."));
+				VERBOSE(loop, P_TIME(); PRINTLN("loop: Checking for unassigned slave."));
 				checkForNewSlaves(1);
 				AWAIT(_checkForNewSlaves);
 				something = (_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave);
@@ -717,7 +718,7 @@ protected_testable:
 			{
 				lastSyncTime = curClock;
 			}
-			else if (curClock - lastSyncTime > 2)
+			else if (curClock - lastSyncTime > 5)
 			{
 				transferPendingData(TimeScale::sec1, curClock);
 				AWAIT(_transferPendingData);

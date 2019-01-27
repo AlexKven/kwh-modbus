@@ -76,7 +76,8 @@ class SourceDevice2 : public DataCollectorDevice
   
   bool readDataPoint(uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits)
   {
-    dataBuffer[0] = (word)((time % 64) * 4 + quarterSecondOffset);;
+    dataBuffer[0] = (byte)(time % 256);
+//    dataBuffer[0] = (word)((time % 64) * 4 + quarterSecondOffset);
   }
 };
 
@@ -101,10 +102,10 @@ class DestinationDevice : public Device
       Serial.write(name[i]);
     }
     Serial.println();
-    Serial.print("Mem allocation ");
-    Serial.println(getMemAllocation());
+    Serial.print("Time: ");
+    Serial.println(curStart);
     curStart = startTime;
-    outDataPointsPerPage = 10;
+    outDataPointsPerPage = 4;
     return RecieveDataStatus::success;
    }
    
@@ -116,8 +117,6 @@ class DestinationDevice : public Device
       timePeriod = 4;
     for (int i = 0; i <dataPointsInPage; i++)
     {
-      Serial.print("Time: ");
-      Serial.print(curStart);
       Serial.print(" Pg: ");
       Serial.print(pageNumber);
       Serial.print(" Pt: ");
@@ -163,7 +162,7 @@ void setup() {
   Device* devices[3];
   devices[0] = new SourceDevice();
   devices[1] = new DestinationDevice();
-  devices[2] = new SourceDevice2();
+  devices[2] = new SourceDevice();
 
   byte* names[3];
   names[0] = (byte*)"device00";

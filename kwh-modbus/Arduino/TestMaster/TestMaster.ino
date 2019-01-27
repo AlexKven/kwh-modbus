@@ -1,6 +1,9 @@
 #define CONSOLE_DEBUG
+#define CONSOLE_INFO
+#define CONSOLE_VERBOSE
 #define PRINTLN(MSG) Serial.println(MSG)
 #define PRINT(MSG) Serial.print(MSG)
+#define WRITE(CHR) Serial.write(CHR)
 #define P_TIME() Serial.print(millis()); Serial.print("ms ")
 
 #include "Arduino.h"
@@ -16,7 +19,7 @@
 #include "DeviceDirectory.hpp"
 #include "SoftwareSerial.h"
 
-DEBUG_CATEGORY(loop)
+DEBUG_CATEGORY(loop|readAndSendData)
 
 class ArduinoFunctions
 {
