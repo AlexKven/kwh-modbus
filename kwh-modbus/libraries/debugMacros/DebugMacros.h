@@ -33,6 +33,9 @@
 #ifndef PRINT(MSG)
 #define PRINT(MSG)
 #endif
+#ifndef P_TIME()
+#define P_TIME()
+#endif
 
 #ifndef CONSOLE_DEBUG
 #define DEBUG(CATEGORY, ...)

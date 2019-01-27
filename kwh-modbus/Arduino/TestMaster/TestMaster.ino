@@ -1,6 +1,7 @@
 #define CONSOLE_DEBUG
 #define PRINTLN(MSG) Serial.println(MSG)
 #define PRINT(MSG) Serial.print(MSG)
+#define P_TIME() Serial.print(millis()); Serial.print("ms ")
 
 #include "Arduino.h"
 #include "Modbus.h"
@@ -15,7 +16,7 @@
 #include "DeviceDirectory.hpp"
 #include "SoftwareSerial.h"
 
-DEBUG_CATEGORY_NONE
+DEBUG_CATEGORY(loop)
 
 class ArduinoFunctions
 {
@@ -72,9 +73,9 @@ void setup() {
 
   modbus.config(&Serial1, &functions, 9600, 4);
   modbus.init(registers, 0, 50, 80);
-  modbus.setMinTimePerTryMicros(100000);
-  modbus.setMaxTimePerTryMicros(200000);
-  modbus.setMaxTries(15);
+  modbus.setMinTimePerTryMicros(10000);
+  modbus.setMaxTimePerTryMicros(100000);
+  modbus.setMaxTries(10);
   directory.init(8, 20);
   master.config(&functions, &modbus, &directory, 40);
   Serial.println("Master initialized");
@@ -92,51 +93,6 @@ int getMemAllocation()
   delete dummy;
   return (int)dummy;
 }
-
-long last;
-long cur;
 void loop() {
-//  Serial.println("loop start");
-  cur = millis();
   master.loop();
-//  Serial.println(cur);
-//  Serial.print("mem ");
-//  Serial.println(getMemAllocation());
-  if (cur - last >= 2000)
-  {
-    last = cur;
-    Serial.println();
-    Serial.println();
-    Serial.println();
-    if (directory.isEmpty())
-    {
-      Serial.println("Directory is empty.");
-//    Serial.print("current Memory: ");
-//    Serial.println(getMemAllocation());
-    }
-    else
-    {
-      byte devName[8];
-      byte devSlaveId;
-      word devType;
-//      int row = directory.findNextDevice(devName, devSlaveId, devType, 0);
-//        Serial.print("Row: ");
-//        Serial.println(row);
-//      while (row != -1)
-//      {
-//        Serial.println("");
-//        Serial.print("Device ");
-//        for (int i = 0; i < 8; i++)
-//          Serial.write(devName[i]);
-//        Serial.println(":");
-//        Serial.print("Slave ID: ");
-//        Serial.println(devSlaveId);
-//        Serial.print("Device type: ");
-//        Serial.println(devType);
-//        Serial.print("Row: ");
-//        Serial.println(row);
-//        row = directory.findNextDevice(devName, devSlaveId, devType, row);
-//      } 
-    }
   }
-}

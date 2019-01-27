@@ -230,26 +230,34 @@ protected_testable:
 	virtual ASYNC_CLASS_FUNC(THIS_T, checkForNewSlaves, byte slaveId)
 	{
 		START_ASYNC;
+		DEBUG(checkForSlaves, P_TIME(); PRINT("checkForSlaves: slaveId = "); PRINTLN(slaveId));
 		completeModbusReadRegisters(slaveId, 0, 8);
 		AWAIT(_completeModbusReadRegisters);
+		DEBUG(checkForSlaves, P_TIME(); PRINT("checkForSlaves: read task result = "); PRINTLN(_completeModbusReadRegisters.result()));
 		switch (_completeModbusReadRegisters.result())
 		{
 		case success:
+			DEBUG(checkForSlaves, P_TIME(); PRINTLN("checkForSlaves: Slave found"));
 			RESULT_ASYNC(SearchResultCode, found);
 		case taskFailure:
+		case noResponse:
 			if (_modbus->getStatus() == TaskStatus::TaskFullyAttempted || _modbus->getStatus() == TaskStatus::TaskTimeOut)
 			{
+				DEBUG(checkForSlaves, P_TIME(); PRINTLN("checkForSlaves: Slave not found"));
 				RESULT_ASYNC(SearchResultCode, notFound);
 			}
 			else
 			{
+				DEBUG(checkForSlaves, P_TIME(); PRINTLN("checkForSlaves: Slave error, task failure"));
 				reportMalfunction(__LINE__);
 				RESULT_ASYNC(SearchResultCode, error);
 			}
 		case masterFailure:
+			DEBUG(checkForSlaves, P_TIME(); PRINTLN("checkForSlaves: Slave error, master failure"));
 			reportMalfunction(__LINE__);
 			RESULT_ASYNC(SearchResultCode, error);
 		default:
+			DEBUG(checkForSlaves, P_TIME(); PRINTLN("checkForSlaves: Bad slave"));
 			RESULT_ASYNC(SearchResultCode, badSlave);
 		}
 		END_ASYNC;
@@ -668,10 +676,12 @@ protected_testable:
 		// Initialize existing slaves on startup
 		for (i = 2; i <= 246; i++)
 		{
+			DEBUG(loop, P_TIME(); PRINT("loop: Checking for slave at "); PRINTLN(i));
 			checkForNewSlaves(i);
 			AWAIT(_checkForNewSlaves);
 			if ((_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave))
 			{
+				DEBUG(loop, P_TIME(); PRINT("loop: Found slave at "); PRINT(i); PRINT(" badSlave = "); PRINTLN(_checkForNewSlaves.result() == badSlave));
 				processNewSlave(_checkForNewSlaves.result() == badSlave);
 			}
 		}
@@ -688,11 +698,13 @@ protected_testable:
 			}
 			if (lastActivityTime == 0 || (curTime - lastActivityTime > 2000000))
 			{
+				DEBUG(loop, P_TIME(); PRINTLN("loop: Checking for unassigned slave."));
 				checkForNewSlaves(1);
 				AWAIT(_checkForNewSlaves);
 				something = (_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave);
 				while (something)
 				{
+					DEBUG(loop, P_TIME(); PRINT("loop: Found slave. badSlave = "); PRINTLN(_checkForNewSlaves.result() == badSlave));
 					processNewSlave(_checkForNewSlaves.result() == badSlave);
 					AWAIT(_processNewSlave);
 					checkForNewSlaves(1);
@@ -746,7 +758,7 @@ public:
 	{
 		if (!started)
 		{
-			DEBUG(| , PRINTLN("Loop started."));
+			DEBUG(loop , P_TIME(); PRINTLN("Loop started."));
 			CREATE_ASSIGN_CLASS_TASK(_loop, THIS_T, this, loop);
 			started = true;
 		}
