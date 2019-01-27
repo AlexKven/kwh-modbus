@@ -73,7 +73,7 @@ void setup() {
 
   modbus.config(&Serial1, &functions, 9600, 4);
   modbus.init(registers, 0, 50, 80);
-  modbus.setMinTimePerTryMicros(10000);
+  modbus.setMinTimePerTryMicros(15000);
   modbus.setMaxTimePerTryMicros(100000);
   modbus.setMaxTries(10);
   directory.init(8, 20);

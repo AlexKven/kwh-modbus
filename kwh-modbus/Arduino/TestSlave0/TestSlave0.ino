@@ -11,6 +11,13 @@
 #include "HardwareSerial.h"
 #include "SoftwareSerial.h"
 
+int getMemAllocation()
+{
+  int *dummy = new int();
+  delete dummy;
+  return (int)dummy;
+}
+
 class ArduinoFunctions
 {
 public:
@@ -59,6 +66,20 @@ class SourceDevice : public DataCollectorDevice
   }
 };
 
+class SourceDevice2 : public DataCollectorDevice
+{
+  public:
+  SourceDevice2()
+  {
+    init(false, TimeScale::ms250, 8);
+  }
+  
+  bool readDataPoint(uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits)
+  {
+    dataBuffer[0] = (word)((time % 64) * 4 + quarterSecondOffset);;
+  }
+};
+
 class DestinationDevice : public Device
 {
   private:
@@ -80,6 +101,8 @@ class DestinationDevice : public Device
       Serial.write(name[i]);
     }
     Serial.println();
+    Serial.print("Mem allocation ");
+    Serial.println(getMemAllocation());
     curStart = startTime;
     outDataPointsPerPage = 10;
     return RecieveDataStatus::success;
@@ -88,13 +111,20 @@ class DestinationDevice : public Device
    RecieveDataStatus receiveDeviceData(byte dataPointsInPage, byte dataPointSize,
    TimeScale timesScale, byte pageNumber, byte* dataPoints)
    {
+    byte timePeriod = 1;
+    if (timesScale == TimeScale::ms250)
+      timePeriod = 4;
     for (int i = 0; i <dataPointsInPage; i++)
     {
-      Serial.println();
       Serial.print("Time: ");
-      Serial.print(pageNumber * 10 + i + curStart);
-      Serial.print(" Data value: ");
+      Serial.print(curStart);
+      Serial.print(" Pg: ");
+      Serial.print(pageNumber);
+      Serial.print(" Pt: ");
+      Serial.print(i);
+      Serial.print(" Val: ");
       Serial.println(dataPoints[i]);
+//      delay(100);
     }
     return RecieveDataStatus::success;
    }
@@ -119,6 +149,10 @@ void setup() {
 
   Serial.begin(9600);
   Serial.println("Starting...");
+  Serial.println("...");
+  Serial.println("...");
+  Serial.println("...");
+  Serial.println("...");
   
   modbus.config(&mySerial, &functions, 9600, 4);
   Serial.println("Slave initialized");
@@ -126,24 +160,26 @@ void setup() {
   modbus.setSlaveId(1);
   slave.config(&functions, &modbus);
   
-  Device* devices[2];
+  Device* devices[3];
   devices[0] = new SourceDevice();
   devices[1] = new DestinationDevice();
+  devices[2] = new SourceDevice2();
 
-  byte* names[2];
+  byte* names[3];
   names[0] = (byte*)"device00";
   names[1] = (byte*)"device01";
+  names[2] = (byte*)"device02";
 
-  slave.init(2, 8, 15, 20, devices, names);
+  slave.init(3, 8, 15, 20, devices, names);
 }
 
 void loop() {
+  slave.loop();
 //  // put your main code here, to run repeatedly:
 //  Serial.println(Serial1.available());12
 
 for (int i = 0; i < 1000; i++)
 {
-  slave.loop();
 //  
 //  delay(5);
 }

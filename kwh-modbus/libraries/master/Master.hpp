@@ -717,7 +717,7 @@ protected_testable:
 			{
 				lastSyncTime = curClock;
 			}
-			else if (curClock - lastSyncTime > 5)
+			else if (curClock - lastSyncTime > 2)
 			{
 				transferPendingData(TimeScale::sec1, curClock);
 				AWAIT(_transferPendingData);
