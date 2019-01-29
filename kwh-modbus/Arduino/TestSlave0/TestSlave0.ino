@@ -1,3 +1,11 @@
+#define CONSOLE_DEBUG
+#define CONSOLE_INFO
+#define CONSOLE_VERBOSE
+#define PRINTLN(MSG) Serial.println(MSG)
+#define PRINT(MSG) Serial.print(MSG)
+#define WRITE(CHR) Serial.write(CHR)
+#define P_TIME() Serial.print(millis()); Serial.print("ms ")
+
 #include "Arduino.h"
 #include "BitFunctions.hpp"
 #include "Modbus.h"
@@ -10,6 +18,8 @@
 #include "Slave.hpp"
 #include "HardwareSerial.h"
 #include "SoftwareSerial.h"
+
+DEBUG_CATEGORY_ALL
 
 int getMemAllocation()
 {
@@ -103,8 +113,8 @@ class DestinationDevice : public Device
     }
     Serial.println();
     Serial.print("Time: ");
-    Serial.println(curStart);
     curStart = startTime;
+    Serial.println(curStart);
     outDataPointsPerPage = 4;
     return RecieveDataStatus::success;
    }

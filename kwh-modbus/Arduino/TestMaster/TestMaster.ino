@@ -19,7 +19,7 @@
 #include "DeviceDirectory.hpp"
 #include "SoftwareSerial.h"
 
-DEBUG_CATEGORY(loop|readAndSendData)
+DEBUG_CATEGORY(readAndSendData|transferPendingData|sendDataToSlaves)
 
 class ArduinoFunctions
 {

@@ -10,6 +10,7 @@
 #include "../device/Device.h"
 #include "../timeManager/TimeManager.h"
 #include "../bitFunctions/BitFunctions.hpp"
+#include "../debugMacros/DebugMacros.h"
 #define ENSURE(statement) if (!(statement)) return false
 
 enum SlaveState : word
@@ -205,6 +206,8 @@ private_testable:
 							curReg >>= 8;
 						_dataBuffer[i] = (byte)(curReg & 0xFF);
 					}
+					VERBOSE(prepareToReceiveData, P_TIME(); PRINT("From slave "); for (int i = 0; i < nameLength; i++) { WRITE(_dataBuffer[i]); }
+					PRINT(": startTime = "); PRINT(startTime); PRINT(" dataPointSize = "); PRINT(dataPointSize); PRINT(" dataTimeScale = "); PRINT((int)dataTimeScale); PRINT(" dataPointsCount = "); PRINTLN(dataPointsCount));
 					if (dataPointsCount > 0)
 					{
 						byte dataPointsPerPage = 0;
@@ -229,6 +232,8 @@ private_testable:
 				byte dataPointSize = (byte)(_modbus->Hreg(3) >> 8);
 				TimeScale timeScale = (TimeScale)((byte)_modbus->Hreg(4));
 				byte pageNumber = (byte)(_modbus->Hreg(4) >> 8);
+
+
 
 				word curReg = 0;
 				word dataLengthBytes = BitFunctions::bitsToBytes(dataPointsInPage * dataPointSize);

@@ -371,6 +371,8 @@ protected_testable:
 		word *regs;
 		byte *dummyName;
 		START_ASYNC;
+		DEBUG(sendDataToSlaves, P_TIME(); PRINT("Sending data to slaves from device: "); for (int i = 0; i < _deviceDirectory->getDeviceNameLength(); i++) { WRITE(name[i]); } PRINTLN(""));
+		VERBOSE(sendDataToSlaves, PRINT("startTime = "); PRINT(startTime); PRINT(" dataSize = "); PRINT(dataSize); PRINT(" numDataPoints = "); PRINTLN(numDataPoints));
 		while (deviceRow != -1)
 		{
 			device = _deviceDirectory->findNextDevice(dummyName, deviceRow);
@@ -454,6 +456,7 @@ protected_testable:
 								}
 								AWAIT(_completeModbusWriteRegisters);
 								ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+								DEBUG(sendDataToSlaves, P_TIME(); PRINT("Transferred a page of data to device with slaveID = "); PRINT(device->slaveId); PRINT(", device# = "); PRINTLN(device->deviceNumber));
 							}
 						}
 					}
@@ -492,7 +495,7 @@ protected_testable:
 	word regCount;
 	word *regs;
 	START_ASYNC;
-	VERBOSE(readAndSendData, P_TIME(); PRINT("Reading data from device "); for (int i = 0; i < deviceNameLength; i++) { WRITE(deviceName[i]); } PRINTLN());
+	DEBUG(readAndSendData, P_TIME(); PRINT("Reading data from device "); for (int i = 0; i < deviceNameLength; i++) { WRITE(deviceName[i]); } PRINTLN(""));
 	if (startTime == endTime)
 		RETURN_ASYNC;
 	if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(deviceRow->deviceType, accumulateData, timeScale, dataSize))
@@ -628,6 +631,7 @@ protected_testable:
 		word regCount;
 		word *regs;
 		START_ASYNC;
+		DEBUG(transferPendingData, P_TIME(); PRINT("transferPendingData maxTimeScale = "); PRINTLN((int)maxTimeScale));
 		while (deviceIndex != -1)
 		{
 			deviceRow = _deviceDirectory->findNextDevice(deviceName, deviceIndex);
