@@ -36,6 +36,9 @@
 #ifndef P_TIME()
 #define P_TIME()
 #endif
+#ifndef WRITE(CHR)
+#define WRITE(CHR)
+#endif
 
 #ifndef CONSOLE_DEBUG
 #define DEBUG(CATEGORY, ...)

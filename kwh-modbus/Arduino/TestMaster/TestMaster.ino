@@ -1,6 +1,9 @@
 #define CONSOLE_DEBUG
+#define CONSOLE_INFO
+#define CONSOLE_VERBOSE
 #define PRINTLN(MSG) Serial.println(MSG)
 #define PRINT(MSG) Serial.print(MSG)
+#define WRITE(CHR) Serial.write(CHR)
 #define P_TIME() Serial.print(millis()); Serial.print("ms ")
 
 #include "Arduino.h"
@@ -16,7 +19,7 @@
 #include "DeviceDirectory.hpp"
 #include "SoftwareSerial.h"
 
-DEBUG_CATEGORY(loop)
+DEBUG_CATEGORY(readAndSendData|transferPendingData|sendDataToSlaves)
 
 class ArduinoFunctions
 {
@@ -73,7 +76,7 @@ void setup() {
 
   modbus.config(&Serial1, &functions, 9600, 4);
   modbus.init(registers, 0, 50, 80);
-  modbus.setMinTimePerTryMicros(10000);
+  modbus.setMinTimePerTryMicros(15000);
   modbus.setMaxTimePerTryMicros(100000);
   modbus.setMaxTries(10);
   directory.init(8, 20);

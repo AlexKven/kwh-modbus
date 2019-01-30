@@ -50,7 +50,7 @@ private_testable:
 	const byte _minorVersion = 0;
 	bool _timeUpdatePending = false;
 	byte *_dataBuffer = nullptr;
-	word _registerBuffer[10];
+	word _registerBuffer[12];
 	word _dataBufferSize;
 
 	uint32_t lastUpdateTimes[8];
@@ -230,10 +230,10 @@ protected_testable:
 	virtual ASYNC_CLASS_FUNC(THIS_T, checkForNewSlaves, byte slaveId)
 	{
 		START_ASYNC;
-		DEBUG(checkForSlaves, P_TIME(); PRINT("checkForSlaves: slaveId = "); PRINTLN(slaveId));
+		VERBOSE(checkForSlaves, P_TIME(); PRINT("checkForSlaves: slaveId = "); PRINTLN(slaveId));
 		completeModbusReadRegisters(slaveId, 0, 8);
 		AWAIT(_completeModbusReadRegisters);
-		DEBUG(checkForSlaves, P_TIME(); PRINT("checkForSlaves: read task result = "); PRINTLN(_completeModbusReadRegisters.result()));
+		VERBOSE(checkForSlaves, P_TIME(); PRINT("checkForSlaves: read task result = "); PRINTLN(_completeModbusReadRegisters.result()));
 		switch (_completeModbusReadRegisters.result())
 		{
 		case success:
@@ -371,6 +371,8 @@ protected_testable:
 		word *regs;
 		byte *dummyName;
 		START_ASYNC;
+		DEBUG(sendDataToSlaves, P_TIME(); PRINT("Sending data to slaves from device: "); for (int i = 0; i < _deviceDirectory->getDeviceNameLength(); i++) { WRITE(name[i]); } PRINTLN(""));
+		VERBOSE(sendDataToSlaves, PRINT("startTime = "); PRINT(startTime); PRINT(" dataSize = "); PRINT(dataSize); PRINT(" numDataPoints = "); PRINTLN(numDataPoints));
 		while (deviceRow != -1)
 		{
 			device = _deviceDirectory->findNextDevice(dummyName, deviceRow);
@@ -454,6 +456,7 @@ protected_testable:
 								}
 								AWAIT(_completeModbusWriteRegisters);
 								ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+								DEBUG(sendDataToSlaves, P_TIME(); PRINT("Transferred a page of data to device with slaveID = "); PRINT(device->slaveId); PRINT(", device# = "); PRINTLN(device->deviceNumber));
 							}
 						}
 					}
@@ -492,6 +495,8 @@ protected_testable:
 	word regCount;
 	word *regs;
 	START_ASYNC;
+	DEBUG(readAndSendData, P_TIME(); PRINT("Reading data from device "); for (int i = 0; i < deviceNameLength; i++) { WRITE(deviceName[i]); } PRINTLN(""));
+	VERBOSE(readAndSendData, PRINT("startTime = "); PRINT(startTime); PRINT(" endTime = "); PRINTLN(endTime));
 	if (startTime == endTime)
 		RETURN_ASYNC;
 	if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(deviceRow->deviceType, accumulateData, timeScale, dataSize))
@@ -627,6 +632,7 @@ protected_testable:
 		word regCount;
 		word *regs;
 		START_ASYNC;
+		DEBUG(transferPendingData, P_TIME(); PRINT("transferPendingData maxTimeScale = "); PRINTLN((int)maxTimeScale));
 		while (deviceIndex != -1)
 		{
 			deviceRow = _deviceDirectory->findNextDevice(deviceName, deviceIndex);
@@ -674,17 +680,17 @@ protected_testable:
 		ASYNC_VAR(5, i);
 		START_ASYNC;
 		// Initialize existing slaves on startup
-		for (i = 2; i <= 246; i++)
-		{
-			DEBUG(loop, P_TIME(); PRINT("loop: Checking for slave at "); PRINTLN(i));
-			checkForNewSlaves(i);
-			AWAIT(_checkForNewSlaves);
-			if ((_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave))
-			{
-				DEBUG(loop, P_TIME(); PRINT("loop: Found slave at "); PRINT(i); PRINT(" badSlave = "); PRINTLN(_checkForNewSlaves.result() == badSlave));
-				processNewSlave(_checkForNewSlaves.result() == badSlave);
-			}
-		}
+		//for (i = 2; i <= 246; i++)
+		//{
+		//	VERBOSE(loop, P_TIME(); PRINT("loop: Checking for slave at "); PRINTLN(i));
+		//	checkForNewSlaves(i);
+		//	AWAIT(_checkForNewSlaves);
+		//	if ((_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave))
+		//	{
+		//		DEBUG(loop, P_TIME(); PRINT("loop: Found slave at "); PRINT(i); PRINT(" badSlave = "); PRINTLN(_checkForNewSlaves.result() == badSlave));
+		//		processNewSlave(_checkForNewSlaves.result() == badSlave);
+		//	}
+		//}
 
 		for (;;)
 		{
@@ -698,7 +704,7 @@ protected_testable:
 			}
 			if (lastActivityTime == 0 || (curTime - lastActivityTime > 2000000))
 			{
-				DEBUG(loop, P_TIME(); PRINTLN("loop: Checking for unassigned slave."));
+				VERBOSE(loop, P_TIME(); PRINTLN("loop: Checking for unassigned slave."));
 				checkForNewSlaves(1);
 				AWAIT(_checkForNewSlaves);
 				something = (_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave);
