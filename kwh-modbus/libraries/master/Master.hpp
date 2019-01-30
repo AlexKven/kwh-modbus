@@ -50,7 +50,7 @@ private_testable:
 	const byte _minorVersion = 0;
 	bool _timeUpdatePending = false;
 	byte *_dataBuffer = nullptr;
-	word _registerBuffer[10];
+	word _registerBuffer[12];
 	word _dataBufferSize;
 
 	uint32_t lastUpdateTimes[8];
@@ -496,6 +496,7 @@ protected_testable:
 	word *regs;
 	START_ASYNC;
 	DEBUG(readAndSendData, P_TIME(); PRINT("Reading data from device "); for (int i = 0; i < deviceNameLength; i++) { WRITE(deviceName[i]); } PRINTLN(""));
+	VERBOSE(readAndSendData, PRINT("startTime = "); PRINT(startTime); PRINT(" endTime = "); PRINTLN(endTime));
 	if (startTime == endTime)
 		RETURN_ASYNC;
 	if (DataCollectorDevice::getParametersFromDataCollectorDeviceType(deviceRow->deviceType, accumulateData, timeScale, dataSize))
