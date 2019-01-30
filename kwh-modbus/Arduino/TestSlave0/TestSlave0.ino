@@ -122,19 +122,19 @@ class DestinationDevice : public Device
    RecieveDataStatus receiveDeviceData(byte dataPointsInPage, byte dataPointSize,
    TimeScale timesScale, byte pageNumber, byte* dataPoints)
    {
-//    byte timePeriod = 1;
-//    if (timesScale == TimeScale::ms250)
-//      timePeriod = 4;
-//    for (int i = 0; i <dataPointsInPage; i++)
-//    {
-//      Serial.print(" Pg: ");
-//      Serial.print(pageNumber);
-//      Serial.print(" Pt: ");
-//      Serial.print(i);
-//      Serial.print(" Val: ");
-//      Serial.println(dataPoints[i]);
-////      delay(100);
-//    }
+    byte timePeriod = 1;
+    if (timesScale == TimeScale::ms250)
+      timePeriod = 4;
+    for (int i = 0; i <dataPointsInPage; i++)
+    {
+      Serial.print(" Pg: ");
+      Serial.print(pageNumber);
+      Serial.print(" Pt: ");
+      Serial.print(i);
+      Serial.print(" Val: ");
+      Serial.println(dataPoints[i]);
+//      delay(100);
+    }
     return RecieveDataStatus::success;
    }
 };
