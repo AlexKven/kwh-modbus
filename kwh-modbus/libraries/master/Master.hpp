@@ -680,17 +680,17 @@ protected_testable:
 		ASYNC_VAR(5, i);
 		START_ASYNC;
 		// Initialize existing slaves on startup
-		for (i = 2; i <= 246; i++)
-		{
-			DEBUG(loop, P_TIME(); PRINT("loop: Checking for slave at "); PRINTLN(i));
-			checkForNewSlaves(i);
-			AWAIT(_checkForNewSlaves);
-			if ((_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave))
-			{
-				DEBUG(loop, P_TIME(); PRINT("loop: Found slave at "); PRINT(i); PRINT(" badSlave = "); PRINTLN(_checkForNewSlaves.result() == badSlave));
-				processNewSlave(_checkForNewSlaves.result() == badSlave);
-			}
-		}
+		//for (i = 2; i <= 246; i++)
+		//{
+		//	VERBOSE(loop, P_TIME(); PRINT("loop: Checking for slave at "); PRINTLN(i));
+		//	checkForNewSlaves(i);
+		//	AWAIT(_checkForNewSlaves);
+		//	if ((_checkForNewSlaves.result() == found) || (_checkForNewSlaves.result() == badSlave))
+		//	{
+		//		DEBUG(loop, P_TIME(); PRINT("loop: Found slave at "); PRINT(i); PRINT(" badSlave = "); PRINTLN(_checkForNewSlaves.result() == badSlave));
+		//		processNewSlave(_checkForNewSlaves.result() == badSlave);
+		//	}
+		//}
 
 		for (;;)
 		{
