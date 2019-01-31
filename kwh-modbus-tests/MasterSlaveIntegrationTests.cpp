@@ -160,7 +160,7 @@ public:
 		modbusSlave->addReg(10, 0);
 		modbusSlave->addReg(11, 0);
 		modbusSlave->addReg(12, 0);
-		master->config(system, modbusMaster, deviceDirectory, 40, 15);
+		master->config(system, modbusMaster, deviceDirectory, 40, 20);
 		slave->config(system, modbusSlave);
 		deviceDirectory->init(5, 20);
 		seedRandom(masterSerial);
@@ -567,7 +567,7 @@ TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferP
 	ASSERT_TRUE(masterSuccess);
 	ASSERT_TRUE(timeSet);
 	ASSERT_EQ(sendingDeviceName, "dev01");
-	Verify(Method(mockReadData, method).Using(2, 4, 0, 20, 40)).AtLeastOnce();
+	Verify(Method(mockReadData, method).Using(2, 4, 0, 20, 16)).AtLeastOnce();
 	Verify(Method(mockPrepareReceiveData, method).Using(5, 2, 8, TimeScale::sec1, 4)).AtLeastOnce();
 	// Data pages recieved by the slave should match {{0, 1, 2}, {3}}, {{4, 5, 6}, {7}}
 	Verify(Method(mockRecieveData, method).Using(4, 8, TimeScale::sec1, 0,
@@ -669,7 +669,7 @@ TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferP
 	ASSERT_TRUE(slaveSuccess);
 	ASSERT_TRUE(masterSuccess);
 	ASSERT_EQ(sendingDeviceName, "dev01");
-	Verify(Method(mockReadData, method).Using(2, 8, 0, 20, 40)).AtLeastOnce();
+	Verify(Method(mockReadData, method).Using(2, 8, 0, 20, 16)).AtLeastOnce();
 	Verify(Method(mockPrepareReceiveData, method).Using(5, 2, 8, TimeScale::sec1, 4)).AtLeastOnce();
 	// Data pages recieved by the slave should match {{0, 1, 2}, {3}}, {{4, 5, 6}, {7}}
 	Verify(Method(mockRecieveData, method).Using(3, 8, TimeScale::sec1, 0,

@@ -162,7 +162,7 @@ public:
 		auto sze = sizeof(T_MASTER);
 		registerArray = new word[12];
 		modbus->init(registerArray, 0, 12, 20);
-		master->config(system, modbus, &mockDeviceDirectory.get(), 10, 15);
+		master->config(system, modbus, &mockDeviceDirectory.get(), 10, 20);
 		modbus->config(serial, system, 1200);
 		tracker.addPointers(modbus, master, serial, system);
 		tracker.addArrays(registerArray);
@@ -177,6 +177,34 @@ public:
 		T_MASTER::readAndSendDeviceData_Task::mock = nullptr;
 	}
 };
+
+TEST_F_TRAITS(MasterTests, calculateMaxPointsPerReadPage_registerLimited_wholePoint,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
+{
+	auto result = T_MASTER::calculateMaxPointsPerReadPage(20, 10, 12);
+	ASSERT_EQ(result, 4);
+}
+
+TEST_F_TRAITS(MasterTests, calculateMaxPointsPerReadPage_registerLimited_partialPoint,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
+{
+	auto result = T_MASTER::calculateMaxPointsPerReadPage(20, 10, 9);
+	ASSERT_EQ(result, 5);
+}
+
+TEST_F_TRAITS(MasterTests, calculateMaxPointsPerReadPage_dataLimited_wholePoint,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
+{
+	auto result = T_MASTER::calculateMaxPointsPerReadPage(12, 20, 12);
+	ASSERT_EQ(result, 8);
+}
+
+TEST_F_TRAITS(MasterTests, calculateMaxPointsPerReadPage_dataLimited_partialPoint,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
+{
+	auto result = T_MASTER::calculateMaxPointsPerReadPage(12, 20, 10);
+	ASSERT_EQ(result, 9);
+}
 
 TEST_F_TRAITS(MasterTests, ensureTaskNotStarted_NeedsReset_Doesnt,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
@@ -1876,7 +1904,7 @@ TEST_F_TRAITS(MasterTests, sendDataToSlaves_Failure_NameTooLongForRegisterBuffer
 	// Arrange
 	MOCK_MODBUS;
 	MOCK_MASTER;
-	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(20);
+	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(30);
 	Fake(Method(masterMock, reportMalfunction));
 	auto devices = Setup_DataCollectorsAndTransmitters();
 
@@ -1899,7 +1927,7 @@ TEST_F_TRAITS(MasterTests, sendDataToSlaves_Failure_NameTooLongForRegisterBuffer
 	master->setClock(0x23456781);
 
 	// Act
-	auto name = (byte*)"01234567899876543210";
+	auto name = (byte*)"012345678998765432100123456789";
 	auto data = tracker.addArray(new byte[5]{ 0x21, 0x88, 0x51, 0x50, 0xAB });
 	T_MASTER::sendDataToSlaves_Task task(&T_MASTER::sendDataToSlaves, master, 0x12345678, 5, TimeScale::hr1, 8, name, data);
 	ASSERT_TRUE(task());

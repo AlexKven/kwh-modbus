@@ -69,6 +69,13 @@ protected_testable:
 		//Serial.println(line);
 	}
 
+	static inline word calculateMaxPointsPerReadPage(byte dataBufferSize, byte registerBufferSize, byte dataSize)
+	{
+		byte dataMax = dataBufferSize * 8 / dataSize;
+		byte registerMax = (registerBufferSize - 4) * 8 / dataSize;
+		return dataMax < registerMax ? dataMax : registerMax;
+	}
+
 	virtual uint32_t getPollPeriodForTimeScale(TimeScale timeScale)
 	{
 		switch (timeScale)
@@ -522,7 +529,7 @@ protected_testable:
 			_registerBuffer[3] = (word)startTime;
 			_registerBuffer[4] = (word)(startTime >> 16);
 			_registerBuffer[5] = numDataPoints;
-			_registerBuffer[6] = curReadPage + (word)((_dataBufferSize * 8 / dataSize) << 8);
+			_registerBuffer[6] = curReadPage + (calculateMaxPointsPerReadPage(_dataBufferSize, _registerBufferSize, dataSize) << 8);
 			completeModbusWriteRegisters(deviceRow->slaveId, 0, 7, _registerBuffer);
 			AWAIT(_completeModbusWriteRegisters);
 			ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
