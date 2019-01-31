@@ -1870,6 +1870,46 @@ TEST_F_TRAITS(MasterTests, sendDataToSlaves_Failure_OnePageEach_Malfunction,
 	Verify(Method(completeWriteRegsMock, func).Using(5, 0, 12, Any<word*>())).Once();
 }
 
+TEST_F_TRAITS(MasterTests, sendDataToSlaves_Failure_NameTooLongForRegisterBuffer,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
+{
+	// Arrange
+	MOCK_MODBUS;
+	MOCK_MASTER;
+	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(20);
+	Fake(Method(masterMock, reportMalfunction));
+	auto devices = Setup_DataCollectorsAndTransmitters();
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
+	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
+	When(Method(completeReadRegsMock, func)).AlwaysReturn(true);
+	When(Method(completeReadRegsMock, result)).AlwaysReturn(success);
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
+	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
+	RegsQueue writtenRegs;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, writtenRegs);
+	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
+
+	RegsQueue readRegs;
+	readRegs.push(REGS(2, 4, 6)); // Bad response
+	readRegs.push(REGS(2, 4, 8 << 8));
+	isRegsResponse_UseMockData(modbusBaseMock, readRegs);
+
+	master->setClock(0x23456781);
+
+	// Act
+	auto name = (byte*)"01234567899876543210";
+	auto data = tracker.addArray(new byte[5]{ 0x21, 0x88, 0x51, 0x50, 0xAB });
+	T_MASTER::sendDataToSlaves_Task task(&T_MASTER::sendDataToSlaves, master, 0x12345678, 5, TimeScale::hr1, 8, name, data);
+	ASSERT_TRUE(task());
+
+	// Assert
+	ASSERT_EQ(writtenRegs.size(), 0);
+	Verify(Method(completeWriteRegsMock, func)).Never();
+	Verify(Method(masterMock, reportMalfunction)).Once();
+}
+
 TEST_F_TRAITS(MasterTests, sendDataToSlaves_Success_ReportDeviceNotResponding,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {

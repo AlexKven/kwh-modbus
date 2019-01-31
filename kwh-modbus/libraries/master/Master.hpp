@@ -372,6 +372,11 @@ protected_testable:
 		word *regs;
 		byte *dummyName;
 		START_ASYNC;
+		if (8 + (_deviceDirectory->getDeviceNameLength() + 1) / 2 > _registerBufferSize)
+		{
+			reportMalfunction(__LINE__);
+			RETURN_ASYNC;
+		}
 		DEBUG(sendDataToSlaves, P_TIME(); PRINT("Sending data to slaves from device: "); for (int i = 0; i < _deviceDirectory->getDeviceNameLength(); i++) { WRITE(name[i]); } PRINTLN(""));
 		VERBOSE(sendDataToSlaves, PRINT("startTime = "); PRINT(startTime); PRINT(" dataSize = "); PRINT(dataSize); PRINT(" numDataPoints = "); PRINTLN(numDataPoints));
 		while (deviceRow != -1)
