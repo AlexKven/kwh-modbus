@@ -50,8 +50,9 @@ private_testable:
 	const byte _minorVersion = 0;
 	bool _timeUpdatePending = false;
 	byte *_dataBuffer = nullptr;
-	word _registerBuffer[12];
-	word _dataBufferSize;
+	word *_registerBuffer;
+	byte _dataBufferSize;
+	byte _registerBufferSize;
 
 	uint32_t lastUpdateTimes[8];
 
@@ -746,13 +747,15 @@ protected_testable:
 	}
 
 public:
-	void config(S *system, M *modbus, D *deviceDirectory, byte dataBufferSize)
+	void config(S *system, M *modbus, D *deviceDirectory, byte dataBufferSize, byte registerBufferSize)
 	{
 		_system = system;
 		_modbus = modbus;
 		_deviceDirectory = deviceDirectory;
 		_dataBufferSize = dataBufferSize;
 		_dataBuffer = new byte[_dataBufferSize];
+		_registerBufferSize = registerBufferSize;
+		_registerBuffer = new word[_registerBufferSize];
 		for (int i = 0; i < 8; i++)
 		{
 			lastUpdateTimes[i] = 0;

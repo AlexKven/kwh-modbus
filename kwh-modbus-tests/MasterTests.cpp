@@ -46,7 +46,7 @@ protected:
 	void SetupOutOfRangeRegisterArray()
 	{
 		modbus->init(registerArray, 20, 12, 20);
-		master->config(system, modbus, &mockDeviceDirectory.get(), 10);
+		master->config(system, modbus, &mockDeviceDirectory.get(), 10, 10);
 	}
 
 	word DataCollectorDeviceType(bool accumulateData, TimeScale timeScale, byte dataPacketSize)
@@ -162,7 +162,7 @@ public:
 		auto sze = sizeof(T_MASTER);
 		registerArray = new word[12];
 		modbus->init(registerArray, 0, 12, 20);
-		master->config(system, modbus, &mockDeviceDirectory.get(), 10);
+		master->config(system, modbus, &mockDeviceDirectory.get(), 10, 10);
 		modbus->config(serial, system, 1200);
 		tracker.addPointers(modbus, master, serial, system);
 		tracker.addArrays(registerArray);
