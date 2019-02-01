@@ -54,6 +54,8 @@ private_testable:
 	byte _dataBufferSize;
 	byte _registerBufferSize;
 
+	word _maxBitTransferSize = 1024;
+
 	uint32_t lastUpdateTimes[8];
 
 	D *_deviceDirectory;
@@ -658,6 +660,24 @@ protected_testable:
 						{
 							readStart = lastUpdateTimes[(int)timeScale];
 							word numDataPoints = (currentTime - readStart) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
+							{
+								word maxPoints = _maxBitTransferSize / dataSize;
+								if (timeScale == TimeScale::ms250)
+								{
+									maxPoints = (maxPoints / 4) * 4;
+									if (maxPoints == 0)
+										maxPoints = 4;
+								}
+								else
+								{
+									if (maxPoints == 0)
+										maxPoints = 1;
+								}
+								if (numDataPoints > maxPoints)
+								{
+									readStart += (uint32_t)(numDataPoints - maxPoints) * TimeManager::getPeriodFromTimeScale(timeScale) / 1000;
+								}
+							}
 							readAndSendDeviceData(deviceRow, _deviceDirectory->getDeviceNameLength(), deviceName,
 								readStart, currentTime);
 						}
@@ -772,6 +792,16 @@ public:
 		{
 			lastUpdateTimes[i] = 0;
 		}
+	}
+
+	word getMaxBitTransferSize()
+	{
+		return _maxBitTransferSize;
+	}
+
+	void setMaxBitTransferSize(word value)
+	{
+		_maxBitTransferSize = value;
 	}
 
 	bool started = false;
