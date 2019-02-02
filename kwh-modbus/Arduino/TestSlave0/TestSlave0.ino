@@ -169,17 +169,15 @@ void setup() {
   modbus.setSlaveId(1);
   slave.config(&functions, &modbus);
   
-  Device* devices[3];
+  Device* devices[2];
   devices[0] = new SourceDevice();
-  devices[1] = new DestinationDevice();
-  devices[2] = new SourceDevice2();
+  devices[1] = new SourceDevice2();
 
-  byte* names[3];
-  names[0] = (byte*)"device00";
-  names[1] = (byte*)"device01";
-  names[2] = (byte*)"device02";
+  byte* names[2];
+  names[0] = (byte*)"meter_00";
+  names[1] = (byte*)"meter_01";
 
-  slave.init(3, 8, 15, 20, devices, names);
+  slave.init(2, 8, 15, 20, devices, names);
 }
 
 void loop() {

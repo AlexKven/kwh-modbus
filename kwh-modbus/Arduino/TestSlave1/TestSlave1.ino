@@ -1,11 +1,32 @@
+#define CONSOLE_DEBUG
+#define CONSOLE_INFO
+#define CONSOLE_VERBOSE
+#define PRINTLN(MSG) Serial.println(MSG)
+#define PRINT(MSG) Serial.print(MSG)
+#define WRITE(CHR) Serial.write(CHR)
+#define P_TIME() Serial.print(millis()); Serial.print("ms ")
+
 #include "Arduino.h"
+#include "BitFunctions.hpp"
 #include "Modbus.h"
 #include "ModbusArray.h"
 #include "ModbusSerial.hpp"
 #include "ModbusSlave.hpp"
+#include "TimeManager.h"
+#include "Device.h"
+#include "DataCollectorDevice.h"
 #include "Slave.hpp"
 #include "HardwareSerial.h"
 #include "SoftwareSerial.h"
+
+DEBUG_CATEGORY_ALL
+
+int getMemAllocation()
+{
+  int *dummy = new int();
+  delete dummy;
+  return (int)dummy;
+}
 
 class ArduinoFunctions
 {
@@ -41,16 +62,84 @@ public:
   }
 };
 
-class RealDevice : public Device
+class SourceDevice : public DataCollectorDevice
 {
   public:
-  word getType()
+  SourceDevice()
   {
-    return 3;
+    init(false, TimeScale::sec1, 8);
+  }
+  
+  bool readDataPoint(uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits)
+  {
+    dataBuffer[0] = (byte)(time % 256);
   }
 };
 
-word *registers = new word[20];
+class SourceDevice2 : public DataCollectorDevice
+{
+  public:
+  SourceDevice2()
+  {
+    init(false, TimeScale::ms250, 8);
+  }
+  
+  bool readDataPoint(uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits)
+  {
+    dataBuffer[0] = (byte)(time % 256);
+//    dataBuffer[0] = (word)((time % 64) * 4 + quarterSecondOffset);
+  }
+};
+
+class DestinationDevice : public Device
+{
+  private:
+  uint32_t curStart;
+  public:
+  word getType()
+  {
+    return 2 << 14;
+  }
+
+  RecieveDataStatus prepareReceiveData(word nameLength, byte* name, uint32_t startTime,
+   byte dataPointSize, TimeScale dataTimeScale, word dataPointsCount, byte &outDataPointsPerPage)
+   {
+    Serial.println();
+    Serial.println();
+    Serial.print("Recieving data from ");
+    for (int i = 0; i < nameLength; i++)
+    {
+      Serial.write(name[i]);
+    }
+    Serial.println();
+    Serial.print("Time: ");
+    curStart = startTime;
+    Serial.println(curStart);
+    outDataPointsPerPage = 4;
+    return RecieveDataStatus::success;
+   }
+   
+   RecieveDataStatus receiveDeviceData(byte dataPointsInPage, byte dataPointSize,
+   TimeScale timesScale, byte pageNumber, byte* dataPoints)
+   {
+    byte timePeriod = 1;
+    if (timesScale == TimeScale::ms250)
+      timePeriod = 4;
+    for (int i = 0; i <dataPointsInPage; i++)
+    {
+      Serial.print(" Pg: ");
+      Serial.print(pageNumber);
+      Serial.print(" Pt: ");
+      Serial.print(i);
+      Serial.print(" Val: ");
+      Serial.println(dataPoints[i]);
+//      delay(100);
+    }
+    return RecieveDataStatus::success;
+   }
+};
+
+word *registers = new word[60];
 typedef ModbusSlave<SoftwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
 typedef Slave<ModbusSlave<SoftwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions> T_Slave;
 T_Modbus modbus;
@@ -62,45 +151,41 @@ ArduinoFunctions functions;
 int interval = 0;
 
 void setup() {
-  for (int i = 0; i < 20; i++)
+  for (int i = 0; i < 60; i++)
   {
     registers[i] = 0;
   }
 
   Serial.begin(9600);
   Serial.println("Starting...");
+  Serial.println("...");
+  Serial.println("...");
+  Serial.println("...");
+  Serial.println("...");
   
   modbus.config(&mySerial, &functions, 9600, 4);
   Serial.println("Slave initialized");
-  modbus.init(registers, 0, 20, 30);
+  modbus.init(registers, 0, 60, 80);
   modbus.setSlaveId(1);
   slave.config(&functions, &modbus);
   
-  Device* devices[2];
-  devices[0] = new RealDevice();
-  devices[1] = new RealDevice();
+  Device* devices[1];
+  devices[0] = new DestinationDevice();
 
-  byte* names[2];
-  names[0] = (byte*)"device02";
-  names[1] = (byte*)"device03";
+  byte* names[1];
+  names[0] = (byte*)"reciever";
 
-  slave.init(2, 8, devices, names);
+  slave.init(1, 8, 15, 20, devices, names);
 }
 
 void loop() {
+  slave.loop();
 //  // put your main code here, to run repeatedly:
 //  Serial.println(Serial1.available());12
 
-  Serial.println("");
-  Serial.println("");
-  Serial.println("");
-  Serial.print("Slave ID: ");
-  Serial.println(slave.getSlaveId());
-
 for (int i = 0; i < 1000; i++)
 {
-  slave.loop();
-//  
+//  s
 //  delay(5);
 }
 

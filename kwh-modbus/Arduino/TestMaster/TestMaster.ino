@@ -1,6 +1,6 @@
 #define CONSOLE_DEBUG
 #define CONSOLE_INFO
-#define CONSOLE_VERBOSE
+//#define CONSOLE_VERBOSE
 #define PRINTLN(MSG) Serial.println(MSG)
 #define PRINT(MSG) Serial.print(MSG)
 #define WRITE(CHR) Serial.write(CHR)
@@ -80,7 +80,7 @@ void setup() {
   modbus.setMaxTimePerTryMicros(100000);
   modbus.setMaxTries(10);
   directory.init(8, 20);
-  master.config(&functions, &modbus, &directory, 40);
+  master.config(&functions, &modbus, &directory, 40, 15);
   Serial.println("Master initialized");
   Serial.print("Initial Memory: ");
   Serial.println(getMemAllocation());
