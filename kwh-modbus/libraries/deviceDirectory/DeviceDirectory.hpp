@@ -7,7 +7,6 @@
 
 #include "../deviceDirectoryRow/DeviceDirectoryRow.h"
 
-template<typename T>
 class DeviceDirectory
 {
 private_testable:
@@ -15,7 +14,6 @@ private_testable:
 	word _deviceNameLength;
 	byte* _deviceNames = nullptr;
 	DeviceDirectoryRow* _devices = nullptr;
-	T* _persistentStore = nullptr;
 
 	virtual byte* getDeviceName(word deviceIndex)
 	{
@@ -39,11 +37,10 @@ private_testable:
 	}
 
 public:
-	virtual void init(word deviceNameLength, word maxDevices, T *persistentStore = nullptr)
+	virtual void init(word deviceNameLength, word maxDevices)
 	{
 		_deviceNameLength = deviceNameLength;
 		_maxDevices = maxDevices;
-		_persistentStore = persistentStore;
 		_devices = new DeviceDirectoryRow[_maxDevices];
 		_deviceNames = new byte[_deviceNameLength * _maxDevices];
 		for (int i = 0; i < _maxDevices; i++)
@@ -52,10 +49,10 @@ public:
 		}
 	}
 
-	virtual void init(int maxMemory, word deviceNameLength, word &maxDevicesOut, T *persistentStore = nullptr)
+	virtual void init(int maxMemory, word deviceNameLength, word &maxDevicesOut)
 	{
 		maxDevicesOut = maxMemory / (sizeof(DeviceDirectoryRow) + deviceNameLength * sizeof(byte));
-		init(deviceNameLength, maxDevicesOut, persistentStore);
+		init(deviceNameLength, maxDevicesOut);
 	}
 
 	virtual word getDeviceNameLength()
@@ -67,7 +64,7 @@ public:
 	//If empty, DeviceType = 0, and SlaveID = 0 unless there's
 	//device entries after that row, then DeviceType = 1
 
-	virtual DeviceDirectoryRow* findDeviceForName(byte* devName, int &rowOut = 0)
+	virtual DeviceDirectoryRow* findDeviceForName(byte* devName, int &rowOut)
 	{
 		rowOut = -1;
 		for (int i = 0; i < _maxDevices; i++)

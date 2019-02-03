@@ -4,18 +4,18 @@
 #include "../kwh-modbus/libraries/deviceDirectory/DeviceDirectory.hpp"
 #include "test_helpers.h"
 #include "PointerTracker.h"
-#define getMock() Mock<DeviceDirectory<byte*>>(*deviceDirectory)
+#define getMock() Mock<DeviceDirectory>(*deviceDirectory)
 
 using namespace fakeit;
 
 class DeviceDirectoryTests : public ::testing::Test
 {
 protected:
-	DeviceDirectory<byte*> *deviceDirectory = new DeviceDirectory<byte*>();
+	DeviceDirectory *deviceDirectory = new DeviceDirectory();
 
 	PointerTracker tracker;
 
-	inline void setupCompareName_ReturnTrueOn(Mock<DeviceDirectory<byte*>> &mock, word index)
+	inline void setupCompareName_ReturnTrueOn(Mock<DeviceDirectory> &mock, word index)
 	{
 		for (int i = 0; i < index; i++)
 		{
@@ -138,15 +138,12 @@ TEST_F_TRAITS(DeviceDirectoryTests, init_default,
 	ASSERT_EQ(deviceDirectory->_devices[4].deviceType, 4);
 	ASSERT_EQ(deviceDirectory->_devices[0].slaveId, 0);
 	ASSERT_EQ(deviceDirectory->_devices[4].slaveId, 4);
-	ASSERT_EQ(deviceDirectory->_persistentStore, nullptr);
 }
 
 TEST_F_TRAITS(DeviceDirectoryTests, init_persistentStore,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	byte *persistentStore = new byte();
-
-	deviceDirectory->init(11, 5, &persistentStore);
+	deviceDirectory->init(11, 5);
 	for (int i = 0; i < 55; i++)
 	{
 		deviceDirectory->_deviceNames[i] = i;
@@ -161,26 +158,25 @@ TEST_F_TRAITS(DeviceDirectoryTests, init_persistentStore,
 	ASSERT_EQ(deviceDirectory->_devices[4].deviceType, 0);
 	ASSERT_EQ(deviceDirectory->_devices[0].slaveId, 0);
 	ASSERT_EQ(deviceDirectory->_devices[4].slaveId, 0);
-	ASSERT_EQ(deviceDirectory->_persistentStore, &persistentStore);
 }
 
 TEST_F_TRAITS(DeviceDirectoryTests, init_maxMemory,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
-	Fake(OverloadedMethod(mock, init, void(word, word, byte**)));
+	Mock<DeviceDirectory> mock = getMock();
+	Fake(OverloadedMethod(mock, init, void(word, word)));
 
 	word numDevices;
 	deviceDirectory->init(500, 11, numDevices);
 
 	ASSERT_EQ(numDevices, 26);
-	Verify(OverloadedMethod(mock, init, void(word, word, byte**)).Using(11, 26, nullptr)).Once();
+	Verify(OverloadedMethod(mock, init, void(word, word)).Using(11, 26)).Once();
 }
 
 TEST_F_TRAITS(DeviceDirectoryTests, findDeviceForName_empty,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	setupCompareName_ReturnTrueOn(mock, 3);
 	deviceDirectory->_maxDevices = 6;
 	deviceDirectory->_deviceNameLength = 5;
@@ -197,7 +193,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findDeviceForName_empty,
 TEST_F_TRAITS(DeviceDirectoryTests, findDeviceForName_emptyish,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	setupCompareName_ReturnTrueOn(mock, 3);
 	deviceDirectory->_maxDevices = 6;
 	deviceDirectory->_deviceNameLength = 5;
@@ -218,7 +214,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findDeviceForName_emptyish,
 TEST_F_TRAITS(DeviceDirectoryTests, findDeviceForName_exhaustedList,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	setupCompareName_ReturnTrueOn(mock, 6);
 	deviceDirectory->_maxDevices = 6;
 	deviceDirectory->_deviceNameLength = 5;
@@ -245,7 +241,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findDeviceForName_exhaustedList,
 TEST_F_TRAITS(DeviceDirectoryTests, findDeviceForName_found,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	setupCompareName_ReturnTrueOn(mock, 3);
 	deviceDirectory->_maxDevices = 6;
 	deviceDirectory->_deviceNameLength = 5;
@@ -273,7 +269,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findDeviceForName_found,
 TEST_F_TRAITS(DeviceDirectoryTests, insertIntoRow,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	deviceDirectory->_maxDevices = 6;
 	deviceDirectory->_deviceNameLength = 5;
 	deviceDirectory->_devices = new DeviceDirectoryRow[6];
@@ -291,7 +287,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, insertIntoRow,
 TEST_F_TRAITS(DeviceDirectoryTests, updateItemInDeviceDirectory_notFound,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 
 	deviceDirectory->_maxDevices = 6;
 	deviceDirectory->_deviceNameLength = 5;
@@ -313,7 +309,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, updateItemInDeviceDirectory_notFound,
 TEST_F_TRAITS(DeviceDirectoryTests, updateItemInDeviceDirectory_foundButSame,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Rare)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 
 	deviceDirectory->_maxDevices = 6;
 	deviceDirectory->_deviceNameLength = 5;
@@ -336,7 +332,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, updateItemInDeviceDirectory_foundButSame,
 TEST_F_TRAITS(DeviceDirectoryTests, updateItemInDeviceDirectory_foundAndChanged,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 
 	deviceDirectory->_maxDevices = 6;
 	deviceDirectory->_deviceNameLength = 5;
@@ -714,7 +710,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findFreeSlaveID_partiallyFilled_case4,
 TEST_F_TRAITS(DeviceDirectoryTests, addDevice_success,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	When(Method(mock, findFreeRow)).Return(6);
 	Fake(Method(mock, insertIntoRow));
 
@@ -728,7 +724,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, addDevice_success,
 TEST_F_TRAITS(DeviceDirectoryTests, addDevice_failure,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Failure)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	When(Method(mock, findFreeRow)).Return(-1);
 	Fake(Method(mock, insertIntoRow));
 	
@@ -742,7 +738,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, addDevice_failure,
 TEST_F_TRAITS(DeviceDirectoryTests, addOrReplaceDevice_deviceAdded,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	When(Method(mock, findDeviceForName)).Do([](byte* name, int &row)
 	{
 		row = -1;
@@ -760,7 +756,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, addOrReplaceDevice_deviceAdded,
 TEST_F_TRAITS(DeviceDirectoryTests, addOrReplaceDevice_deviceReplaced,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	auto device = DeviceDirectoryRow(10, 11, 12, 13);
 	When(Method(mock, findDeviceForName)).Do([&device](byte* name, int &row)
 	{
@@ -804,7 +800,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, filterDevicesForSlave_empty,
 TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_0,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	byte name[4];
 	name[0] = 'N';
 	name[1] = 'm';
@@ -840,7 +836,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_0,
 TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_1,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	byte name[4];
 	name[0] = 'N';
 	name[1] = 'm';
@@ -876,7 +872,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_1,
 TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_2,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	byte name[4];
 	name[0] = 'N';
 	name[1] = 'm';
@@ -910,7 +906,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case0_2,
 TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_0,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	byte name[4];
 	name[0] = 'N';
 	name[1] = 'm';
@@ -946,7 +942,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_0,
 TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1a,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	byte name[4];
 	name[0] = 'N';
 	name[1] = 'm';
@@ -982,7 +978,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1a,
 TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1b,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	byte name[4];
 	name[0] = 'N';
 	name[1] = 'm';
@@ -1018,7 +1014,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_1b,
 TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_2,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	byte name[4];
 	name[0] = 'N';
 	name[1] = 'm';
@@ -1052,7 +1048,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case1_2,
 TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0a,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	byte name[4];
 	name[0] = 'N';
 	name[1] = 'm';
@@ -1088,7 +1084,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0a,
 TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0b,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	byte name[4];
 	name[0] = 'N';
 	name[1] = 'm';
@@ -1124,7 +1120,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_0b,
 TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_1,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	byte name[4];
 	name[0] = 'N';
 	name[1] = 'm';
@@ -1160,7 +1156,7 @@ TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_1,
 TEST_F_TRAITS(DeviceDirectoryTests, findNextDevice_NoCondition_Case2_2,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	Mock<DeviceDirectory<byte*>> mock = getMock();
+	Mock<DeviceDirectory> mock = getMock();
 	byte name[4];
 	name[0] = 'N';
 	name[1] = 'm';

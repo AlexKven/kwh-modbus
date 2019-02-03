@@ -16,7 +16,7 @@
 using namespace fakeit;
 
 typedef MockableResilientModbusMaster<MockSerialStream, WindowsSystemFunctions, ModbusArray> T_MODBUS;
-typedef Master<T_MODBUS, WindowsSystemFunctions, DeviceDirectory<byte*>> T_MASTER;
+typedef Master<T_MODBUS, WindowsSystemFunctions, DeviceDirectory> T_MASTER;
 typedef ModbusMaster<MockSerialStream, WindowsSystemFunctions, ModbusArray> T_MODBUS_BASE;
 typedef ResilientTask<WindowsSystemFunctions> T_MODBUS_TASK;
 
@@ -37,7 +37,7 @@ protected:
 	WindowsSystemFunctions *system = new WindowsSystemFunctions();
 	T_MODBUS *modbus = new T_MODBUS();
 	T_MASTER *master = new T_MASTER();
-	Mock<DeviceDirectory<byte*>> mockDeviceDirectory;
+	Mock<DeviceDirectory> mockDeviceDirectory;
 
 	PointerTracker tracker;
 

@@ -53,7 +53,7 @@ inline bool contains(ModbusTransmissionError a, ModbusTransmissionError b)
 typedef ModbusSlave<ISerialStream, ISystemFunctions, ModbusMemory> T_ModbusSlave;
 typedef ResilientModbusMaster<ISerialStream, ISystemFunctions, ModbusMemory> T_ModbusMaster;
 typedef Slave<T_ModbusSlave, WindowsSystemFunctions> T_Slave;
-typedef Master<T_ModbusMaster, WindowsSystemFunctions, DeviceDirectory<byte*>> T_Master;
+typedef Master<T_ModbusMaster, WindowsSystemFunctions, DeviceDirectory> T_Master;
 class MasterSlaveIntegrationTests :
 	public ::testing::Test,
 	public ::testing::WithParamInterface<ModbusTransmissionError>
@@ -98,7 +98,7 @@ protected:
 	queue<byte> *masterIn;
 	MockSerialStream *slaveSerial;
 	MockSerialStream *masterSerial;
-	DeviceDirectory<byte*> *deviceDirectory;
+	DeviceDirectory *deviceDirectory;
 	T_Slave *slave = new T_Slave();
 	T_Master *master = new T_Master();
 
@@ -140,7 +140,7 @@ public:
 		masterSerial = new MockSerialStream(masterIn, slaveIn);
 		slaveSerial->setSystem(system);
 		masterSerial->setSystem(system);
-		deviceDirectory = new DeviceDirectory<byte*>();
+		deviceDirectory = new DeviceDirectory();
 
 		tracker.addPointers(modbusSlave, modbusMaster, slaveIn, masterIn, slaveSerial,
 			masterSerial, deviceDirectory, slave, master);
