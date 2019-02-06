@@ -173,6 +173,7 @@ public:
 	// Tested
 	bool readInputFrame(bool &broadcast_out)
 	{
+		Serial.println("Read Input Frame");
 		byte *frame = this->getFramePtr();
 		word length = this->getFrameLength();
 		// first byte of frame = address
@@ -184,14 +185,17 @@ public:
 		broadcast_out = false;
 		if (address == 0)
 		{
+			Serial.println("Bad Address");
 			broadcast_out = true;
 		}
 		else if (address != this->getSlaveId()) {
+			Serial.println("Bad SlaveId");
 			return false;
 		}
 
 		//CRC Check
 		if (crc != this->calcCrc(frame[0], frame + 1, length - 3)) {
+			Serial.println("Bad CRC");
 			return false;
 		}
 

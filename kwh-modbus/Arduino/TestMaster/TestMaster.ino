@@ -1,6 +1,6 @@
 #define CONSOLE_DEBUG
 #define CONSOLE_INFO
-//#define CONSOLE_VERBOSE
+#define CONSOLE_VERBOSE
 #define PRINTLN(MSG) Serial.println(MSG)
 #define PRINT(MSG) Serial.print(MSG)
 #define WRITE(CHR) Serial.write(CHR)
@@ -77,8 +77,8 @@ void setup() {
   modbus.config(&Serial1, &functions, 9600, 4);
   modbus.init(registers, 0, 50, 80);
   modbus.setMinTimePerTryMicros(15000);
-  modbus.setMaxTimePerTryMicros(100000);
-  modbus.setMaxTries(10);
+  modbus.setMaxTimePerTryMicros(2000000);
+  modbus.setMaxTries(15);
   directory.init(8, 20);
   master.config(&functions, &modbus, &directory, 40, 15);
   Serial.println("Master initialized");
