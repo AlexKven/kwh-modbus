@@ -1,6 +1,6 @@
 #define CONSOLE_DEBUG
 #define CONSOLE_INFO
-//#define CONSOLE_VERBOSE
+#define CONSOLE_VERBOSE
 #define PRINTLN(MSG) Serial.println(MSG)
 #define PRINT(MSG) Serial.print(MSG)
 #define WRITE(CHR) Serial.write(CHR)
