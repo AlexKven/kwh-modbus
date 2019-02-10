@@ -701,16 +701,17 @@ protected_testable:
 		return _transferPendingData;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, unsigned long, unsigned long, uint32_t, bool, int));
+	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, unsigned long, unsigned int, unsigned long, uint32_t, bool, int));
 	loop_Task _loop;
 	virtual ASYNC_CLASS_FUNC(THIS_T, loop)
 	{
 		ASYNC_VAR_INIT(0, lastActivityTime, 0);
 		ASYNC_VAR_INIT(1, lastSyncTime, 0);
-		ASYNC_VAR(2, curTime);
-		ASYNC_VAR(3, curClock);
-		ASYNC_VAR(4, something);
-		ASYNC_VAR(5, i);
+		ASYNC_VAR_INIT(2, syncNum, 0);
+		ASYNC_VAR(3, curTime);
+		ASYNC_VAR(4, curClock);
+		ASYNC_VAR(5, something);
+		ASYNC_VAR(6, i);
 		START_ASYNC;
 		// Initialize existing slaves on startup
 		//for (i = 2; i <= 246; i++)
@@ -756,9 +757,21 @@ protected_testable:
 			{
 				lastSyncTime = curClock;
 			}
-			else if (curClock - lastSyncTime > 5)
+			else if (curClock - lastSyncTime > 4)
 			{
-				transferPendingData(TimeScale::sec1, curClock);
+				syncNum++;
+				if (syncNum % 21600 == 0)
+					transferPendingData(TimeScale::hr24, curClock);
+				else if (syncNum % 900 == 0)
+					transferPendingData(TimeScale::hr1, curClock);
+				else if (syncNum % 450 == 0)
+					transferPendingData(TimeScale::min30, curClock);
+				else if (syncNum % 150 == 0)
+					transferPendingData(TimeScale::min10, curClock);
+				else if (syncNum % 15 == 0)
+					transferPendingData(TimeScale::min1, curClock);
+				else
+					transferPendingData(TimeScale::sec1, curClock);
 				AWAIT(_transferPendingData);
 				lastSyncTime = curClock;
 			}
