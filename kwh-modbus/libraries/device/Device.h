@@ -19,6 +19,9 @@ enum class RecieveDataStatus
 
 class Device
 {
+private:
+	TimeManager *_timeSource = nullptr;
+
 public:
 	virtual word getType() = 0;
 	virtual bool readData(uint32_t startTime, word numPoints, byte page,
@@ -29,4 +32,6 @@ public:
 	virtual RecieveDataStatus receiveDeviceData(byte dataPointsInPage, byte dataPointSize,
 		TimeScale timesScale, byte pageNumber, byte* dataPoints);
 	virtual void deviceNotResponding(word nameLength, byte* name, uint32_t reportTime);
+	virtual void setTimeSource(TimeManager *timeSource);
+	virtual TimeManager* getTimeSource();
 };

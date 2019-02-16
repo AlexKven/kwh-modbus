@@ -22,3 +22,13 @@ RecieveDataStatus Device::receiveDeviceData(byte dataPointsInPage, byte dataPoin
 void Device::deviceNotResponding(word nameLength, byte * name, uint32_t reportTime)
 {
 }
+
+void Device::setTimeSource(TimeManager *timeSource)
+{
+	_timeSource = timeSource;
+}
+
+TimeManager* Device::getTimeSource()
+{
+	return _timeSource;
+}

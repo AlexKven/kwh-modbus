@@ -293,6 +293,7 @@ public:
 				_deviceNames[i][j] = deviceNames[i][j];
 			}
 			_devices[i] = devices[i];
+			_devices[i]->setTimeSource(this);
 		}
 	}
 

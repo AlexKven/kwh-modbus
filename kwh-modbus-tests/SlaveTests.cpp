@@ -43,6 +43,7 @@ protected:
 		{
 			When(Method(mockDevices[i], getType)).AlwaysReturn(7);
 			When(Method(mockDevices[i], readData)).AlwaysReturn(false);
+			Fake(Method(mockDevices[i], setTimeSource));
 			devices[i] = &mockDevices[i].get();
 		}
 	}
@@ -845,6 +846,8 @@ TEST_F_TRAITS(SlaveTests, SlaveTests_init,
 	}
 	ASSERT_TRUE(slave->_dataBuffer != nullptr);
 	ASSERT_EQ(slave->_dataBufferSize, 30);
+	for (int i = 0; i < 3; i++)
+		Verify(Method(mockDevices[0], setTimeSource).Using(slave)).Once();
 }
 
 TEST_F_TRAITS(SlaveTests, SlaveTests_clearDevices,
