@@ -482,7 +482,7 @@ TEST_P_TRAITS(MasterSlaveIntegrationTests, MasterSlaveIntegrationTests_transferP
 	});
 
 	auto mSlave = Mock<T_Slave>(*slave);
-	When(Method(mSlave, wasNeverSet)).AlwaysDo([&timeSet, this]() {
+	When(Method(mSlave, wasTimeNeverSet)).AlwaysDo([&timeSet, this]() {
 		if (!testConditionsSet)
 			return false;
 		return !timeSet; 

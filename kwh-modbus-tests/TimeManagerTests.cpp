@@ -437,12 +437,12 @@ TEST_F_TRAITS(TimeManagerTests, timeCodeRoundTrip_QuarterSecondWrongWindowCorrec
 TEST_F_TRAITS(TimeManagerTests, wasNeverSet_true,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
-	ASSERT_TRUE(timeManager->wasNeverSet());
+	ASSERT_TRUE(timeManager->wasTimeNeverSet());
 }
 
 TEST_F_TRAITS(TimeManagerTests, wasNeverSet_false,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {
 	timeManager->_clockSet = 5;
-	ASSERT_FALSE(timeManager->wasNeverSet());
+	ASSERT_FALSE(timeManager->wasTimeNeverSet());
 }

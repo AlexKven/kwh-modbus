@@ -92,7 +92,7 @@ private_testable:
 			ENSURE(_modbus->Hreg(4 + index, 0)); // Messages waiting
 			break;
 		case sDisplayDevData:
-			if (wasNeverSet())
+			if (wasTimeNeverSet())
 			{
 				// need the time
 				ENSURE(_modbus->Hreg(1, 1));
@@ -180,7 +180,7 @@ private_testable:
 			case 4:
 			{
 				_state = sPreparingToReceiveDevData;
-				if (wasNeverSet())
+				if (wasTimeNeverSet())
 				{
 					_stateDetail = (word)RecieveDataStatus::timeRequested;
 				}
