@@ -100,7 +100,7 @@ private_testable:
 			else
 			{
 				deviceNum = _modbus->Hreg(2);
-				uint32_t startTime = _modbus->Hreg(3) + (_modbus->Hreg(4) << 16);
+				uint32_t startTime = _modbus->Hreg(3) + ((uint32_t)_modbus->Hreg(4) << 16);
 				word numDataPointsRequested = _modbus->Hreg(5);
 				byte curPage = (byte)(_modbus->Hreg(6) & 0x00FF);
 				byte maxPoints = (byte)((_modbus->Hreg(6) >> 8) & 0x00FF);
@@ -187,7 +187,7 @@ private_testable:
 				RecieveDataStatus status;
 				Device *device = _devices[_modbus->Hreg(2)];
 				word nameLength = _modbus->Hreg(3);
-				uint32_t startTime = _modbus->Hreg(4) + (_modbus->Hreg(5) << 16);
+				uint32_t startTime = _modbus->Hreg(4) + ((uint32_t)_modbus->Hreg(5) << 16);
 				byte dataPointSize = (byte)(_modbus->Hreg(6) & 0xFF);
 				TimeScale dataTimeScale = (TimeScale)((_modbus->Hreg(6) >> 8) & 0xFF);
 				word dataPointsCount = _modbus->Hreg(7);
@@ -260,7 +260,7 @@ private_testable:
 				break;
 			case 32770:
 				_state = sIdle;
-				setClock((uint32_t)(_modbus->Hreg(3) << 16) + (uint16_t)_modbus->Hreg(2));
+				setClock(((uint32_t)_modbus->Hreg(3) << 16) + (uint16_t)_modbus->Hreg(2));
 				displayedStateInvalid = true;
 				break;
 			}
