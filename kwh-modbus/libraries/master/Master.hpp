@@ -647,7 +647,7 @@ protected_testable:
 		word regCount;
 		word *regs;
 		START_ASYNC;
-		DEBUG(transferPendingData, P_TIME(); PRINT("transferPendingData maxTimeScale = "); PRINTLN((int)maxTimeScale));
+		DEBUG(transferPendingData, P_TIME(); PRINT("transferPendingData maxTimeScale = "); PRINT((int)maxTimeScale); PRINT(", currentTime = "); PRINTLN(currentTime));
 		while (deviceIndex != -1)
 		{
 			deviceRow = _deviceDirectory->findNextDevice(deviceName, deviceIndex);
@@ -659,7 +659,7 @@ protected_testable:
 					{
 						{
 							readStart = lastUpdateTimes[(int)timeScale];
-							word numDataPoints = (currentTime - readStart) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
+							uint32_t numDataPoints = (uint64_t)(currentTime - readStart) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
 							{
 								word maxPoints = _maxBitTransferSize / dataSize;
 								if (timeScale == TimeScale::ms250)
@@ -675,7 +675,9 @@ protected_testable:
 								}
 								if (numDataPoints > maxPoints)
 								{
-									readStart += (uint32_t)(numDataPoints - maxPoints) * TimeManager::getPeriodFromTimeScale(timeScale) / 1000;
+									readStart += (uint64_t)(numDataPoints - (uint32_t)maxPoints) * TimeManager::getPeriodFromTimeScale(timeScale) / 1000;
+									DEBUG(transferPendingData, P_TIME(); PRINT("data transfer truncated to "); PRINT(maxPoints); PRINT(" from "); PRINTLN(numDataPoints));
+									numDataPoints = maxPoints;
 								}
 							}
 							readAndSendDeviceData(deviceRow, _deviceDirectory->getDeviceNameLength(), deviceName,
