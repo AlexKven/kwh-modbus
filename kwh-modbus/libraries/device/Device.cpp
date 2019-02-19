@@ -32,3 +32,8 @@ TimeManager* Device::getTimeSource()
 {
 	return _timeSource;
 }
+
+bool Device::isDataTransmitterDeviceType(word deviceType)
+{
+	return ((deviceType >> 14) == 2);
+}

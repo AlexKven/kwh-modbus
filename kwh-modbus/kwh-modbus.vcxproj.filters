@@ -35,9 +35,6 @@
     <ClCompile Include="libraries\device\Device.cpp">
       <Filter>libraries\device</Filter>
     </ClCompile>
-    <ClCompile Include="libraries\device\DataTransmitterDevice.cpp">
-      <Filter>libraries\device</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\modbus\Modbus.h">
@@ -123,9 +120,6 @@
     </ClInclude>
     <ClInclude Include="libraries\deviceDirectoryRow\DeviceDirectoryRow.h">
       <Filter>libraries\deviceDirectoryRow</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\device\DataTransmitterDevice.h">
-      <Filter>libraries\device</Filter>
     </ClInclude>
     <ClInclude Include="libraries\bitFunctions\BitFunctions.hpp">
       <Filter>libraries\bitFunctions</Filter>

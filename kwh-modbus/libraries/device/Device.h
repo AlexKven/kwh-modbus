@@ -34,4 +34,6 @@ public:
 	virtual void deviceNotResponding(word nameLength, byte* name, uint32_t reportTime);
 	virtual void setTimeSource(TimeManager *timeSource);
 	virtual TimeManager* getTimeSource();
+
+	static bool isDataTransmitterDeviceType(word deviceType);
 };

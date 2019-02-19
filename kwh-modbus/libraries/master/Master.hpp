@@ -9,7 +9,6 @@
 
 #include "../device/Device.h"
 #include "../device/DataCollectorDevice.h"
-#include "../device/DataTransmitterDevice.h"
 #include "../asyncAwait/AsyncAwait.hpp"
 #include "../timeManager/TimeManager.h"
 #include "../deviceDirectoryRow/DeviceDirectoryRow.h"
@@ -393,7 +392,7 @@ protected_testable:
 			device = _deviceDirectory->findNextDevice(dummyName, deviceRow);
 			if (device != nullptr)
 			{
-				if (DataTransmitterDevice::isDataTransmitterDeviceType(device->deviceType))
+				if (Device::isDataTransmitterDeviceType(device->deviceType))
 				{
 				begin_write:
 					_registerBuffer[0] = 1;
