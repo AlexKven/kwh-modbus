@@ -355,6 +355,36 @@ TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_5bi
 		(word)0x0A41);
 }
 
+TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_TimeRequested_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
+{
+	slave->_state = sRequestedTime;
+	slave->displayedStateInvalid = true;
+
+	Device **devices = tracker.addArray(new Device*[3]);
+	SetupDevices(devices, 3);
+	byte **names = tracker.addArray(new byte*[3]);
+	names[0] = (byte*)"dev01";
+	names[1] = (byte*)"dev02";
+	names[2] = (byte*)"dev03";
+
+	When(Method(mockDevices[1], masterRequestTime)).Return((2016) + (1237 << 16));
+
+	slave->init(3, 5, 12, 1, devices, names);
+
+	// Select device #1
+	registerArray[2] = 1;
+
+	bool success = slave->setOutgoingState();
+
+	ASSERT_EQ(slave->displayedStateInvalid, false);
+	ASSERT_TRUE(success);
+	assertArrayEq(registerArray,
+		sRequestedTime,
+		(word)2016,
+		(word)1237);
+}
+
 TEST_F_TRAITS(SlaveTests, SlaveTests_processIncomingState_Idle,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
 {

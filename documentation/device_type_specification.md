@@ -10,12 +10,12 @@ KWH Modbus Devices are individual worker units that communicate with the master 
 | 6-11            | Data size (in bits) (data collector only)    |
 | 12-15           | TBD                                          |
 
-| Data flow type | Description                  |
-| -------------- | ---------------------------- |
-| 00             | No data flow (commands only) |
-| 01             | Data collector               |
-| 10             | Data transmitter             |
-| 11             | Diagnostic data receiver     |
+| Data flow type | Description                                       |
+| -------------- | ------------------------------------------------- |
+| 00             | No data flow (commands only) / Other device types |
+| 01             | Data collector                                    |
+| 10             | Data transmitter                                  |
+| 11             | Diagnostic data receiver                          |
 
 **Data accumulation type:** 0 = instantaneous (like temperature), 1 = accumulate (like energy usage)
 
@@ -42,4 +42,12 @@ The following statistics may be obtained from the slave (if supported) depending
 | 3         | Lifetime maximum             | Lifetime maximum          |
 | 4         | Minimum mean                 | Minimum total             |
 | 5         | Maximum mean                 | Maximum total             |
+
+## Other Device Types
+
+The following statistics may be obtained from the slave (if supported) depending on the accumulation type:
+
+| **Device Type**  | **Description**                       |
+| ---------------- | ------------------------------------- |
+| 0000000000000001 | Time server (master can request time) |
 

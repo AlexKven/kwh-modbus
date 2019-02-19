@@ -702,6 +702,57 @@ protected_testable:
 		return _transferPendingData;
 	}
 
+	DEFINE_CLASS_TASK(THIS_T, requestCurrentTime, uint32_t, VARS(int, DeviceDirectoryRow*, byte*, uint32_t));
+	requestCurrentTime_Task _requestCurrentTime;
+	virtual ASYNC_CLASS_FUNC(THIS_T, requestCurrentTime)
+	{
+		ASYNC_VAR_INIT(0, deviceIndex, 0);
+		ASYNC_VAR(1, deviceRow);
+		ASYNC_VAR(2, deviceName);
+		ASYNC_VAR(3, readStart);
+		word regCount;
+		word *regs;
+		START_ASYNC;
+		DEBUG(requestCurrentTime, P_TIME(); PRINT("requestCurrentTime"));
+		while (deviceIndex != -1)
+		{
+			deviceRow = _deviceDirectory->findNextDevice(deviceName, deviceIndex);
+			if (deviceRow != nullptr)
+			{
+				if (Device::isTimeServerDeviceType(deviceRow->deviceType))
+				{
+					_registerBuffer[0] = 1;
+					_registerBuffer[1] = 6;
+					_registerBuffer[2] = deviceRow->deviceNumber;
+					completeModbusWriteRegisters(deviceRow->slaveId, 0, 3, _registerBuffer);
+					AWAIT(_completeModbusWriteRegisters);
+
+					ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
+					if (_completeModbusReadRegisters.result() == noResponse)
+						continue;
+					completeModbusReadRegisters(deviceRow->slaveId, 0, 3);
+					AWAIT(_completeModbusReadRegisters);
+					ENSURE_NONMALFUNCTION(_completeModbusReadRegisters);
+					if (_completeModbusReadRegisters.result() == noResponse)
+						continue;
+					_modbus->isReadRegsResponse(regCount, regs);
+					uint32_t result = (uint32_t)regs[1] + ((uint32_t)regs[2] << 16);
+					if (result > 0)
+					{
+						RESULT_ASYNC(uint32_t, result);
+					}
+				}
+			}
+		}
+		RESULT_ASYNC(uint32_t, 0);
+		END_ASYNC;
+	}
+	requestCurrentTime_Task& requestCurrentTime()
+	{
+		_requestCurrentTime = requestCurrentTime_Task(&THIS_T::requestCurrentTime, this, maxTimeScale, currentTime);
+		return _requestCurrentTime;
+	}
+
 	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, unsigned long, unsigned int, unsigned long, uint32_t, bool, int));
 	loop_Task _loop;
 	virtual ASYNC_CLASS_FUNC(THIS_T, loop)

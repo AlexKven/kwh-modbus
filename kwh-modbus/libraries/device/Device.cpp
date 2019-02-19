@@ -19,6 +19,11 @@ RecieveDataStatus Device::receiveDeviceData(byte dataPointsInPage, byte dataPoin
 	return RecieveDataStatus::notSupported;
 }
 
+uint32_t Device::masterRequestTime()
+{
+	return 0;
+}
+
 void Device::deviceNotResponding(word nameLength, byte * name, uint32_t reportTime)
 {
 }
@@ -36,4 +41,9 @@ TimeManager* Device::getTimeSource()
 bool Device::isDataTransmitterDeviceType(word deviceType)
 {
 	return ((deviceType >> 14) == 2);
+}
+
+bool Device::isTimeServerDeviceType(word deviceType)
+{
+	return (deviceType == 1);
 }

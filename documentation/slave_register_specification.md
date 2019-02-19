@@ -106,18 +106,10 @@ Here is a listing of each request type:
     * 3.5: Data point timescale (8 bits)
     * 4: Data points count
     * 5 to end: Name
-  * If the number of data points is 0, then a non-responsive device is being reported.  The slave shall respond with a state of 0.
-* 5: Write data
-  * This is to send actual data to the receiving slave.
-  * You must call `4: Prepare to write data` before calling `5: Write data`.
-  * This response will have a state of 0.
-  * Slave will automatically calculate offset from page number, according to the value returned from `4: Prepare to write data`.
-  * The data in this request will have the following format:
-    * 0: Number of data points in this page (8 bits)
-    * 0.5: Data point size (8 bits)
-    * 1: Data point timescale
-    * 1.5: Page number
-    * 2 to end: Data
+  * If the number of data points is 0, then a non-responsive device is being reported.  The slave shall respond with a state of 0.5: Write dataThis is to send actual data to the receiving slave.You must call `4: Prepare to write data` before calling `5: Write data`.This response will have a state of 0.Slave will automatically calculate offset from page number, according to the value returned from `4: Prepare to write data`.The data in this request will have the following format:0: Number of data points in this page (8 bits)0.5: Data point size (8 bits)1: Data point timescale1.5: Page number2 to end: Data
+* 6: Request time
+  - This is to request time from a device that can obtain the current time.
+  - There is no data in this request.
 * 32770 (0x8002): Broadcasts time in unsigned Y2K epoch time that is used by Arduino time library
   * Goes to all slaves at once
   * Overflows in 2136

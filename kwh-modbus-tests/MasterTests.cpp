@@ -94,6 +94,31 @@ protected:
 		return devices;
 	}
 
+	vector<tuple<byte*, DeviceDirectoryRow>>* Setup_TimeServers()
+	{
+		auto devices = new vector<tuple<byte*, DeviceDirectoryRow>>();
+		tracker.addPointer(devices);
+		devices->push_back(make_tuple((byte*)"server0", DeviceDirectoryRow(1, 0, 1, 10)));
+
+		When(OverloadedMethod(mockDeviceDirectory, findNextDevice, DeviceDirectoryRow*(byte*&, int&)))
+			.AlwaysDo([devices](byte* &devName, int &row)
+		{
+			if (row < devices->size())
+			{
+				row++;
+				devName = get<0>((*devices)[row - 1]);
+				return &get<1>((*devices)[row - 1]);
+			}
+			else
+			{
+				row = -1;
+				return (DeviceDirectoryRow*)nullptr;
+			}
+		});
+
+		return devices;
+	}
+
 	void isRegsResponse_UseMockData(Mock<T_MODBUS_BASE> &mock, RegsQueue &regsQueue)
 	{
 		When(Method(mock, isReadRegsResponse)).AlwaysDo([&regsQueue](word &regCount, word *&regs) {
@@ -2071,4 +2096,56 @@ TEST_F_TRAITS(MasterTests, sendDataToSlaves_Success_FirstDeviceDoesntRespond,
 		Method(completeWriteRegsMock, result) +
 		Method(completeWriteRegsMock, func).Using(6, 0, 8, Any<word*>()) +
 		Method(completeWriteRegsMock, result)).Once();
+}
+
+TEST_F_TRAITS(MasterTests, requestTime_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
+{
+	// Arrange
+	MOCK_MODBUS;
+	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
+	auto devices = Setup_TimeServers();
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word>> completeReadRegsMock;
+	T_MASTER::completeModbusReadRegisters_Task::mock = &completeReadRegsMock.get();
+	When(Method(completeReadRegsMock, func)).AlwaysReturn(true);
+	When(Method(completeReadRegsMock, result)).AlwaysReturn(success);
+
+	Mock<IMockedTask<ModbusRequestStatus, byte, word, word, word*>> completeWriteRegsMock;
+	T_MASTER::completeModbusWriteRegisters_Task::mock = &completeWriteRegsMock.get();
+	RegsQueue writtenRegs;
+	completeWriteRegs_UseRegsQueue(completeWriteRegsMock, writtenRegs);
+	When(Method(completeWriteRegsMock, result)).AlwaysReturn(success);
+
+	RegsQueue readRegs;
+	readRegs.push(REGS(3, 6, 2020, 2026));
+	isRegsResponse_UseMockData(modbusBaseMock, readRegs);
+
+	// Act
+	auto name = (byte*)"Server0";
+	auto data = tracker.addArray(new byte[5]{ 0x21, 0x88, 0x51, 0x50, 0xAB });
+	T_MASTER::requestCurrentTime_Task task(&T_MASTER::requestCurrentTime, master);
+	ASSERT_TRUE(task());
+
+	// Assert
+
+	ASSERT_EQ(task.result(), 2020 + (2026 << 16));
+	//assertPopRegsQueue(writtenRegs, withString(REGS(8, 1, 4, 1, 7, 0x5678, 0x1234, 5 + (6 << 8), 8), "Meter01"));
+	//assertPopRegsQueue(writtenRegs, REGS(4, 1, 32770, 0x6781, 0x2345));
+	//assertPopRegsQueue(writtenRegs, withString(REGS(8, 1, 4, 1, 7, 0x5678, 0x1234, 5 + (6 << 8), 8), "Meter01"));
+	//assertPopRegsQueue(writtenRegs, REGS(8, 1, 5, 1, 8 + (5 << 8), 6, 0x8821, 0x5051, 0xAB));
+	//assertPopRegsQueue(writtenRegs, withString(REGS(8, 1, 4, 2, 7, 0x5678, 0x1234, 5 + (6 << 8), 8), "Meter01"));
+	//assertPopRegsQueue(writtenRegs, REGS(8, 1, 5, 2, 8 + (5 << 8), 6, 0x8821, 0x5051, 0xAB));
+	//Verify(Method(completeWriteRegsMock, func).Using(5, 0, 12, Any<word*>()) +
+	//	Method(completeWriteRegsMock, result) +
+	//	Method(completeWriteRegsMock, func).Using(0, 0, 4, Any<word*>()) +
+	//	Method(completeWriteRegsMock, result) +
+	//	Method(completeWriteRegsMock, func).Using(5, 0, 12, Any<word*>()) +
+	//	Method(completeWriteRegsMock, result) +
+	//	Method(completeWriteRegsMock, func).Using(5, 0, 8, Any<word*>()) +
+	//	Method(completeWriteRegsMock, result) +
+	//	Method(completeWriteRegsMock, func).Using(6, 0, 12, Any<word*>()) +
+	//	Method(completeWriteRegsMock, result) +
+	//	Method(completeWriteRegsMock, func).Using(6, 0, 8, Any<word*>()) +
+	//	Method(completeWriteRegsMock, result)).Once();
 }

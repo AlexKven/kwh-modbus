@@ -21,10 +21,11 @@ enum SlaveState : word
 	sDisplayDevData = 3,
 	sPreparingToReceiveDevData = 4,
 	sReceivingDevData = 5,
-	sDisplayDevCommand = 6,
-	sReceivingDevCommand = 7,
-	sDisplayDevMessage = 8,
-	sDisplaySlaveMessage = 9,
+	sRequestedTime = 6,
+	sDisplayDevCommand = 7,
+	sReceivingDevCommand = 8,
+	sDisplayDevMessage = 9,
+	sDisplaySlaveMessage = 10,
 	sSetTime = 32770
 };
 
@@ -146,6 +147,14 @@ private_testable:
 		case sPreparingToReceiveDevData:
 			ENSURE(_modbus->Hreg(1, _stateDetail));
 			break;
+		case sRequestedTime:
+		{
+			deviceNum = _modbus->Hreg(2);
+			uint32_t time = _devices[deviceNum]->masterRequestTime();
+			ENSURE(_modbus->Hreg(1, (word)time));
+			ENSURE(_modbus->Hreg(2, (word)(time >> 16)));
+		}
+			break;
 		}
 		displayedStateInvalid = false;
 		return true;
@@ -222,7 +231,7 @@ private_testable:
 				}
 				displayedStateInvalid = true;
 			}
-				break;
+			break;
 			case 5:
 			{
 				_state = sIdle;
@@ -253,11 +262,19 @@ private_testable:
 						_dataBuffer[i] = (byte)(curReg & 0xFF);
 					}
 				}
-				
+
 				status = device->receiveDeviceData(dataPointsInPage, dataPointSize, timeScale, pageNumber, _dataBuffer);
 			}
+			displayedStateInvalid = true;
+			break;
+			case 6:
+			{
+				_state = sRequestedTime;
 				displayedStateInvalid = true;
 				break;
+			}
+			displayedStateInvalid = true;
+			break;
 			case 32770:
 				_state = sIdle;
 				setClock(((uint32_t)_modbus->Hreg(3) << 16) + (uint16_t)_modbus->Hreg(2));
