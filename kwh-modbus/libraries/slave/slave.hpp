@@ -153,6 +153,7 @@ private_testable:
 			uint32_t time = _devices[deviceNum]->masterRequestTime();
 			ENSURE(_modbus->Hreg(1, (word)time));
 			ENSURE(_modbus->Hreg(2, (word)(time >> 16)));
+			VERBOSE(setOutgoingState, P_TIME(); PRINT("Time requested. Value = "); PRINTLN(time));
 		}
 			break;
 		}

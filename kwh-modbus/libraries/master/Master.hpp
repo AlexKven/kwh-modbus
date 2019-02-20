@@ -713,7 +713,7 @@ protected_testable:
 		word regCount;
 		word *regs;
 		START_ASYNC;
-		DEBUG(requestCurrentTime, P_TIME(); PRINT("requestCurrentTime"));
+		DEBUG(requestCurrentTime, P_TIME(); PRINTLN("Request current time."));
 		while (deviceIndex != -1)
 		{
 			deviceRow = _deviceDirectory->findNextDevice(deviceName, deviceIndex);
@@ -728,7 +728,7 @@ protected_testable:
 					AWAIT(_completeModbusWriteRegisters);
 
 					ENSURE_NONMALFUNCTION(_completeModbusWriteRegisters);
-					if (_completeModbusReadRegisters.result() == noResponse)
+					if (_completeModbusWriteRegisters.result() == noResponse)
 						continue;
 					completeModbusReadRegisters(deviceRow->slaveId, 0, 3);
 					AWAIT(_completeModbusReadRegisters);
@@ -737,6 +737,8 @@ protected_testable:
 						continue;
 					_modbus->isReadRegsResponse(regCount, regs);
 					uint32_t result = (uint32_t)regs[1] + ((uint32_t)regs[2] << 16);
+					VERBOSE(requestCurrentTime, P_TIME(); PRINT("Requested time from device "); for (int i = 0; i < _deviceDirectory->getDeviceNameLength(); i++) { WRITE(deviceName[i]); }
+					PRINT(", value = "); PRINTLN(result));
 					if (result > 0)
 					{
 						RESULT_ASYNC(uint32_t, result);
@@ -749,11 +751,11 @@ protected_testable:
 	}
 	requestCurrentTime_Task& requestCurrentTime()
 	{
-		_requestCurrentTime = requestCurrentTime_Task(&THIS_T::requestCurrentTime, this, maxTimeScale, currentTime);
+		_requestCurrentTime = requestCurrentTime_Task(&THIS_T::requestCurrentTime, this);
 		return _requestCurrentTime;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, unsigned long, unsigned int, unsigned long, uint32_t, bool, int));
+	DEFINE_CLASS_TASK(THIS_T, loop, void, VARS(unsigned long, unsigned long, unsigned int, unsigned long, uint32_t, bool, int, unsigned long));
 	loop_Task _loop;
 	virtual ASYNC_CLASS_FUNC(THIS_T, loop)
 	{
@@ -764,6 +766,7 @@ protected_testable:
 		ASYNC_VAR(4, curClock);
 		ASYNC_VAR(5, something);
 		ASYNC_VAR(6, i);
+		ASYNC_VAR_INIT(7, clockLastUpdated, 0);
 		START_ASYNC;
 		// Initialize existing slaves on startup
 		//for (i = 2; i <= 246; i++)
@@ -809,7 +812,7 @@ protected_testable:
 			{
 				lastSyncTime = curClock;
 			}
-			else if (curClock - lastSyncTime > 4)
+			else if ((curClock - lastSyncTime >= 4) && !wasTimeNeverSet())
 			{
 				syncNum++;
 				if (syncNum % 21600 == 0)
@@ -826,6 +829,23 @@ protected_testable:
 					transferPendingData(TimeScale::sec1, curClock);
 				AWAIT(_transferPendingData);
 				lastSyncTime = curClock;
+			}
+			if ((curClock - clockLastUpdated >= 86400) || (wasTimeNeverSet() && (curClock - clockLastUpdated >= 1)))
+			{
+				DEBUG(loop, P_TIME(); PRINTLN("Updating clock."));
+				requestCurrentTime();
+				AWAIT(_requestCurrentTime);
+				if (_requestCurrentTime.result() != 0)
+				{
+					setClock(_requestCurrentTime.result());
+					curClock = getClock();
+					VERBOSE(loop, P_TIME(); PRINT("Clock updated. Value = "); PRINTLN(curClock));
+				}
+				else
+				{
+					VERBOSE(loop, P_TIME(); PRINTLN("Clock update failed. Will try again in 1 second."));
+				}
+				clockLastUpdated = curClock;
 			}
 
 			YIELD_ASYNC;
