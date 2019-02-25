@@ -327,7 +327,7 @@ public:
 	// Basic initial version
 	void loop()
 	{
-		tick(_system->millis());
+		tick(_system->micros());
 
 		bool processed;
 		bool broadcast;
