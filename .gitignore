@@ -336,3 +336,5 @@ ASALocalRun/
 *.gch
 *.out
 *.o
+
+kwh-modbus/destinations\.txt
