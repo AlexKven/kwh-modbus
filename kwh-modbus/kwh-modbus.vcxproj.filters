@@ -127,6 +127,9 @@
     <ClInclude Include="libraries\debugMacros\DebugMacros.h">
       <Filter>libraries\debugMacros</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\denseShiftBuffer\DenseShiftBuffer.hpp">
+      <Filter>libraries\denseShiftBuffer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -203,6 +206,9 @@
     </Filter>
     <Filter Include="libraries\debugMacros">
       <UniqueIdentifier>{25770e78-1795-421c-b7de-f44d986538c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\denseShiftBuffer">
+      <UniqueIdentifier>{eb5ce509-c7e7-4a16-a2b7-5e9078320fd1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -86,6 +86,7 @@
     <ClInclude Include="libraries\bitFunctions\BitFunctions.hpp" />
     <ClInclude Include="libraries\communicator\SystemParameters.h" />
     <ClInclude Include="libraries\debugMacros\DebugMacros.h" />
+    <ClInclude Include="libraries\denseShiftBuffer\DenseShiftBuffer.hpp" />
     <ClInclude Include="libraries\deviceDirectoryRow\DeviceDirectoryRow.h" />
     <ClInclude Include="libraries\deviceDirectory\DeviceDirectory.hpp" />
     <ClInclude Include="libraries\device\DataCollectorDevice.h" />

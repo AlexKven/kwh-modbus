@@ -25,6 +25,7 @@
     <ClCompile Include="BitFunctionsTests.cpp" />
     <ClCompile Include="test_helpers.cpp" />
     <ClCompile Include="DebugMacrosTests.cpp" />
+    <ClCompile Include="DenseShiftBufferTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
