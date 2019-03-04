@@ -14,6 +14,7 @@ private_testable:
 	byte *_buffer;
 	int _capacity;
 	int _current;
+	int _numStored = 0;
 
 public:
 	DenseShiftBuffer(int capacity)
@@ -31,6 +32,8 @@ public:
 	void push(T item)
 	{
 		_current++;
+		if (_numStored < _capacity)
+			_numStored++;
 		if (_current >= _capacity)
 			_current = 0;
 		BitFunctions::copyBits(&item, _buffer, 0, _current * B, B);
@@ -44,5 +47,10 @@ public:
 		T result = 0;
 		BitFunctions::copyBits(_buffer, &result, actualIndex * B, 0, B);
 		return result;
+	}
+
+	int getNumStored()
+	{
+		return _numStored;
 	}
 };
