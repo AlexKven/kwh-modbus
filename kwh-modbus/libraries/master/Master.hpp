@@ -53,7 +53,7 @@ private_testable:
 	byte _dataBufferSize;
 	byte _registerBufferSize;
 
-	word _maxBitTransferSize = 1024;
+	word _maxTransferSize = 150;
 
 	uint32_t lastUpdateTimes[8];
 
@@ -632,7 +632,7 @@ protected_testable:
 		return _readAndSendDeviceData;
 	}
 
-	DEFINE_CLASS_TASK(THIS_T, transferPendingData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t), TimeScale, uint32_t);
+	DEFINE_CLASS_TASK(THIS_T, transferPendingData, void, VARS(int, DeviceDirectoryRow*, byte*, bool, TimeScale, byte, uint32_t[8]), TimeScale, uint32_t);
 	transferPendingData_Task _transferPendingData;
 	virtual ASYNC_CLASS_FUNC(THIS_T, transferPendingData, TimeScale maxTimeScale, uint32_t currentTime)
 	{
@@ -642,10 +642,28 @@ protected_testable:
 		ASYNC_VAR(3, accumulateData);
 		ASYNC_VAR(4, timeScale);
 		ASYNC_VAR(5, dataSize);
-		ASYNC_VAR(6, readStart);
+		ASYNC_VAR(6, updatedTimes);
 		word regCount;
 		word *regs;
 		START_ASYNC;
+		for (int i = 0; i <= (int)maxTimeScale; i++)
+		{
+			uint32_t numDataPoints = (uint64_t)(currentTime - lastUpdateTimes[i]) * 1000 / TimeManager::getPeriodFromTimeScale((TimeScale)i);
+			{
+				word maxPoints = _maxTransferSize;
+				if (i == 0)
+				{
+					maxPoints = (maxPoints / 4) * 4;
+				}
+				if (numDataPoints > maxPoints)
+				{
+					lastUpdateTimes[i] += (uint64_t)(numDataPoints - (uint32_t)maxPoints) * TimeManager::getPeriodFromTimeScale((TimeScale)i) / 1000;
+					DEBUG(transferPendingData, P_TIME(); PRINT("data transfer truncated to "); PRINT(maxPoints); PRINT(" from "); PRINTLN(numDataPoints));
+					numDataPoints = maxPoints;
+				}
+			}
+			updatedTimes[i] = lastUpdateTimes[i] + numDataPoints * TimeManager::getPeriodFromTimeScale((TimeScale)i) / 1000;
+		}
 		DEBUG(transferPendingData, P_TIME(); PRINT("transferPendingData maxTimeScale = "); PRINT((int)maxTimeScale); PRINT(", currentTime = "); PRINTLN(currentTime));
 		while (deviceIndex != -1)
 		{
@@ -656,42 +674,18 @@ protected_testable:
 				{
 					if (timeScale <= maxTimeScale)
 					{
-						{
-							readStart = lastUpdateTimes[(int)timeScale];
-							uint32_t numDataPoints = (uint64_t)(currentTime - readStart) * 1000 / TimeManager::getPeriodFromTimeScale(timeScale);
-							{
-								word maxPoints = _maxBitTransferSize / dataSize;
-								if (timeScale == TimeScale::ms250)
-								{
-									maxPoints = (maxPoints / 4) * 4;
-									if (maxPoints == 0)
-										maxPoints = 4;
-								}
-								else
-								{
-									if (maxPoints == 0)
-										maxPoints = 1;
-								}
-								if (numDataPoints > maxPoints)
-								{
-									readStart += (uint64_t)(numDataPoints - (uint32_t)maxPoints) * TimeManager::getPeriodFromTimeScale(timeScale) / 1000;
-									DEBUG(transferPendingData, P_TIME(); PRINT("data transfer truncated to "); PRINT(maxPoints); PRINT(" from "); PRINTLN(numDataPoints));
-									numDataPoints = maxPoints;
-								}
-							}
-							readAndSendDeviceData(deviceRow, _deviceDirectory->getDeviceNameLength(), deviceName,
-								readStart, currentTime);
-						}
+						if (lastUpdateTimes[(int)timeScale] == updatedTimes[(int)timeScale])
+							continue;
+						readAndSendDeviceData(deviceRow, _deviceDirectory->getDeviceNameLength(), deviceName,
+							lastUpdateTimes[(int)timeScale], updatedTimes[(int)timeScale]);
 						AWAIT(_readAndSendDeviceData);
 					}
 				}
 			}
 		}
-		auto intTS = (int)maxTimeScale;
-		while (intTS >= 0)
+		for (int i = 0; i <= (int)maxTimeScale; i++)
 		{
-			lastUpdateTimes[intTS] = currentTime;
-			intTS--;
+			lastUpdateTimes[i] = updatedTimes[i];
 		}
 		RETURN_ASYNC;
 		END_ASYNC;
@@ -879,14 +873,14 @@ public:
 		}
 	}
 
-	word getMaxBitTransferSize()
+	word getMaxTransferSize()
 	{
-		return _maxBitTransferSize;
+		return _maxTransferSize;
 	}
 
-	void setMaxBitTransferSize(word value)
+	void setMaxTransferSize(word value)
 	{
-		_maxBitTransferSize = value;
+		_maxTransferSize = value;
 	}
 
 	bool started = false;

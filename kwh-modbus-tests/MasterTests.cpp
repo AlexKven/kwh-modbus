@@ -1140,6 +1140,7 @@ TEST_F_TRAITS(MasterTests, transferPendingData_AllTimescales_Success,
 	MOCK_MODBUS;
 	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
 	auto devices = Setup_DataCollectorsAndTransmitters();
+	master->_maxTransferSize = 480;
 
 	Mock<IMockedTask<void, DeviceDirectoryRow*, word, byte*, uint32_t, uint32_t>> readAndSendDeviceDataMock;
 	T_MASTER::readAndSendDeviceData_Task::mock = &readAndSendDeviceDataMock.get();
@@ -1151,22 +1152,51 @@ TEST_F_TRAITS(MasterTests, transferPendingData_AllTimescales_Success,
 		master->lastUpdateTimes[i] = i + 5;
 	}
 
-	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::hr24, 20);
+	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::hr24, 120);
 	ASSERT_TRUE(task());
 
-	Verify(Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 0), 7, getDeviceNamePtr(devices, 0), 5, 20) +
-		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 1), 7, getDeviceNamePtr(devices, 1), 6, 20) +
-		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 3), 7, getDeviceNamePtr(devices, 3), 11, 20) +
-		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 5), 7, getDeviceNamePtr(devices, 5), 8, 20) +
-		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 6), 7, getDeviceNamePtr(devices, 6), 12, 20) +
-		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 7), 7, getDeviceNamePtr(devices, 7), 7, 20) +
-		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 8), 7, getDeviceNamePtr(devices, 8), 10, 20)).Once();
+	Verify(Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 0), 7, getDeviceNamePtr(devices, 0), 5, 120) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 1), 7, getDeviceNamePtr(devices, 1), 6, 120) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 5), 7, getDeviceNamePtr(devices, 5), 8, 68) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 7), 7, getDeviceNamePtr(devices, 7), 7, 112)).Once();
 	assertArrayEq<uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t>(
-		master->lastUpdateTimes, 20, 20, 20, 20, 20, 20, 20, 20);
+		master->lastUpdateTimes, 120, 120, 112, 68, 9, 10, 11, 12);
 }
 
-TEST_F_TRAITS(MasterTests, transferPendingData_30MinMax_Success,
+TEST_F_TRAITS(MasterTests, transferPendingData_AllTimescales_FullDay_Success,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
+{
+	MOCK_MODBUS;
+	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
+	auto devices = Setup_DataCollectorsAndTransmitters();
+	master->_maxTransferSize = 1000;
+
+	Mock<IMockedTask<void, DeviceDirectoryRow*, word, byte*, uint32_t, uint32_t>> readAndSendDeviceDataMock;
+	T_MASTER::readAndSendDeviceData_Task::mock = &readAndSendDeviceDataMock.get();
+	When(Method(readAndSendDeviceDataMock, func)).AlwaysReturn(true);
+	Fake(Method(readAndSendDeviceDataMock, result));
+
+	for (int i = 0; i < 8; i++)
+	{
+		master->lastUpdateTimes[i] = i + 5;
+	}
+
+	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::hr24, 86500);
+	ASSERT_TRUE(task());
+
+	Verify(Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 0), 7, getDeviceNamePtr(devices, 0), 86250, 86500) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 1), 7, getDeviceNamePtr(devices, 1), 85500, 86500) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 3), 7, getDeviceNamePtr(devices, 3), 11, 86411) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 5), 7, getDeviceNamePtr(devices, 5), 26468, 86468) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 6), 7, getDeviceNamePtr(devices, 6), 12, 86412) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 7), 7, getDeviceNamePtr(devices, 7), 71497, 86497) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 8), 7, getDeviceNamePtr(devices, 8), 10, 86410)).Once();
+	assertArrayEq<uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t>(
+		master->lastUpdateTimes, 86500, 86500, 86497, 86468, 86409, 86410, 86411, 86412);
+}
+
+TEST_F_TRAITS(MasterTests, transferPendingData_30MinMax_Success_Partial,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	MOCK_MODBUS;
 	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
@@ -1182,16 +1212,14 @@ TEST_F_TRAITS(MasterTests, transferPendingData_30MinMax_Success,
 		master->lastUpdateTimes[i] = i + 5;
 	}
 
-	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::min30, 20);
+	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::min30, 25);
 	ASSERT_TRUE(task());
 
-	Verify(Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 0), 7, getDeviceNamePtr(devices, 0), 5, 20) +
-		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 1), 7, getDeviceNamePtr(devices, 1), 6, 20) +
-		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 5), 7, getDeviceNamePtr(devices, 5), 8, 20) +
-		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 7), 7, getDeviceNamePtr(devices, 7), 7, 20) +
-		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 8), 7, getDeviceNamePtr(devices, 8), 10, 20)).Once();
+	Verify(Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 0), 7, getDeviceNamePtr(devices, 0), 5, 25) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 1), 7, getDeviceNamePtr(devices, 1), 6, 25) +
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 7), 7, getDeviceNamePtr(devices, 7), 7, 22)).Once();
 	assertArrayEq<uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t>(
-		master->lastUpdateTimes, 20, 20, 20, 20, 20, 20, 11, 12);
+		master->lastUpdateTimes, 25, 25, 22, 8, 9, 10, 11, 12);
 }
 
 TEST_F_TRAITS(MasterTests, transferPendingData_1SecMax_Success,
@@ -1224,7 +1252,7 @@ TEST_F_TRAITS(MasterTests, transferPendingData_1SecMax_MaxBitTransfer_Success,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Edge)
 {
 	MOCK_MODBUS;
-	master->_maxBitTransferSize = 30;
+	master->_maxTransferSize = 9;
 	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
 	auto devices = Setup_DataCollectorsAndTransmitters();
 
@@ -1242,7 +1270,7 @@ TEST_F_TRAITS(MasterTests, transferPendingData_1SecMax_MaxBitTransfer_Success,
 	ASSERT_TRUE(task());
 
 	Verify(Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 0), 7, getDeviceNamePtr(devices, 0), 18, 20) +
-		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 1), 7, getDeviceNamePtr(devices, 1), 10, 20)).Once();
+		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 1), 7, getDeviceNamePtr(devices, 1), 11, 20)).Once();
 	assertArrayEq<uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t>(
 		master->lastUpdateTimes, 20, 20, 7, 8, 9, 10, 11, 12);
 }
@@ -1251,7 +1279,7 @@ TEST_F_TRAITS(MasterTests, transferPendingData_1SecMax_0MaxBitTransfer_Success,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Rare)
 {
 	MOCK_MODBUS;
-	master->_maxBitTransferSize = 0;
+	master->_maxTransferSize = 0;
 	When(Method(mockDeviceDirectory, getDeviceNameLength)).AlwaysReturn(7);
 	auto devices = Setup_DataCollectorsAndTransmitters();
 
@@ -1268,8 +1296,7 @@ TEST_F_TRAITS(MasterTests, transferPendingData_1SecMax_0MaxBitTransfer_Success,
 	T_MASTER::transferPendingData_Task task(&T_MASTER::transferPendingData, master, TimeScale::sec1, 20);
 	ASSERT_TRUE(task());
 
-	Verify(Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 0), 7, getDeviceNamePtr(devices, 0), 19, 20) +
-		Method(readAndSendDeviceDataMock, func).Using(getDevicePtr(devices, 1), 7, getDeviceNamePtr(devices, 1), 19, 20)).Once();
+	Verify(Method(readAndSendDeviceDataMock, func)).Never();
 	assertArrayEq<uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t>(
 		master->lastUpdateTimes, 20, 20, 7, 8, 9, 10, 11, 12);
 }
