@@ -19,7 +19,7 @@
 #include "DeviceDirectory.hpp"
 #include "SoftwareSerial.h"
 
-DEBUG_CATEGORY(readAndSendData|transferPendingData|sendDataToSlaves)
+DEBUG_CATEGORY(checkForSlaves|readAndSendData|transferPendingData|sendDataToSlaves)
 
 class ArduinoFunctions
 {
@@ -57,12 +57,12 @@ public:
 
 word *registers = new word[50];
 typedef ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
-typedef Master<ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions, DeviceDirectory<byte*>> T_Master;
+typedef Master<ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions, DeviceDirectory> T_Master;
 
 T_Modbus modbus;
 T_Master master;
 ArduinoFunctions functions;
-DeviceDirectory<byte*> directory;
+DeviceDirectory directory;
 SoftwareSerial mySerial(10, 11);
 
 void setup() {
@@ -80,7 +80,7 @@ void setup() {
   modbus.setMaxTimePerTryMicros(100000);
   modbus.setMaxTries(10);
   directory.init(8, 20);
-  master.config(&functions, &modbus, &directory, 40);
+  master.config(&functions, &modbus, &directory, 40, 30);
   Serial.println("Master initialized");
   Serial.print("Initial Memory: ");
   Serial.println(getMemAllocation());

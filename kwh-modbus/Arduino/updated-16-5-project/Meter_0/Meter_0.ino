@@ -86,19 +86,22 @@ class SourceDevice : public DataCollectorDevice
   
   bool readDataPoint(uint32_t time, byte quarterSecondOffset, byte* dataBuffer, byte dataSizeBits)
   {
-//    Serial.print(F("Requested data for: "));
-//    Serial.print(getMinute(time));
-//    Serial.print(F(". Current minute: "));
-//    Serial.println(getMinute());
+    double WATTHOURS_PER_UNIT = 0.0019073486;
+    Serial.print(F("Requested data for: "));
+    Serial.print(getMinute(time));
+    Serial.print(F(". Current minute: "));
+    Serial.println(getMinute());
+    uint32_t timeDiff = getMinute() - getMinute(time);
     uint32_t result = 0;
-//    if (getMinute(time) == getMinute())
-//    {
-      unsigned long pulseDiff = getAndResetPulses();
-      double wattHours = (double)pulseDiff * WATTHOURS_PER_PULSE;
+    if (getNumMinutesStored() > timeDiff)
+    {
+//      unsigned long pulseDiff = getAndResetPulses();
+      result = getCachedMinute(timeDiff);
+      double wattHours = (double)result * WATTHOURS_PER_UNIT;
 
-      result = (double)pulseDiff * UNITS_PER_PULSE;
-      Serial.print(F(" Pulses: "));
-      Serial.print(pulseDiff);
+//      result = (double)pulseDiff * UNITS_PER_PULSE;
+//      Serial.print(F(" Pulses: "));
+//      Serial.print(pulseDiff);
       Serial.print(F(" Watthours: "));
       Serial.print(wattHours);
       Serial.print(F(" Units: "));
@@ -109,7 +112,7 @@ class SourceDevice : public DataCollectorDevice
       result >>= 8;
       dataBuffer[2] = (byte)(result & 0xFF);
       return true;
-//    }
+    }
 //    return false;
 //    Serial.print(F("Result: "));
 //    unsigned int result = (unsigned int)(sin((float)(time % 3600) * 3.14159265358 / 1800) * 2000 + 2500);

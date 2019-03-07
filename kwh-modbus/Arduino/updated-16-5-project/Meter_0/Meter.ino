@@ -1,5 +1,6 @@
 #include <EEPROM.h>
 #include "TimeManager.h"
+#include "DenseShiftBuffer.hpp"
 
 TimeManager *mainTimeManager;
 
@@ -7,95 +8,26 @@ volatile unsigned long totalPulses;
 unsigned long timeCountingPulses;
 unsigned long pulsesLastMinute = 0;
 
-const int NUM_CACHED_HOURS = 1;
 //const bool CLEAR_EEPROM = true;
 const double WATTHOURS_PER_PULSE = 0.0026944444465999994;
 const double WATTHOURS_PER_UNIT = 0.0019073486;
 const double UNITS_PER_PULSE = 1.412664914;
-byte *cachedMinutes;
-//unsigned int currentMinuteIndex;
-int numMinutes;
-unsigned int minuteStartIndex;
+DenseShiftBuffer<uint32_t, 12> *cachedMinutes;
 
 unsigned long getTimeMinutes()
 {
   return mainTimeManager->getClock() / 60;
 }
 
-void moveNextMinute()
+unsigned long getCachedMinute(int min)
 {
-  for (int i = NUM_CACHED_HOURS * 60 * 3 - 1; i > 2; i--)
-  {
-    cachedMinutes[i] = cachedMinutes[i - 3];
-  }
-  if (numMinutes < NUM_CACHED_HOURS * 60)
-    numMinutes++;
+  cachedMinutes->get(min);
 }
 
-unsigned long getCachedMinuteIndex(int index)
+int getNumMinutesStored()
 {
-  unsigned long result = 0;
-  for (int j = 0; j < 3; j++)
-  {
-    result = result << 8;
-    result += cachedMinutes[index * 3 + j];
-//    Serial.println(index * 3);
-//    Serial.println(cachedMinutes[index * 3 + j]);
-  }
-  return result;
+  cachedMinutes->getNumStored();
 }
-
-void setCachedMinuteIndex(int index, unsigned long data)
-{
-  for (int i = 0; i < 3; i++)
-  {
-    cachedMinutes[index * 3 + i] = (data >> 16 - 8 * i);
-//    Serial.println(index * 3);
-//    Serial.println(cachedMinutes[index * 3 + j]);
-  }
-}
-//
-//unsigned long getCachedMinute(unsigned int index)
-//{
-//  unsigned int actualIndex = (minuteStartIndex + index) % (NUM_CACHED_HOURS * 60);
-//  unsigned long result = 0;
-//  for (int j = 0; j < 3; j++)
-//  {
-//    result = result << 8;
-//    result += cachedMinutes[3 * actualIndex + j];
-//  }
-//  return result;
-//}
-//
-
-unsigned long getCachedMinuteForTime(unsigned long time)
-{
-  unsigned int diff = (getTimeMinutes() - time);
-  return getCachedMinuteIndex(diff);
-}
-
-//
-//void setCachedMinute(unsigned int index, unsigned long data)
-//{
-//  unsigned int actualIndex = (minuteStartIndex + index) % (NUM_CACHED_HOURS * 60);
-//  for (int i = 0; i < 3; i++)
-//  {
-//    cachedMinutes[3 * actualIndex + i] = (data >> 16 - 8 * i);
-//  }
-//}
-
-//void setCachedMinuteEEPROM(unsigned int index, unsigned long data)
-//{
-//  unsigned int actualIndex = (minuteStartIndex + index) % (NUM_CACHED_HOURS * 60);
-//  for (int i = 0; i < 3; i++)
-//  {
-//    EEPROM[6 + 3 * actualIndex + i] = (data >> 16 - 8 * i);
-//  }
-//  EEPROM[0] = (numMinutes >> 8);
-//  EEPROM[1] = (numMinutes);
-//  EEPROM[2] = (minuteStartIndex >> 8);
-//  EEPROM[3] = (minuteStartIndex);
-//}
 
 long safelyGetTotalPulses()
 {
@@ -126,35 +58,6 @@ void pulse()
   safelyIncrementTotalPulses();
 }
 
-void readStateFromEEPROM()
-{
-//  numMinutes = 0;
-//  for (int j = 0; j < 2; j++)
-//  {
-//    numMinutes = numMinutes << 8;
-//    numMinutes += EEPROM[0 + j];
-//  }
-//  minuteStartIndex = 0;
-//  for (int j = 0; j < 2; j++)
-//  {
-//    minuteStartIndex = minuteStartIndex << 8;
-//    minuteStartIndex += EEPROM[2 + j];
-//  }
-//  for (int i = 0; i < NUM_CACHED_HOURS * 60 * 3; i++)
-//  {
-//    cachedMinutes[i] = EEPROM[6 + i];
-//  }
-}
-
-void clearEEPROM()
-{
-//  for (int i = 0 ; i < EEPROM.length() ; i++) {
-//     EEPROM.write(i, 0);
-//   }
-}
-
-
-
 unsigned long getAndResetPulses()
 {
   unsigned long pulses;
@@ -168,8 +71,6 @@ unsigned long getAndResetPulses()
 void onMinuteElapsedMeter()
 {
   Serial.println(F("Minute passed."));
-  moveNextMinute();
-  Serial.println(F("Move next minute."));
   double wattHours;
   unsigned long formattedWattHours;
   unsigned long pulses;
@@ -180,26 +81,24 @@ void onMinuteElapsedMeter()
     pulses = safelyGetTotalPulses();
     unsigned long pulseDiff = pulses - pulsesLastMinute;
     //timeLastMinute = _millis;
-    //wattHours = (double)pulseDiff * WATTHOURS_PER_PULSE;
+//    wattHours = (double)pulseDiff * WATTHOURS_PER_PULSE;
     formattedWattHours = (double)pulseDiff * UNITS_PER_PULSE;
     Serial.print(F(" Pulses: "));
     Serial.print(pulseDiff);
-//    Serial.print(F(" Watthours: "));
-//    Serial.print(wattHours);
-    Serial.print(F(" Formatted Watthours: "));
+    Serial.print(F(" Watthours: "));
+//    Serial.println(wattHours);
+//    Serial.print(F(" Formatted Watthours: "));
     Serial.println(formattedWattHours);
-    setCachedMinuteIndex(0, formattedWattHours);
     Serial.print(F(" From RAM: "));
-    Serial.println(getCachedMinuteIndex(0));
-    //secretary->sendUsageData(0, getCurrentTime(), formattedWattHours);
-//    if (NUM_CACHED_HOURS == 2)
-//      setCachedMinuteEEPROM(numMinutes - 1, formattedWattHours);
+    Serial.println(cachedMinutes->get(0));
     pulsesLastMinute = pulses;
+
+    cachedMinutes->push(formattedWattHours);
   
-    for (int i = 0; i < numMinutes; i++)
+    for (int i = cachedMinutes->getNumStored() - 1; i >= 0 ; i--)
     {
       unsigned long time = getTimeMinutes() - i;
-      formattedWattHours = getCachedMinuteForTime(time);
+      formattedWattHours = cachedMinutes->get(i);
       wattHours = (double)formattedWattHours * WATTHOURS_PER_UNIT;
       Serial.print("Minute: ");
       Serial.print(time);
@@ -233,8 +132,7 @@ void setupMeter()
 //    else
 //      readStateFromEEPROM();
 //  }
-  numMinutes = 0;
-  minuteStartIndex = 0;
+  cachedMinutes = new DenseShiftBuffer<uint32_t, 12>(6);
   pulsesLastMinute = safelyGetTotalPulses();
   attachInterrupt(digitalPinToInterrupt(2), pulse, RISING);
   safelyZeroTotalPulses();
@@ -255,6 +153,7 @@ void loopMeter()
   unsigned long _micros = micros();
   unsigned long pulses;
 //  
+  onMinuteElapsedMeter();
   if (Serial.available())
   {
     while (Serial.available())
