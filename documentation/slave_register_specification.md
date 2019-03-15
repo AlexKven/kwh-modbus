@@ -26,7 +26,7 @@ Slaves will have the first register always be the current state of the slave. Be
 | 1.5 |KWH Modbus minor version number | 0-255 ||
 | 2 | Number of devices | 1-65535 | Realistically 1-10ish |
 | 3 | Length of device names | 1-65535 | Reastically 4-12ish|
-| 4 | Number of Modbus holding registers on slave | up to 65535 | |
+| 4 | Number of KWH Modbus protocol registers on slave | up to 65535 | |
 | 5 | Number of commands pending from devices |||
 | 6 | Number of messages pending from devices |||
 | 7 | Number of messages pending from slave |||
@@ -68,6 +68,38 @@ Slaves will have the first register always be the current state of the slave. Be
 | 1          | Status (8 bits)               | 0 to 4   | 0 = success, 1 = not supported, 2 = name is too long, 3 = current time is requested, 4 = failure |
 | 1.5        | Data points per page (8 bits) | 0 to 255 | Specifies how many data points the slave will expect to receive per page |
 
+### 7: Master is preparing to reading next command
+
+| Register # | Value                 | Range    | Notes                                |
+| ---------- | --------------------- | -------- | ------------------------------------ |
+| 1          | Name length (8 bits)  | 0 to 255 | This is 0 if master is the recipient |
+| 1.5        | Command size (8 bits) | 0 to 255 | Number of bytes in command           |
+| 2 to X     | Name characters       |          | Name of device that is the recipient |
+
+### 8: Master is reading next command data
+
+| Register # | Value                            | Range | Notes |
+| ---------- | -------------------------------- | ----- | ----- |
+| 1 to X     | Bytes in command, 2 per register |       |       |
+
+### 9: Master is acknowledging next command
+
+| Register # | Value                        | Range    | Notes                                   |
+| ---------- | ---------------------------- | -------- | --------------------------------------- |
+| 1          | Number of remaining commands | 0 to 255 | Saves a step if processing all commands |
+
+### 10: Master is preparing to send command
+
+| Register # | Value                       | Range  | Notes                                       |
+| ---------- | --------------------------- | ------ | ------------------------------------------- |
+| 1          | Immediate response (8 bits) | 0 to 2 | 0 = success, 1 = failure, 2 = not supported |
+
+### 11: Master is sending command
+
+| Register # | Value              | Range       | Notes                    |
+| ---------- | ------------------ | ----------- | ------------------------ |
+| 1          | Response (16 bits) | 0 to 2^16-1 | This gets sent to sender |
+
 ###
 
 Here is a listing of each request type:
@@ -106,10 +138,38 @@ Here is a listing of each request type:
     * 3.5: Data point timescale (8 bits)
     * 4: Data points count
     * 5 to end: Name
-  * If the number of data points is 0, then a non-responsive device is being reported.  The slave shall respond with a state of 0.5: Write dataThis is to send actual data to the receiving slave.You must call `4: Prepare to write data` before calling `5: Write data`.This response will have a state of 0.Slave will automatically calculate offset from page number, according to the value returned from `4: Prepare to write data`.The data in this request will have the following format:0: Number of data points in this page (8 bits)0.5: Data point size (8 bits)1: Data point timescale1.5: Page number2 to end: Data
+  * If the number of data points is 0, then a non-responsive device is being reported.  The slave shall respond with a state of 0.5: Write dataThis is to send actual data to the receiving slave.You must call `4: Prepare to write data` before calling 
+* 5: Write data`.`
+  *  `This response will have a state of 0.`
+  *  `Slave will automatically calculate offset from page number, according to the value returned from `4: Prepare to write data`.
+  * The data in this request will have the following format:
+    * 0: Number of data points in this page (8 bits)
+    * 0.5: Data point size (8 bits)
+    * 1: Data point timescale
+    * 1.5: Page number
+    * 2 to end: Data
 * 6: Request time
   - This is to request time from a device that can obtain the current time.
   - There is no data in this request.
+* 7: Prepare read next command
+  * This is to read the recipient and size of the next command from the slave.
+  * There is no data in this request.
+* 8: Read next command
+  * This is to read only the data of the next command from the slave.
+  * There is no data in this request.
+* 9 Acknowledge next command
+  * This is to tell the slave that the command was processed, with the response from the recipient.
+  * The data in this request will have the following format:
+    * 1: The response (16 bits, all 1s if no response)
+* 10: Prepare send command
+  * This is to send to the recipient of a command the size and sender of the command.
+  * The data in this request will have the following format:
+    * 1: Sender name length (8 bits)
+    * 1.5: Command size (8 bits)
+    * 2 to end: Sender name
+* 11: Send command
+  * This is to send the command data to the recipient.
+    * 1 to end: Command data
 * 32770 (0x8002): Broadcasts time in unsigned Y2K epoch time that is used by Arduino time library
   * Goes to all slaves at once
   * Overflows in 2136
