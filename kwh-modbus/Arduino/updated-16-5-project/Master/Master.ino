@@ -19,7 +19,7 @@
 #include "DeviceDirectory.hpp"
 #include "SoftwareSerial.h"
 
-DEBUG_CATEGORY(readAndSendData|transferPendingData|sendDataToSlaves|loop|requestCurrentTime)
+DEBUG_CATEGORY(readAndSendData|checkForSlaves|transferPendingData|sendDataToSlaves|loop|requestCurrentTime)
 
 class ArduinoFunctions
 {
@@ -63,7 +63,7 @@ T_Modbus modbus;
 T_Master master;
 ArduinoFunctions functions;
 DeviceDirectory directory;
-SoftwareSerial serialSource(10, 13);
+SoftwareSerial serialSource(50, 51);
 
 void setup() {
   for (int i = 0; i < 50; i++)
@@ -74,11 +74,11 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting...");
 
-  modbus.config(&serialSource, &functions, 9600, 6);
-  modbus.init(registers, 0, 50, 80);
+  modbus.config(&serialSource, &functions, 9600, 4);
+  modbus.init(registers, 0, 60, 80);
   modbus.setMinTimePerTryMicros(15000);
   modbus.setMaxTimePerTryMicros(100000);
-  modbus.setMaxTries(5);
+  modbus.setMaxTries(10);
   directory.init(8, 20);
   master.config(&functions, &modbus, &directory, 40, 15);
 //  master.setClock(603858840);

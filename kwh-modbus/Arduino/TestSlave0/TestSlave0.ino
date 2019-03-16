@@ -144,7 +144,7 @@ typedef ModbusSlave<SoftwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
 typedef Slave<ModbusSlave<SoftwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions> T_Slave;
 T_Modbus modbus;
 T_Slave slave;
-SoftwareSerial mySerial(10, 11);
+SoftwareSerial mySerial(50, 51);
 
 ArduinoFunctions functions;
 
