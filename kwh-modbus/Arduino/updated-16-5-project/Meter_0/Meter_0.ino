@@ -126,7 +126,7 @@ typedef Slave<ModbusSlave<SoftwareSerial, ArduinoFunctions, ModbusArray>, Arduin
 T_Modbus modbus;
 T_Slave slave;
 
-SoftwareSerial serialSource(50, 51);
+SoftwareSerial serialSource(12, 13);
 ArduinoFunctions functions;
 
 void setup() {
@@ -138,7 +138,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println(F("Starting..."));
   
-  modbus.config(&serialSource, &functions, 9600, 4);
+  modbus.config(&serialSource, &functions, 9600, 6);
   Serial.println(F("Slave initialized"));
   modbus.init(registers, 0, 60, 80);
   modbus.setSlaveId(1);

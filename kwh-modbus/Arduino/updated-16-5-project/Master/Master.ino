@@ -63,7 +63,7 @@ T_Modbus modbus;
 T_Master master;
 ArduinoFunctions functions;
 DeviceDirectory directory;
-SoftwareSerial serialSource(50, 51);
+SoftwareSerial serialSource(10, 13);
 
 void setup() {
   for (int i = 0; i < 50; i++)
@@ -74,7 +74,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting...");
 
-  modbus.config(&serialSource, &functions, 9600, 4);
+  modbus.config(&serialSource, &functions, 9600, 6);
   modbus.init(registers, 0, 60, 80);
   modbus.setMinTimePerTryMicros(15000);
   modbus.setMaxTimePerTryMicros(100000);
