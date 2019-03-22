@@ -22,10 +22,12 @@ enum SlaveState : word
 	sPreparingToReceiveDevData = 4,
 	sReceivingDevData = 5,
 	sRequestedTime = 6,
-	sDisplayDevCommand = 7,
-	sReceivingDevCommand = 8,
-	sDisplayDevMessage = 9,
-	sDisplaySlaveMessage = 10,
+	sPreparingToReadCommand = 7,
+	sReadingCommandData = 8,
+	sAcknowledgeCommand = 9,
+	sPreparingToSendCommand = 10,
+	sSendingCommandData = 11,
+	sDisplaySlaveMessage = 12,
 	sSetTime = 32770
 };
 
@@ -51,6 +53,25 @@ private_testable:
 	M *_modbus;
 
 private_testable:
+	virtual bool copyBufferToRegisters(word regStart, word bufferSizeBits)
+	{
+		byte numRegs = BitFunctions::bitsToStructs<word, word>(bufferSizeBits);
+		word curReg;
+		for (int i = 0; i < numRegs; i++)
+		{
+			curReg = 0;
+			if (i < numRegs - 1)
+			{
+				BitFunctions::copyBits((byte*)_dataBuffer, &curReg, (word)(i * 16), (word)0, (word)16);
+			}
+			else
+			{
+				BitFunctions::copyBits((byte*)_dataBuffer, &curReg, (word)(i * 16), (word)0, (word)((bufferSizeBits - 1) % 16 + 1));
+			}
+			ENSURE(_modbus->Hreg(regStart + i, curReg));
+		}
+	}
+
 	virtual bool setOutgoingState()
 	{
 		ENSURE(_modbus->validRange(0, _hregCount));
@@ -118,22 +139,7 @@ private_testable:
 					ENSURE(_modbus->Hreg(3, (word)((startTime >> 16) & 0xFFFF)));
 					ENSURE(_modbus->Hreg(4, (word)(dataPointsCount + ((word)(dataPointSize << 8)))));
 					ENSURE(_modbus->Hreg(5, (word)(curPage + ((word)(pagesRemaining << 8)))));
-					word totalBits = dataPointsCount * dataPointSize;
-					byte numRegs = BitFunctions::bitsToStructs<word, word>(totalBits);
-					word curReg;
-					for (int i = 0; i < numRegs; i++)
-					{
-						curReg = 0;
-						if (i < numRegs - 1)
-						{
-							BitFunctions::copyBits((byte*)_dataBuffer, &curReg, (word)(i * 16), (word)0, (word)16);
-						}
-						else
-						{
-							BitFunctions::copyBits((byte*)_dataBuffer, &curReg, (word)(i * 16), (word)0, (word)((totalBits - 1) % 16 + 1));
-						}
-						ENSURE(_modbus->Hreg(6 + i, curReg));
-					}
+					ENSURE(copyBufferToRegisters(6, dataPointsCount * dataPointSize));
 				}
 				else
 				{
@@ -155,7 +161,19 @@ private_testable:
 			ENSURE(_modbus->Hreg(2, (word)(time >> 16)));
 			VERBOSE(setOutgoingState, P_TIME(); PRINT("Time requested. Value = "); PRINTLN(time));
 		}
-			break;
+		break;
+		case sPreparingToReadCommand:
+		{
+			deviceNum = _modbus->Hreg(2);
+			byte recipientNameLength;
+			byte commandLength;
+			if (_devices[deviceNum]->prepareReadNextCommand(recipientNameLength, commandLength, _dataBuffer))
+			{
+				ENSURE(_modbus->Hreg(1, (word)recipientNameLength + ((word)commandLength << 8)));
+
+			}
+		}
+		break;
 		}
 		displayedStateInvalid = false;
 		return true;

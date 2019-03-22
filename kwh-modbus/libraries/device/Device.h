@@ -35,6 +35,8 @@ public:
 	virtual void deviceNotResponding(word nameLength, byte* name, uint32_t reportTime);
 	virtual void setTimeSource(TimeManager *timeSource);
 	virtual TimeManager* getTimeSource();
+	virtual bool prepareReadNextCommand(byte &recipientNameLength, byte &commandSize, byte* recipientName);
+	virtual int readNextCommandData(byte *data);
 
 	static bool isDataTransmitterDeviceType(word deviceType);
 	static bool isTimeServerDeviceType(word deviceType);

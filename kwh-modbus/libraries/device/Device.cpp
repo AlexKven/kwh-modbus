@@ -38,6 +38,16 @@ TimeManager* Device::getTimeSource()
 	return _timeSource;
 }
 
+bool Device::prepareReadNextCommand(byte & recipientNameLength, byte & commandSize, byte * recipientName)
+{
+	return false;
+}
+
+int Device::readNextCommandData(byte * data)
+{
+	return 0;
+}
+
 bool Device::isDataTransmitterDeviceType(word deviceType)
 {
 	return ((deviceType >> 14) == 2);
