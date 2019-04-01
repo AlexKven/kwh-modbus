@@ -96,7 +96,7 @@ uint32_t TimeManager::getPeriodFromTimeScale(TimeScale timeScale)
 
 uint32_t TimeManager::getClock()
 {
-	return (uint32_t)((_curTime - _clockSet) / 1000000) + _initialClock;
+	return (uint32_t)((_curTime - _clockSet) / (uint64_t)1000000) + _initialClock;
 }
 
 void TimeManager::setClock(uint32_t clock)
