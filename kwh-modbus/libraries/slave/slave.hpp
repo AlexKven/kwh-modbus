@@ -109,7 +109,13 @@ private_testable:
 				byte dataPointsCount;
 				byte pagesRemaining;
 				byte dataPointSize;
-				if (device->readData(startTime, numDataPointsRequested, curPage,
+				
+				if (startTime > getClock())
+				{
+					// If the request starts in the future, someone's clock is messed up!
+					ENSURE(_modbus->Hreg(1, 1));
+				}
+				else if (device->readData(startTime, numDataPointsRequested, curPage,
 					_dataBuffer, _dataBufferSize, maxPoints, dataPointsCount, pagesRemaining, dataPointSize))
 				{
 					// success
