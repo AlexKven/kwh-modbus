@@ -24,6 +24,9 @@ DEBUG_CATEGORY(readAndSendData|checkForSlaves|transferPendingData|sendDataToSlav
 class ArduinoFunctions
 {
 public:
+  const uint32_t us_delay = 4174967000;
+  const uint32_t ms_delay = 4174967;
+
   void delayMicroseconds(long len)
   {
     ::delayMicroseconds(len);
@@ -44,14 +47,22 @@ public:
     ::pinMode(pin, mode);
   }
 
-  unsigned long micros()
+  uint64_t micros()
   {
-    return ::micros();
+    static uint32_t low32_micros, high32_micros = 0;
+    uint32_t new_low32_micros = ::micros() + us_delay;
+    if (new_low32_micros < low32_micros) high32_micros++;
+    low32_micros = new_low32_micros;
+    return (uint64_t)high32_micros << 32 | (uint64_t)low32_micros;
   }
 
-  unsigned long millis()
+  uint64_t millis()
   {
-    return ::millis();
+    static uint32_t low32_millis, high32_millis = 0;
+    uint32_t new_low32_millis = ::millis() + ms_delay;
+    if (new_low32_millis < low32_millis) high32_millis++;
+    low32_millis = new_low32_millis;
+    return (uint64_t)high32_millis << 32 | (uint64_t)low32_millis;
   }
 };
 
@@ -75,8 +86,8 @@ void setup() {
   Serial.println("Starting...");
 
   modbus.config(&serialSource, &functions, 9600, 6);
-  modbus.init(registers, 0, 60, 80);
-  modbus.setMinTimePerTryMicros(15000);
+  modbus.init(registers, 0, 50, 80);
+  modbus.setMinTimePerTryMicros(20000);
   modbus.setMaxTimePerTryMicros(100000);
   modbus.setMaxTries(10);
   directory.init(8, 20);

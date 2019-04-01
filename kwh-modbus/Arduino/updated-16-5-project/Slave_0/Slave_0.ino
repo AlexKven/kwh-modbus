@@ -56,14 +56,23 @@ public:
     ::pinMode(pin, mode);
   }
 
-  long micros()
+
+  uint64_t long micros()
   {
-    return ::micros();
+    static uint32_t low32_micros, high32_micros = 0;
+    uint32_t new_low32_micros = ::micros();
+    if (new_low32_micros < low32_micros) high32_micros++;
+    low32_micros = new_low32_micros;
+    return (uint64_t)high32_micros << 32 | (uint64_t)low32_micros;
   }
 
-  long millis()
+  uint64_t long millis()
   {
-    return ::millis();
+    static uint32_t low32_millis, high32_millis = 0;
+    uint32_t new_low32_millis = ::millis();
+    if (new_low32_millis < low32_millis) high32_millis++;
+    low32_millis = new_low32_millis;
+    return (uint64_t)high32_millis << 32 | (uint64_t)low32_millis;
   }
 };
 
@@ -263,6 +272,7 @@ public:
   }
 };
 
+SoftwareSerial serial(50, 51);
 word *registers = new word[60];
 typedef ModbusSlave<HardwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
 typedef Slave<ModbusSlave<HardwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions> T_Slave;
@@ -279,13 +289,46 @@ IPAddress ip(192, 168, 0, 177);
 IPAddress myDns(192, 168, 0, 1);
 
 void setup() {
+
+  
+
+  Serial.begin(9600);
+  Serial.println(F("Starting..."));
+
+  
+    // start the Ethernet connection:
+  Serial.println(F("Initialize Ethernet:"));
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println("Failed");
+    // Check for Ethernet hardware present
+    if (Ethernet.hardwareStatus() == EthernetNoHardware) {
+      Serial.println(F("Shield not found"));
+    }
+    if (Ethernet.linkStatus() == LinkOFF) {
+      Serial.println(F("Ethernet cable not connected."));
+    }
+    // try to congifure using IP address instead of DHCP:
+    Ethernet.begin(mac, ip, myDns);
+  } else {
+    Serial.print("  assigned IP ");
+    Serial.println(Ethernet.localIP());
+  }
+  
+  // if you get a connection, report back via serial:
+  if (client.connect(server, 11004)) {
+    Serial.print(F("connected to "));
+    Serial.println(client.remoteIP());
+  } else {
+    // if you didn't get a connection to the server:
+    Serial.println(F("connection failed"));
+  }
+
+  
+  
   for (int i = 0; i < 60; i++)
   {
     registers[i] = 0;
   }
-
-  Serial.begin(9600);
-  Serial.println(F("Starting..."));
   
   modbus.config(&Serial1, &functions, 9600, 4);
   Serial.println(F("Slave initialized"));
@@ -305,36 +348,15 @@ void setup() {
 
   slave.init(2, 6, 15, 20, devices, names);
 
-    // start the Ethernet connection:
-  Serial.println(F("Initialize Ethernet:"));
-  if (Ethernet.begin(mac) == 0) {
-    Serial.println("Failed");
-    // Check for Ethernet hardware present
-    if (Ethernet.hardwareStatus() == EthernetNoHardware) {
-      Serial.println(F("Shield not found"));
-    }
-    if (Ethernet.linkStatus() == LinkOFF) {
-      Serial.println(F("Ethernet cable not connected."));
-    }
-    // try to congifure using IP address instead of DHCP:
-    Ethernet.begin(mac, ip, myDns);
-  } else {
-    Serial.print("  assigned IP ");
-    Serial.println(Ethernet.localIP());
-  }
-    
-  // if you get a connection, report back via serial:
-  if (client.connect(server, 11004)) {
-    Serial.print(F("connected to "));
-    Serial.println(client.remoteIP());
-  } else {
-    // if you didn't get a connection to the server:
-    Serial.println(F("connection failed"));
-  }
 }
 
 unsigned long lastDisplay = 0;
 
 void loop() {
   slave.loop();
+  if (millis() - lastDisplay >= 1000)
+  {
+    lastDisplay = millis();
+    Serial.println(modbus.getSlaveId());
+  }
 }

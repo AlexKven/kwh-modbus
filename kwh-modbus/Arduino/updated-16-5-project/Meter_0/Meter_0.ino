@@ -21,8 +21,11 @@
 
 DEBUG_CATEGORY_ALL
 
+TimeManager *mainTimeManager;
+
 int getMemAllocation()
 {
+  // Arduino Uno max = 2160
   int *dummy = new int();
   delete dummy;
   return (int)dummy;
@@ -51,14 +54,22 @@ public:
     ::pinMode(pin, mode);
   }
 
-  long micros()
+  uint64_t long micros()
   {
-    return ::micros();
+    static uint32_t low32_micros, high32_micros = 0;
+    uint32_t new_low32_micros = ::micros();
+    if (new_low32_micros < low32_micros) high32_micros++;
+    low32_micros = new_low32_micros;
+    return (uint64_t)high32_micros << 32 | (uint64_t)low32_micros;
   }
 
-  long millis()
+  uint64_t long millis()
   {
-    return ::millis();
+    static uint32_t low32_millis, high32_millis = 0;
+    uint32_t new_low32_millis = ::millis();
+    if (new_low32_millis < low32_millis) high32_millis++;
+    low32_millis = new_low32_millis;
+    return (uint64_t)high32_millis << 32 | (uint64_t)low32_millis;
   }
 };
 
@@ -93,11 +104,15 @@ class SourceDevice : public DataCollectorDevice
     Serial.println(getMinute());
     uint32_t timeDiff = getMinute() - getMinute(time);
     uint32_t result = 0;
+    Serial.println(timeDiff);
+    Serial.println(getNumMinutesStored());
     if (getNumMinutesStored() > timeDiff)
     {
 //      unsigned long pulseDiff = getAndResetPulses();
       result = getCachedMinute(timeDiff);
       double wattHours = (double)result * WATTHOURS_PER_UNIT;
+      Serial.print(F("Result: "));
+      Serial.println(result);
 
 //      result = (double)pulseDiff * UNITS_PER_PULSE;
 //      Serial.print(F(" Pulses: "));
@@ -111,6 +126,12 @@ class SourceDevice : public DataCollectorDevice
       dataBuffer[1] = (byte)(result & 0xFF);
       result >>= 8;
       dataBuffer[2] = (byte)(result & 0xFF);
+      return true;
+    }
+    else
+    {
+      Serial.println("Out of range.");
+      result = 0;
       return true;
     }
 //    return false;
@@ -137,25 +158,31 @@ void setup() {
 
   Serial.begin(9600);
   Serial.println(F("Starting..."));
-  
+  DEBUG(heapMemory, P_TIME(); PRINT("Initial mem usage = "); PRINTLN(getMemAllocation()));
   modbus.config(&serialSource, &functions, 9600, 6);
   Serial.println(F("Slave initialized"));
+  
   modbus.init(registers, 0, 60, 80);
   modbus.setSlaveId(1);
   slave.config(&functions, &modbus);
+  DEBUG(heapMemory, P_TIME(); PRINT(F("Mem usage after init modbus = ")); PRINTLN(getMemAllocation()));
   
   Device* devices[1];
   devices[0] = new SourceDevice();
 
   byte* names[1];
   names[0] = (byte*)"meter0";
+  DEBUG(heapMemory, P_TIME(); PRINT(F("Mem usage after setup devices = ")); PRINTLN(getMemAllocation()));
 
   slave.init(1, 6, 15, 20, devices, names);
+  DEBUG(heapMemory, P_TIME(); PRINT(F("Mem usage after init slave = ")); PRINTLN(getMemAllocation()));
   
 //  pinMode(4, OUTPUT);
 //  digitalWrite(4, HIGH);
 
-//  setupMeter();
+  setupMeter();
+  mainTimeManager = &slave;
+  DEBUG(heapMemory, P_TIME(); PRINT(F("Mem usage after init meter = ")); PRINTLN(getMemAllocation()));
 }
 
 void loop() {
