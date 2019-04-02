@@ -25,6 +25,7 @@ protected:
 	T_MODBUS *modbus = new T_MODBUS();
 	T_SLAVE *slave = new T_SLAVE();
 	Mock<Device> *mockDevices = nullptr;
+	int regCount;
 
 	PointerTracker tracker;
 
@@ -62,6 +63,7 @@ protected:
 public:
 	void SetUp()
 	{
+		regCount = 15;
 		registerArray = new word[15];
 		modbus->init(registerArray, 0, 15, 20);
 		slave->config(system, modbus);
@@ -74,6 +76,42 @@ public:
 	{
 	}
 };
+
+TEST_F_TRAITS(SlaveTests, SlaveTests_copyBufferToRegisters_Success,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
+{
+	slave->_dataBuffer = new byte[19];
+	// Zero registers
+	for (int i = 0; i < regCount; i++)
+	{
+		registerArray[i] = 0;
+	}
+	// Fill in data buffer
+	for (int i = 0; i < 19; i++)
+	{
+		slave->_dataBuffer[i] = i;
+	}
+
+	bool success = slave->copyBufferToRegisters(3, 146); // 152 bits truncated to 146
+
+	ASSERT_TRUE(success);
+	assertArrayEq(registerArray,
+		(word)0,
+		(word)0,
+		(word)0,
+		(byte)0, (byte)1,
+		(byte)2, (byte)3,
+		(byte)4, (byte)5,
+		(byte)6, (byte)7,
+		(byte)8, (byte)9,
+		(byte)10, (byte)11,
+		(byte)12, (byte)13,
+		(byte)14, (byte)15,
+		(byte)16, (byte)17,
+		(byte)2, (byte)0, // 18 truncated to 2
+		(word)0,
+		(word)0);
+}
 
 TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_Idle_Success,
 	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
