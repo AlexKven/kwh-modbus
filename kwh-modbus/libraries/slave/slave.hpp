@@ -318,6 +318,7 @@ public:
 			}
 			_devices[i] = devices[i];
 			_devices[i]->setTimeSource(this);
+			_devices[i]->setup();
 		}
 	}
 
@@ -342,6 +343,9 @@ public:
 			processIncomingState(processed);
 		if (displayedStateInvalid)
 			setOutgoingState();
+
+		for (int i = 0; i < _deviceCount; i++)
+			_devices[i]->loop();
 	}
 
 	void clearDevices()

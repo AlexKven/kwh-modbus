@@ -172,6 +172,10 @@ public:
 		When(Method(device1, getType)).AlwaysReturn(2);
 		Fake(Method(device0, setTimeSource));
 		Fake(Method(device1, setTimeSource));
+		Fake(Method(device0, setup));
+		Fake(Method(device1, setup));
+		Fake(Method(device0, loop));
+		Fake(Method(device1, loop));
 		Device* devices[2];
 		devices[0] = &device0.get();
 		devices[1] = &device1.get();
