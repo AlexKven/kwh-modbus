@@ -315,7 +315,7 @@ void setup() {
   }
   
   // if you get a connection, report back via serial:
-  if (client.connect(server, 11004)) {
+  if (client.connect(server, 11002)) {
     Serial.print(F("connected to "));
     Serial.println(client.remoteIP());
   } else {

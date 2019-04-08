@@ -102,11 +102,11 @@ class SourceDevice : public DataCollectorDevice
     Serial.print(getMinute(time));
     Serial.print(F(". Current minute: "));
     Serial.println(getMinute());
-    uint32_t timeDiff = getMinute() - getMinute(time);
+    int64_t timeDiff = getMinute() - getMinute(time);
     uint32_t result = 0;
-    Serial.println(timeDiff);
+    Serial.println((int)timeDiff);
     Serial.println(getNumMinutesStored());
-    if (getNumMinutesStored() > timeDiff)
+    if (getNumMinutesStored() > timeDiff  && timeDiff >= 0)
     {
 //      unsigned long pulseDiff = getAndResetPulses();
       result = getCachedMinute(timeDiff);
@@ -177,8 +177,8 @@ void setup() {
   slave.init(1, 6, 15, 20, devices, names);
   DEBUG(heapMemory, P_TIME(); PRINT(F("Mem usage after init slave = ")); PRINTLN(getMemAllocation()));
   
-//  pinMode(4, OUTPUT);
-//  digitalWrite(4, HIGH);
+  pinMode(4, OUTPUT);
+  digitalWrite(4, HIGH);
 
   setupMeter();
   mainTimeManager = &slave;
@@ -187,5 +187,5 @@ void setup() {
 
 void loop() {
   slave.loop();
-//  loopMeter();
+  loopMeter();
 }
