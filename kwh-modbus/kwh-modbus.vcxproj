@@ -97,6 +97,7 @@
     <ClInclude Include="libraries\modbus\Modbus.h" />
     <ClInclude Include="libraries\modbus\ModbusArray.h" />
     <ClInclude Include="libraries\modbus\ModbusSerial.hpp" />
+    <ClInclude Include="libraries\pulseMeter\PulseMeter.hpp" />
     <ClInclude Include="libraries\random\Random.h" />
     <ClInclude Include="libraries\resilientModbusMaster\ResilientModbusMaster.hpp" />
     <ClInclude Include="libraries\resilientTask\ResilientTask.hpp" />

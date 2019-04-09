@@ -31,13 +31,13 @@ private_testable:
 
 protected_testable:
 	virtual void tick(uint64_t curTime);
-	virtual uint64_t getCurTime();
-	virtual uint64_t getTimeSincePenultimateTick();
 
 	virtual uint32_t getTimeCodeForClock(TimeScale timeScale, uint32_t clock = 0);
 	virtual uint32_t getClockForTimeCode(TimeScale timeScale, uint32_t timeCode, uint32_t referenceClock = 0);
 
 public:
+	virtual uint64_t getCurTime();
+	virtual uint64_t getTimeSincePenultimateTick();
 	virtual uint32_t getClock();
 	virtual void setClock(uint32_t clock);
 	virtual bool wasTimeNeverSet();

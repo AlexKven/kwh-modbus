@@ -301,6 +301,7 @@ public:
 
 	void init(word deviceCount, word deviceNameLength, word hregCount, byte dataBufferSize, Device **devices, byte **deviceNames)
 	{
+		tick(_system->micros());
 		clearDevices();
 		_deviceCount = deviceCount;
 		_deviceNameLength = deviceNameLength;

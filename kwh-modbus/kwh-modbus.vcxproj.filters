@@ -130,6 +130,9 @@
     <ClInclude Include="libraries\denseShiftBuffer\DenseShiftBuffer.hpp">
       <Filter>libraries\denseShiftBuffer</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\pulseMeter\PulseMeter.hpp">
+      <Filter>libraries\pulseMeter</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="General">
@@ -209,6 +212,9 @@
     </Filter>
     <Filter Include="libraries\denseShiftBuffer">
       <UniqueIdentifier>{eb5ce509-c7e7-4a16-a2b7-5e9078320fd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\pulseMeter">
+      <UniqueIdentifier>{4d5f7e49-200f-4877-98cd-3c8aad106066}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
