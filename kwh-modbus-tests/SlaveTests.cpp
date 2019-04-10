@@ -193,6 +193,7 @@ TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_DeviceDoesn
 	ZeroRegisterArray();
 	ZeroDataBuffer();
 	slave->_clockSet = 1; // Time is no longer "never set"
+	slave->_initialClock = 65715; // Need to set the time to the start of request
 
 	// Select device #0
 	registerArray[2] = 0;
@@ -253,6 +254,7 @@ TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_4bi
 	ZeroRegisterArray();
 	ZeroDataBuffer();
 	slave->_clockSet = 1; // Time is no longer "never set"
+	slave->_initialClock = 65715; // Need to set the time to the start of request
 
 	// Select device #0
 	registerArray[2] = 0;
@@ -324,6 +326,7 @@ TEST_F_TRAITS(SlaveTests, SlaveTests_setOutgoingState_DisplayDevData_Success_5bi
 	ZeroRegisterArray();
 	ZeroDataBuffer();
 	slave->_clockSet = 1; // Time is no longer "never set"
+	slave->_initialClock = 65715; // Need to set the time to the start of request
 
 	// Select device #0
 	registerArray[2] = 0;
