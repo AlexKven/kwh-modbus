@@ -20,6 +20,7 @@ protected_testable:
 
 	volatile T _pulseCount = 0;
 	uint64_t _lastUpdateTime = 0;
+	uint32_t _lastUpdateClock = 0;
 
 private:
 	using DataCollectorDevice::init;
@@ -28,6 +29,21 @@ public:
 	bool readDataPoint(uint32_t time, byte quarterSecondOffset,
 		byte* dataBuffer, byte dataSizeBits)
 	{
+		//if (time > _lastUpdateClock || (time == _lastUpdateClock && quarterSecondOffset > 0))
+		//	return false; // Future data point requested; clock needs to be updated
+		uint32_t timeDiff = _lastUpdateClock - time; // timeDiff is how many seconds in the past the request is for
+		if (timeDiff < 0x80000000 && timeDiff > 0x400000)
+			// Quick way to distinguish between rollover and requesting data from the future
+			return false;
+		timeDiff *= (uint32_t)1000; // timeDiff is now in millliseconds
+		timeDiff += 250 * quarterSecondOffset; // exclusively for MS250 timescale
+		timeDiff /= TimeManager::getPeriodFromTimeScale(_timeScale); // timeDiff is now number of periods before now
+		if (_dataBuffer->getNumStored() > timeDiff)
+		{
+			T result = _dataBuffer->get(timeDiff);
+			BitFunctions::copyBits<T, byte, int>(&result, dataBuffer, 0, 0, dataSizeBits);
+			return true;
+		}
 		return false;
 	}
 
@@ -75,10 +91,11 @@ public:
 	void loop()
 	{
 		curTime = getTimeSource()->getCurTime();
-		while (_lastUpdateTime - curTime >= _usPeriod)
+		if (_lastUpdateTime - curTime >= _usPeriod)
 		{
 			periodElapsed();
-			_lastUpdateTime += _usPeriod;
+			_lastUpdateTime = curTime;
+			_lastUpdateClock = getTimeSource()->getClock();
 		}
 	}
 };

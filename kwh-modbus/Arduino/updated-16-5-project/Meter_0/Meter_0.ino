@@ -15,9 +15,11 @@
 #include "TimeManager.h"
 #include "Device.h"
 #include "DataCollectorDevice.h"
+#include "PulseMeter.hpp"
 #include "Slave.hpp"
 #include "HardwareSerial.h"
 #include "SoftwareSerial.h"
+#include <util/atomic.h>
 
 DEBUG_CATEGORY_ALL
 
@@ -70,6 +72,24 @@ public:
     if (new_low32_millis < low32_millis) high32_millis++;
     low32_millis = new_low32_millis;
     return (uint64_t)high32_millis << 32 | (uint64_t)low32_millis;
+  }
+};
+
+PulseMeter<uint32_t, 12>* meter;
+
+void pulseMeter()
+{
+  meter->incrementPulseCount();
+}
+
+class PulseMeter_t : public PulseMeter<uint32_t, 12>
+{
+public:
+  void setup()
+  {
+    PulseMeter<uint32_t, 12>::setup();
+    meter = this;
+    attachInterrupt(digitalPinToInterrupt(2), pulseMeter, RISING);
   }
 };
 
@@ -168,7 +188,9 @@ void setup() {
   DEBUG(heapMemory, P_TIME(); PRINT(F("Mem usage after init modbus = ")); PRINTLN(getMemAllocation()));
   
   Device* devices[1];
-  devices[0] = new SourceDevice();
+  auto dev = new PulseMeter_t();
+  dev->init(10, TimeScale::min1, 1.412664914, 32);
+  devices[0] = dev;
 
   byte* names[1];
   names[0] = (byte*)"meter0";
@@ -180,12 +202,12 @@ void setup() {
   pinMode(4, OUTPUT);
   digitalWrite(4, HIGH);
 
-  setupMeter();
+//  setupMeter();
   mainTimeManager = &slave;
   DEBUG(heapMemory, P_TIME(); PRINT(F("Mem usage after init meter = ")); PRINTLN(getMemAllocation()));
 }
 
 void loop() {
   slave.loop();
-  loopMeter();
+//  loopMeter();
 }
