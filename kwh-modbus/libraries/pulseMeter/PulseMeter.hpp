@@ -15,15 +15,11 @@ class PulseMeter : public DataCollectorDevice
 protected_testable:
 	DenseShiftBuffer<T, B> *_dataBuffer = nullptr;
 	uint64_t _usPeriod;
-	int _bufferCapacity = 0;
 	double _unitsPerPulse = 1;
 
 	volatile T _pulseCount = 0;
 	uint64_t _lastUpdateTime = 0;
 	uint32_t _lastUpdateClock = 0;
-
-private:
-	using DataCollectorDevice::init;
 
 public:
 	bool readDataPoint(uint32_t time, byte quarterSecondOffset,
@@ -37,7 +33,7 @@ public:
 			return false;
 		timeDiff *= (uint32_t)1000; // timeDiff is now in millliseconds
 		timeDiff += 250 * quarterSecondOffset; // exclusively for MS250 timescale
-		timeDiff /= TimeManager::getPeriodFromTimeScale(_timeScale); // timeDiff is now number of periods before now
+		timeDiff /= (_usPeriod / 1000); // timeDiff is now number of periods before now
 		if (_dataBuffer->getNumStored() > timeDiff)
 		{
 			T result = _dataBuffer->get(timeDiff);
@@ -73,11 +69,10 @@ public:
 	void init(int bufferCapacity, TimeScale timeScale,
 		double unitsPerPulse, byte dataPacketSize)
 	{
-		DataCollectorDevice::init(false, timeScale, dataPacketSize);
-		_bufferCapacity = bufferCapacity;
+		DataCollectorDevice::init(true, timeScale, dataPacketSize);
 		_unitsPerPulse = unitsPerPulse;
 
-		_dataBuffer = new DenseShiftBuffer<T, B>(_bufferCapacity);
+		_dataBuffer = new DenseShiftBuffer<T, B>(bufferCapacity);
 		_usPeriod = TimeManager::getPeriodFromTimeScale(_timeScale) * 1000;
 	}
 
