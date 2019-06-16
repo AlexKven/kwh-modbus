@@ -4,6 +4,7 @@
 #else
 #include "../arduinoMacros/arduinoMacros.h"
 #endif
+#include <climits>
 
 class BitFunctions
 {

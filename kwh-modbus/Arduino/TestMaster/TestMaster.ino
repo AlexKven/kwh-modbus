@@ -56,14 +56,14 @@ public:
 };
 
 word *registers = new word[50];
-typedef ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
-typedef Master<ResilientModbusMaster<HardwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions, DeviceDirectory> T_Master;
+typedef ResilientModbusMaster<SoftwareSerial, ArduinoFunctions, ModbusArray> T_Modbus;
+typedef Master<ResilientModbusMaster<SoftwareSerial, ArduinoFunctions, ModbusArray>, ArduinoFunctions, DeviceDirectory> T_Master;
 
 T_Modbus modbus;
 T_Master master;
 ArduinoFunctions functions;
 DeviceDirectory directory;
-SoftwareSerial mySerial(10, 11);
+SoftwareSerial mySerial(50, 51);
 
 void setup() {
   for (int i = 0; i < 50; i++)
@@ -74,7 +74,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting...");
 
-  modbus.config(&Serial1, &functions, 9600, 4);
+  modbus.config(&mySerial, &functions, 9600, 4);
   modbus.init(registers, 0, 50, 80);
   modbus.setMinTimePerTryMicros(15000);
   modbus.setMaxTimePerTryMicros(100000);

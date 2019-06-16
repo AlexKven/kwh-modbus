@@ -646,6 +646,7 @@ protected_testable:
 		word regCount;
 		word *regs;
 		START_ASYNC;
+		VERBOSE(transferPendingData, P_TIME(); PRINT("Last updated times: "); for (int i = 0; i < 8; i++) { PRINT(lastUpdateTimes[i]); PRINT(" "); } PRINTLN(""));
 		for (int i = 0; i <= (int)maxTimeScale; i++)
 		{
 			uint32_t numDataPoints = (uint64_t)(currentTime - lastUpdateTimes[i]) * 1000 / TimeManager::getPeriodFromTimeScale((TimeScale)i);
@@ -808,6 +809,7 @@ protected_testable:
 			}
 			else if ((curClock - lastSyncTime >= 4) && !wasTimeNeverSet())
 			{
+				VERBOSE(loop, P_TIME(); PRINT("Current clock = "); PRINTLN(curClock));
 				syncNum++;
 				if (syncNum % 21600 == 0)
 					transferPendingData(TimeScale::hr24, curClock);
@@ -826,7 +828,7 @@ protected_testable:
 			}
 			if ((curClock - clockLastUpdated >= 86400) || (wasTimeNeverSet() && (curClock - clockLastUpdated >= 1)))
 			{
-				DEBUG(loop, P_TIME(); PRINTLN("Updating clock."));
+				DEBUG(loop, P_TIME(); PRINT("Updating clock. Current clock = "); PRINTLN(curClock));
 				requestCurrentTime();
 				AWAIT(_requestCurrentTime);
 				if (_requestCurrentTime.result() != 0)

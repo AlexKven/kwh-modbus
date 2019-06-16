@@ -1,8 +1,7 @@
 #include <EEPROM.h>
+#include <util/atomic.h>
 #include "TimeManager.h"
 #include "DenseShiftBuffer.hpp"
-
-TimeManager *mainTimeManager;
 
 volatile unsigned long totalPulses;
 unsigned long timeCountingPulses;
@@ -12,7 +11,7 @@ unsigned long pulsesLastMinute = 0;
 const double WATTHOURS_PER_PULSE = 0.0026944444465999994;
 const double WATTHOURS_PER_UNIT = 0.0019073486;
 const double UNITS_PER_PULSE = 1.412664914;
-DenseShiftBuffer<uint32_t, 12> *cachedMinutes;
+DenseShiftBuffer<uint32_t, 16> *cachedMinutes;
 
 unsigned long getTimeMinutes()
 {
@@ -21,35 +20,43 @@ unsigned long getTimeMinutes()
 
 unsigned long getCachedMinute(int min)
 {
-  cachedMinutes->get(min);
+  if (min >= cachedMinutes->getNumStored())
+    return 0;
+  return cachedMinutes->get(min);
 }
 
 int getNumMinutesStored()
 {
-  cachedMinutes->getNumStored();
+  return cachedMinutes->getNumStored();
 }
 
 long safelyGetTotalPulses()
 {
   long result;
-  cli();
-  result = totalPulses;
-  sei();
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+  {
+    result = totalPulses;
+  }
   return result;
 }
 
 void safelyIncrementTotalPulses()
 {
-  cli();
-  totalPulses++;
-  sei();
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+  {
+    totalPulses++;
+  }
 }
 
 void safelyZeroTotalPulses()
 {
-  cli();
-  totalPulses = 0;
-  sei();
+  do
+  {
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+      totalPulses = 0;
+    }
+  } while (safelyGetTotalPulses() != 0);
   timeCountingPulses = micros();
 }
 
@@ -83,6 +90,8 @@ void onMinuteElapsedMeter()
     //timeLastMinute = _millis;
 //    wattHours = (double)pulseDiff * WATTHOURS_PER_PULSE;
     formattedWattHours = (double)pulseDiff * UNITS_PER_PULSE;
+    cachedMinutes->push(formattedWattHours);
+    
     Serial.print(F(" Pulses: "));
     Serial.print(pulseDiff);
     Serial.print(F(" Watthours: "));
@@ -90,10 +99,8 @@ void onMinuteElapsedMeter()
 //    Serial.print(F(" Formatted Watthours: "));
     Serial.println(formattedWattHours);
     Serial.print(F(" From RAM: "));
-    Serial.println(cachedMinutes->get(0));
+    Serial.println(getCachedMinute(0));
     pulsesLastMinute = pulses;
-
-    cachedMinutes->push(formattedWattHours);
   
     for (int i = cachedMinutes->getNumStored() - 1; i >= 0 ; i--)
     {
@@ -132,7 +139,7 @@ void setupMeter()
 //    else
 //      readStateFromEEPROM();
 //  }
-  cachedMinutes = new DenseShiftBuffer<uint32_t, 12>(6);
+  cachedMinutes = new DenseShiftBuffer<uint32_t, 16>(6);
   pulsesLastMinute = safelyGetTotalPulses();
   attachInterrupt(digitalPinToInterrupt(2), pulse, RISING);
   safelyZeroTotalPulses();
@@ -152,8 +159,11 @@ void loopMeter()
   unsigned long _millis = millis();
   unsigned long _micros = micros();
   unsigned long pulses;
-//  
-  onMinuteElapsedMeter();
+  if (_millis - lastUpdateTimeMS >= 60000 || (lastUpdateTimeMS == 0 && _millis > 0))
+  {
+    onMinuteElapsedMeter();
+    lastUpdateTimeMS = _millis;
+  }
   if (Serial.available())
   {
     while (Serial.available())
