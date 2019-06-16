@@ -9,6 +9,14 @@
       <Configuration>Release</Configuration>
       <Platform>ARM</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x86">
       <Configuration>Debug</Configuration>
       <Platform>x86</Platform>
@@ -27,14 +35,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{237f78b3-c4da-47a4-bc3a-6741312acdca}</ProjectGuid>
+    <ProjectGuid>{821c59fe-1f24-4d5b-8c9d-f555ff36e85d}</ProjectGuid>
     <Keyword>Linux</Keyword>
-    <RootNamespace>kwh_modbus</RootNamespace>
+    <RootNamespace>kwh_modbus_linux</RootNamespace>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <ApplicationType>Linux</ApplicationType>
     <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
     <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
-    <LinuxProjectType>{2238F9CD-F817-4ECC-BD14-2524D2669B35}</LinuxProjectType>
+    <LinuxProjectType>{D51BCBC9-82E9-4017-911E-C93873C4EA2B}</LinuxProjectType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
@@ -55,67 +63,30 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
-  <ImportGroup Label="Shared" />
+  <ImportGroup Label="Shared">
+    <Import Project="..\kwh-modbus\kwh-modbus.vcxitems" Label="Shared" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetExt>.lib</TargetExt>
+    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>gcc</RemoteCppCompileToolExe>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="libraries\arduinoClasses\ArduinoSerial.cpp" />
-    <ClCompile Include="libraries\arduinoClasses\ArduinoSystem.cpp" />
-    <ClCompile Include="libraries\device\DataCollectorDevice.cpp" />
-    <ClCompile Include="libraries\device\Device.cpp" />
-    <ClCompile Include="libraries\modbus\Modbus.cpp" />
-    <ClCompile Include="libraries\modbus\ModbusArray.cpp" />
-    <ClCompile Include="libraries\random\Random.cpp" />
-    <ClCompile Include="libraries\timeManager\TimeManager.cpp" />
-    <ClCompile Include="mock\MockSerialStream.cpp" />
-    <ClCompile Include="noArduino\ModbusMemory.cpp" />
-    <ClCompile Include="noArduino\SystemFunctions.cpp" />
-    <ClCompile Include="program.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="interfaces\ISerialStream.h" />
-    <ClInclude Include="interfaces\ISystemFunctions.h" />
-    <ClInclude Include="libraries\arduinoClasses\ArduinoSerial.h" />
-    <ClInclude Include="libraries\arduinoClasses\ArduinoSystem.h" />
-    <ClInclude Include="libraries\asyncAwait\AsyncAwait.hpp" />
-    <ClInclude Include="libraries\bitFunctions\BitFunctions.hpp" />
-    <ClInclude Include="libraries\communicator\SystemParameters.h" />
-    <ClInclude Include="libraries\debugMacros\DebugMacros.h" />
-    <ClInclude Include="libraries\denseShiftBuffer\DenseShiftBuffer.hpp" />
-    <ClInclude Include="libraries\deviceDirectoryRow\DeviceDirectoryRow.h" />
-    <ClInclude Include="libraries\deviceDirectory\DeviceDirectory.hpp" />
-    <ClInclude Include="libraries\device\DataCollectorDevice.h" />
-    <ClInclude Include="libraries\device\Device.h" />
-    <ClInclude Include="libraries\master\Master.hpp" />
-    <ClInclude Include="libraries\modbusMaster\ModbusMaster.hpp" />
-    <ClInclude Include="libraries\modbusSlave\ModbusSlave.hpp" />
-    <ClInclude Include="libraries\modbus\Modbus.h" />
-    <ClInclude Include="libraries\modbus\ModbusArray.h" />
-    <ClInclude Include="libraries\modbus\ModbusSerial.hpp" />
-    <ClInclude Include="libraries\random\Random.h" />
-    <ClInclude Include="libraries\resilientModbusMaster\ResilientModbusMaster.hpp" />
-    <ClInclude Include="libraries\resilientTask\ResilientTask.hpp" />
-    <ClInclude Include="libraries\slave\Slave.hpp" />
-    <ClInclude Include="libraries\timeManager\TimeManager.h" />
-    <ClInclude Include="libraries\tuple\Tuple.hpp" />
-    <ClInclude Include="mock\MockableResilientModbusMaster.hpp" />
-    <ClInclude Include="mock\MockSerialStream.h" />
-    <ClInclude Include="noArduino\SystemFunctions.h" />
-    <ClInclude Include="noArduino\ArduinoMacros.h" />
-    <ClInclude Include="noArduino\ModbusMemory.h" />
-    <ClInclude Include="noArduino\TestHelpers.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="libraries\master\cpp.hint" />
+    <ClInclude Include="PlatformMacros.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile />
-    <ClCompile />
     <ClCompile>
       <PreprocessorDefinitions>NO_ARDUINO</PreprocessorDefinitions>
     </ClCompile>

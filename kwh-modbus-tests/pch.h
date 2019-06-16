@@ -7,6 +7,5 @@
 
 #include "gtest/gtest.h"
 #include "GTA_Traits_1.8.0.h"
-#define NO_ARDUINO
 #define protected_testable public
 #define private_testable public
