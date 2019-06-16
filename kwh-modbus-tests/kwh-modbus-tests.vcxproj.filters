@@ -2,10 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="test_helpers.h" />
     <ClCompile Include="Source.cpp" />
-    <ClCompile Include="WindowsFunctions.cpp" />
-    <ClCompile Include="WindowsSystemFunctions.cpp" />
     <ClCompile Include="ModbusArrayTests.cpp" />
     <ClCompile Include="ModbusMemoryTests.cpp" />
     <ClCompile Include="ModbusSerialTests.cpp" />
@@ -23,10 +20,12 @@
     <ClCompile Include="TimeManagerTests.cpp" />
     <ClCompile Include="DataCollectorDeviceTests.cpp" />
     <ClCompile Include="BitFunctionsTests.cpp" />
-    <ClCompile Include="test_helpers.cpp" />
     <ClCompile Include="DebugMacrosTests.cpp" />
     <ClCompile Include="DenseShiftBufferTests.cpp" />
     <ClCompile Include="PulseMeterTests.cpp" />
+    <ClCompile Include="WindowsFunctions.cpp" />
+    <ClCompile Include="WindowsSystemFunctions.cpp" />
+    <ClCompile Include="test_helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -34,6 +33,8 @@
     <ClInclude Include="WindowsSystemFunctions.h" />
     <ClInclude Include="PointerTracker.h" />
     <ClInclude Include="GTA_Traits_1.8.0.h" />
+    <ClInclude Include="fakeit.hpp" />
+    <ClInclude Include="test_helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{d5ec5a32-83eb-4b72-a3a2-40ffbf03af10}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libraries\arduinoClasses\ArduinoSerial.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)libraries\arduinoClasses\ArduinoSystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)libraries\device\DataCollectorDevice.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)libraries\device\Device.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)libraries\modbus\Modbus.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)libraries\modbus\ModbusArray.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)libraries\random\Random.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)libraries\timeManager\TimeManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)mock\MockSerialStream.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)noArduino\ModbusMemory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)noArduino\SystemFunctions.cpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)interfaces\ISerialStream.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)interfaces\ISystemFunctions.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\arduinoClasses\ArduinoSerial.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\arduinoClasses\ArduinoSystem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\asyncAwait\AsyncAwait.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\bitFunctions\BitFunctions.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\communicator\SystemParameters.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\debugMacros\DebugMacros.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\denseShiftBuffer\DenseShiftBuffer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\deviceDirectoryRow\DeviceDirectoryRow.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\deviceDirectory\DeviceDirectory.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\device\DataCollectorDevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\device\Device.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\master\Master.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\modbusMaster\ModbusMaster.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\modbusSlave\ModbusSlave.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\modbus\Modbus.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\modbus\ModbusArray.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\modbus\ModbusSerial.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\random\Random.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\resilientModbusMaster\ResilientModbusMaster.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\resilientTask\ResilientTask.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\slave\Slave.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\timeManager\TimeManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\tuple\Tuple.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)mock\MockableResilientModbusMaster.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)mock\MockSerialStream.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)noArduino\SystemFunctions.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)noArduino\ArduinoMacros.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)noArduino\ModbusMemory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)noArduino\TestHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)libraries\pulseMeter\PulseMeter.hpp" /> 
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)libraries\master\cpp.hint" />
+  </ItemGroup>
+  <!-- 
+
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)mock\MockableResilientModbusMaster.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)mock\mockserialstream.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)mock\mockserialstream.cpp" />
+  </ItemGroup> -->
+</Project>
