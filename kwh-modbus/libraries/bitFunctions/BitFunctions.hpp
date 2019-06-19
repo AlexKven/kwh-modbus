@@ -1,10 +1,10 @@
 #pragma once
 
 #ifdef NO_ARDUINO
+#include <climits>
 #else
 #include "../arduinoMacros/arduinoMacros.h"
 #endif
-#include <climits>
 
 class BitFunctions
 {
