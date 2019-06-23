@@ -100,7 +100,7 @@ class SourceDevice : public DataCollectorDevice
 
 EthernetClient client;
 EthernetUDP Udp;
-IPAddress timeServer(193, 79, 237, 14);
+IPAddress timeServer(128, 138, 140, 44);
 const int NTP_PACKET_SIZE= 48;
 
 class DestinationDevice : public Device
@@ -212,7 +212,7 @@ public:
     return 1;
   }
 
-  unsigned long sendNTPpacket(IPAddress& address)
+  void sendNTPpacket(IPAddress& address)
   {
     memset(packetBuffer, 0, NTP_PACKET_SIZE);
     packetBuffer[0] = 0b11100011;
@@ -252,6 +252,7 @@ public:
        lowWord = word(packetBuffer[42], packetBuffer[43]); 
        result = highWord << 16 | lowWord;
        result = result - 2208988800 - 946684800;
+       Serial.println(result);
        lastTimeResult = result;
      }
     }
