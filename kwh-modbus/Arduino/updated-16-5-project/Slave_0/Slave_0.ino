@@ -164,7 +164,7 @@ class DestinationDevice : public Device
       timePeriod = 4;
     for (int i = 0; i <dataPointsInPage; i++)
     {
-      setTime(946684800 + curStart + i);
+      setTime(946684800 + curStart + i * 60);
       uint32_t value = dataPoints[i * 3] + dataPoints[i * 3 + 1] * 256 + dataPoints[i * 3 + 2] * 256 * 256;
       Serial.print(" Pg: ");
       Serial.print(pageNumber);
@@ -358,6 +358,5 @@ void loop() {
   if (millis() - lastDisplay >= 1000)
   {
     lastDisplay = millis();
-    Serial.println(modbus.getSlaveId());
   }
 }

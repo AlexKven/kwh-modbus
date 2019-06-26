@@ -159,7 +159,11 @@ void loopMeter()
   unsigned long _millis = millis();
   unsigned long _micros = micros();
   unsigned long pulses;
-  if (_millis - lastUpdateTimeMS >= 60000 || (lastUpdateTimeMS == 0 && _millis > 0))
+  if (lastUpdateTimeMS == 0 && _millis > 0)
+  {
+    lastUpdateTimeMS = _millis;
+  }
+  if (_millis - lastUpdateTimeMS >= 60000)
   {
     onMinuteElapsedMeter();
     lastUpdateTimeMS = _millis;

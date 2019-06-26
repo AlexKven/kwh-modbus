@@ -152,7 +152,7 @@ class SourceDevice : public DataCollectorDevice
     {
       Serial.println("Out of range.");
       result = 0;
-      return true;
+      return false;
     }
 //    return false;
 //    Serial.print(F("Result: "));
@@ -202,12 +202,12 @@ void setup() {
   pinMode(4, OUTPUT);
   digitalWrite(4, HIGH);
 
-//  setupMeter();
+  setupMeter();
   mainTimeManager = &slave;
   DEBUG(heapMemory, P_TIME(); PRINT(F("Mem usage after init meter = ")); PRINTLN(getMemAllocation()));
 }
 
 void loop() {
   slave.loop();
-//  loopMeter();
+  loopMeter();
 }
