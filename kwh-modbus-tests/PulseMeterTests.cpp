@@ -44,3 +44,91 @@ TEST_F_TRAITS(PulseMeterTests, init_success,
 	ASSERT_EQ(timeScale, TimeScale::min10);
 	ASSERT_EQ(dataPacketSize, 40);
 }
+
+TEST_F_TRAITS(PulseMeterTests, readDataPoint_OneSecondPeriod_Success_Past,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
+{
+	pulseMeter->init(6, TimeScale::sec1, 2.5, 32);
+	pulseMeter->_lastUpdateClock = 2500000;
+	pulseMeter->_dataBuffer->push(1);
+	pulseMeter->_dataBuffer->push(2);
+	pulseMeter->_dataBuffer->push(3);
+	pulseMeter->_dataBuffer->push(4);
+	pulseMeter->_dataBuffer->push(5);
+	pulseMeter->_dataBuffer->push(6);
+	pulseMeter->_dataBuffer->push(7);
+
+	uint64_t result = 0;
+	byte* resultBuffer = (byte*)& result;
+
+	bool success = pulseMeter->readDataPoint(2499998, 0, resultBuffer, 32);
+
+	ASSERT_TRUE(success);
+	ASSERT_EQ(result, 5);
+}
+
+TEST_F_TRAITS(PulseMeterTests, readDataPoint_OneSecondPeriod_Success_Present,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
+{
+	pulseMeter->init(6, TimeScale::sec1, 2.5, 32);
+	pulseMeter->_lastUpdateClock = 2500000;
+	pulseMeter->_dataBuffer->push(1);
+	pulseMeter->_dataBuffer->push(2);
+	pulseMeter->_dataBuffer->push(3);
+	pulseMeter->_dataBuffer->push(4);
+	pulseMeter->_dataBuffer->push(5);
+	pulseMeter->_dataBuffer->push(6);
+	pulseMeter->_dataBuffer->push(7);
+
+	uint64_t result = 0;
+	byte* resultBuffer = (byte*)& result;
+
+	bool success = pulseMeter->readDataPoint(2500000, 0, resultBuffer, 32);
+
+	ASSERT_TRUE(success);
+	ASSERT_EQ(result, 7);
+}
+
+TEST_F_TRAITS(PulseMeterTests, readDataPoint_OneSecondPeriod_Failure_OutOfRangePast,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
+{
+	pulseMeter->init(6, TimeScale::sec1, 2.5, 32);
+	pulseMeter->_lastUpdateClock = 2500000;
+	pulseMeter->_dataBuffer->push(1);
+	pulseMeter->_dataBuffer->push(2);
+	pulseMeter->_dataBuffer->push(3);
+	pulseMeter->_dataBuffer->push(4);
+	pulseMeter->_dataBuffer->push(5);
+	pulseMeter->_dataBuffer->push(6);
+	pulseMeter->_dataBuffer->push(7);
+
+	uint64_t result = 0;
+	byte* resultBuffer = (byte*)& result;
+
+	bool success = pulseMeter->readDataPoint(2499994, 0, resultBuffer, 32);
+
+	ASSERT_FALSE(success);
+	ASSERT_EQ(result, 0);
+}
+
+TEST_F_TRAITS(PulseMeterTests, readDataPoint_OneSecondPeriod_Failure_OutOfRangeFuture,
+	Type, Unit, Threading, Single, Determinism, Static, Case, Typical)
+{
+	pulseMeter->init(6, TimeScale::sec1, 2.5, 32);
+	pulseMeter->_lastUpdateClock = 2500000;
+	pulseMeter->_dataBuffer->push(1);
+	pulseMeter->_dataBuffer->push(2);
+	pulseMeter->_dataBuffer->push(3);
+	pulseMeter->_dataBuffer->push(4);
+	pulseMeter->_dataBuffer->push(5);
+	pulseMeter->_dataBuffer->push(6);
+	pulseMeter->_dataBuffer->push(7);
+
+	uint64_t result = 0;
+	byte* resultBuffer = (byte*)& result;
+
+	bool success = pulseMeter->readDataPoint(2500001, 0, resultBuffer, 32);
+
+	ASSERT_FALSE(success);
+	ASSERT_EQ(result, 0);
+}
